@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chromaticdesktop.invalid/schemas/recovery.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "journalId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "timestampUtc": {
+      "type": "string",
+      "format": "date-time",
+      "maxLength": 64
+    },
+    "userSid": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 184,
+      "pattern": "^S-1-[0-9-]+$"
+    },
+    "sessionId": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "agentPid": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "agentStartTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Prepared",
+        "Applied",
+        "Restoring",
+        "Restored",
+        "Conflict",
+        "RecoveryRequired"
+      ]
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/resource"
+      },
+      "maxItems": 128
+    },
+    "preview": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/preview"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "journalId",
+    "timestampUtc",
+    "userSid",
+    "sessionId",
+    "agentPid",
+    "agentStartTicks",
+    "generation",
+    "status",
+    "resources",
+    "preview"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "display": {
+      "type": "object",
+      "properties": {
+        "monitorDevicePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "edidSerial": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gdiName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "adapterLuid": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "targetId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "monitorDevicePath",
+        "edidSerial",
+        "gdiName",
+        "adapterLuid",
+        "targetId"
+      ],
+      "additionalProperties": false
+    },
+    "rational": {
+      "type": "object",
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "additionalProperties": false
+    },
+    "intent": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 320,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 16384
+        },
+        "refreshRate": {
+          "$ref": "#/$defs/rational"
+        },
+        "scaling": {
+          "type": "string",
+          "enum": [
+            "Unchanged",
+            "Centered",
+            "Stretched",
+            "AspectRatio"
+          ]
+        },
+        "hdr": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "refreshRate",
+        "scaling",
+        "hdr"
+      ],
+      "additionalProperties": false
+    },
+    "resourceValue": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 768
+        },
+        "topologyBase64": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 524288,
+              "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "topologyFormat": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "ccd-v1-x64"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "values",
+        "topologyBase64",
+        "topologyFormat"
+      ],
+      "additionalProperties": false
+    },
+    "resource": {
+      "type": "object",
+      "properties": {
+        "ownershipId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "GlobalMatrix",
+            "GammaRamp",
+            "NativeVibrance",
+            "DisplayTopology",
+            "Hdr",
+            "TemporaryDdc"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "GlobalDesktop",
+            "PerMonitor"
+          ]
+        },
+        "display": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/display"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baseline": {
+          "$ref": "#/$defs/resourceValue"
+        },
+        "lastApplied": {
+          "$ref": "#/$defs/resourceValue"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "persistentUndo": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ownershipId",
+        "kind",
+        "scope",
+        "display",
+        "baseline",
+        "lastApplied",
+        "generation",
+        "persistentUndo"
+      ],
+      "additionalProperties": false
+    },
+    "preview": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Prepared",
+            "Applying",
+            "AwaitingConfirmation",
+            "Confirmed",
+            "RollingBack",
+            "Reverted",
+            "Failed"
+          ]
+        },
+        "display": {
+          "$ref": "#/$defs/display"
+        },
+        "intent": {
+          "$ref": "#/$defs/intent"
+        },
+        "deadlineUtc": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "display",
+        "intent",
+        "deadlineUtc",
+        "generation"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

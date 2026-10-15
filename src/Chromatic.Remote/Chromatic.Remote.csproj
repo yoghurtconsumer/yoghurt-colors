@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
+    <ProjectReference Include="../Chromatic.Infrastructure/Chromatic.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

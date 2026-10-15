@@ -1,0 +1,1 @@
+# Stage 1 intentionally generates no native entry points. Stage 2 adds audited SDK bindings.

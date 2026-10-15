@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
+  </ItemGroup>
+</Project>

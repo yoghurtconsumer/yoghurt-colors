@@ -1,0 +1,40 @@
+<Window x:Class="Chromatic.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:Chromatic.App.ViewModels" xmlns:views="clr-namespace:Chromatic.App.Views" Title="Chromatic Desktop" Width="1120" Height="780" MinWidth="840" MinHeight="620" Closing="Window_Closing" WindowStartupLocation="CenterScreen" AutomationProperties.Name="Chromatic Desktop">
+  <Window.Resources>
+    <DataTemplate DataType="{x:Type vm:DisplayViewModel}"><views:DisplayView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:PresetsViewModel}"><views:PresetsView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:GamesViewModel}"><views:GamesView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ResolutionViewModel}"><views:ResolutionView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CrosshairViewModel}"><views:CrosshairView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:MonitorViewModel}"><views:MonitorView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:CustomizeViewModel}"><views:CustomizeView /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
+  </Window.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="228" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="18,24">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="10,0,0,28"><TextBlock Text="◒  chromatic" FontSize="23" FontWeight="Bold" /><TextBlock Text="D E S K T O P" FontSize="10" Margin="31,4,0,0" Foreground="{DynamicResource MutedBrush}" /></StackPanel>
+        <views:MusicPanel DockPanel.Dock="Bottom" DataContext="{Binding Music}" Margin="8,24,0,0" />
+        <ListBox ItemsSource="{Binding Navigation}" SelectedItem="{Binding Selected}" Background="Transparent" BorderThickness="0" AutomationProperties.Name="Main navigation" Foreground="{DynamicResource TextBrush}" HorizontalContentAlignment="Stretch">
+          <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="Padding" Value="10,12" /><Setter Property="Margin" Value="0,2" /><Setter Property="AutomationProperties.Name" Value="{Binding Label}" /><Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource SelectionBrush}" /><Setter Property="Foreground" Value="{DynamicResource TextBrush}" /></Trigger></Style.Triggers></Style></ListBox.ItemContainerStyle>
+          <ListBox.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Glyph}" Width="25" /><TextBlock Text="{Binding Label}" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+    <DockPanel Grid.Column="1" Margin="34,26">
+      <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,14,0,0" Margin="0,20,0,0"><TextBlock Text="{Binding Status}" FontSize="12" AutomationProperties.Name="Effects completion status" Foreground="{DynamicResource MutedBrush}" /></Border>
+      <StackPanel DockPanel.Dock="Top">
+        <DockPanel Margin="0,0,0,12"><TextBlock Text="WORKSPACE / LOCAL" FontWeight="SemiBold" Foreground="{DynamicResource MutedBrush}" /><WrapPanel HorizontalAlignment="Right"><Button Content="Pause" Command="{Binding PauseCommand}" /><Button Content="Restore" Command="{Binding RestoreCommand}" /></WrapPanel></DockPanel>
+        <TextBlock Text="{Binding StartupWarning}" Foreground="{DynamicResource AccentBrush}" />
+      </StackPanel>
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+          <ContentControl Content="{Binding CurrentPage}" />
+          <Expander Header="Backend capabilities · Stage 1" Margin="0,24,0,0" Foreground="{DynamicResource TextBrush}">
+            <ItemsControl ItemsSource="{Binding Capabilities}"><ItemsControl.ItemTemplate><DataTemplate><StackPanel Margin="4,8"><TextBlock><Run Text="{Binding Backend}" /><Run Text=" · " /><Run Text="{Binding Status}" /><Run Text=" · " /><Run Text="{Binding Scope}" /></TextBlock><TextBlock Text="{Binding Reason}" FontSize="12" Foreground="{DynamicResource MutedBrush}" /></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+          </Expander>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Grid>
+</Window>

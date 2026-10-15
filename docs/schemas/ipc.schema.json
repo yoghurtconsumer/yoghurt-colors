@@ -1,0 +1,1135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chromaticdesktop.invalid/schemas/ipc.schema.json",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "command"
+        },
+        "sessionId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "envelope": {
+          "$ref": "#/$defs/envelope"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "sessionId",
+        "envelope"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "hello"
+        },
+        "processId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "processStartTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "sessionId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "userSid": {
+          "type": "string",
+          "pattern": "^S-1-[0-9-]+$",
+          "maxLength": 184
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "processId",
+        "processStartTicks",
+        "sessionId",
+        "userSid",
+        "nonce"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "result"
+        },
+        "commandId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "decision": {
+          "$ref": "#/$defs/commandResult"
+        },
+        "completion": {
+          "$ref": "#/$defs/applyResult"
+        },
+        "state": {
+          "$ref": "#/$defs/state"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "kind",
+        "commandId",
+        "decision",
+        "completion",
+        "state"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "color": {
+      "type": "object",
+      "properties": {
+        "saturationPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 300
+        },
+        "brightness": {
+          "type": "number",
+          "minimum": -0.25,
+          "maximum": 0.25
+        },
+        "contrast": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "gamma": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5
+        },
+        "warmth": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "vibrance": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "shadows": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.8
+        },
+        "highlights": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.8
+        },
+        "cvdMode": {
+          "type": "string",
+          "enum": [
+            "None",
+            "RedWeak",
+            "GreenWeak",
+            "BlueWeak"
+          ]
+        }
+      },
+      "required": [
+        "saturationPercent",
+        "brightness",
+        "contrast",
+        "gamma",
+        "warmth",
+        "vibrance",
+        "shadows",
+        "highlights",
+        "cvdMode"
+      ],
+      "additionalProperties": false
+    },
+    "display": {
+      "type": "object",
+      "properties": {
+        "monitorDevicePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "edidSerial": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gdiName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "adapterLuid": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "targetId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "monitorDevicePath",
+        "edidSerial",
+        "gdiName",
+        "adapterLuid",
+        "targetId"
+      ],
+      "additionalProperties": false
+    },
+    "rational": {
+      "type": "object",
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "additionalProperties": false
+    },
+    "intent": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 320,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 16384
+        },
+        "refreshRate": {
+          "$ref": "#/$defs/rational"
+        },
+        "scaling": {
+          "type": "string",
+          "enum": [
+            "Unchanged",
+            "Centered",
+            "Stretched",
+            "AspectRatio"
+          ]
+        },
+        "hdr": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "refreshRate",
+        "scaling",
+        "hdr"
+      ],
+      "additionalProperties": false
+    },
+    "crosshair": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "shape": {
+              "type": "string",
+              "enum": [
+                "Cross",
+                "Dot",
+                "Circle",
+                "T",
+                "DotCross"
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 128
+            },
+            "gap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "thickness": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "outline": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{8}$",
+              "minLength": 9,
+              "maxLength": 9
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "offsetX": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "offsetY": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "assetHash": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "minLength": 64,
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "shape",
+            "size",
+            "gap",
+            "thickness",
+            "outline",
+            "color",
+            "opacity",
+            "offsetX",
+            "offsetY",
+            "assetHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "shape": {
+              "const": "Picture"
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 128
+            },
+            "gap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "thickness": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "outline": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{8}$",
+              "minLength": 9,
+              "maxLength": 9
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "offsetX": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "offsetY": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "assetHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "enabled",
+            "shape",
+            "size",
+            "gap",
+            "thickness",
+            "outline",
+            "color",
+            "opacity",
+            "offsetX",
+            "offsetY",
+            "assetHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "monitor": {
+      "type": "object",
+      "properties": {
+        "display": {
+          "$ref": "#/$defs/display"
+        },
+        "gamma": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5
+        },
+        "warmth": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "display",
+        "gamma",
+        "warmth"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "globalColor": {
+          "$ref": "#/$defs/color"
+        },
+        "monitors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/monitor"
+          },
+          "maxItems": 32
+        },
+        "crosshair": {
+          "$ref": "#/$defs/crosshair"
+        },
+        "displayIntent": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/intent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "globalColor",
+        "monitors",
+        "crosshair",
+        "displayIntent"
+      ],
+      "additionalProperties": false
+    },
+    "preview": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Prepared",
+            "Applying",
+            "AwaitingConfirmation",
+            "Confirmed",
+            "RollingBack",
+            "Reverted",
+            "Failed"
+          ]
+        },
+        "display": {
+          "$ref": "#/$defs/display"
+        },
+        "intent": {
+          "$ref": "#/$defs/intent"
+        },
+        "deadlineUtc": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "display",
+        "intent",
+        "deadlineUtc",
+        "generation"
+      ],
+      "additionalProperties": false
+    },
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "commandId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "baseRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "command": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "enable"
+                },
+                "enabled": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "enabled"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "setColor"
+                },
+                "color": {
+                  "$ref": "#/$defs/color"
+                }
+              },
+              "required": [
+                "type",
+                "color"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "activatePreset"
+                },
+                "profile": {
+                  "$ref": "#/$defs/profile"
+                }
+              },
+              "required": [
+                "type",
+                "profile"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "foregroundChanged"
+                },
+                "identity": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "normalizedPath": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 32768,
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                        },
+                        "processId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483647
+                        },
+                        "processStartTicks": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9223372036854775807
+                        }
+                      },
+                      "required": [
+                        "normalizedPath",
+                        "processId",
+                        "processStartTicks"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "profile": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/profile"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "identity",
+                "profile"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "setHold"
+                },
+                "held": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "held"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "previewMode"
+                },
+                "transactionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "display": {
+                  "$ref": "#/$defs/display"
+                },
+                "intent": {
+                  "$ref": "#/$defs/intent"
+                },
+                "deadlineUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "type",
+                "transactionId",
+                "display",
+                "intent",
+                "deadlineUtc"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "confirmMode"
+                },
+                "transactionId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "type",
+                "transactionId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "cancelPreview"
+                },
+                "transactionId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "type",
+                "transactionId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "suspend"
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "Pause",
+                    "SessionLock",
+                    "PowerSuspend",
+                    "SessionDisconnected",
+                    "AdvancedColor",
+                    "Recovery"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "resume"
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "Pause",
+                    "SessionLock",
+                    "PowerSuspend",
+                    "SessionDisconnected",
+                    "AdvancedColor",
+                    "Recovery"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "restore"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "shutdown"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "commandId",
+        "baseRevision",
+        "generation",
+        "command"
+      ],
+      "additionalProperties": false
+    },
+    "applyResult": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "backend": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "errorCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explanation": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "success",
+        "backend",
+        "errorCode",
+        "explanation",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "commandResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "Accepted",
+            "StaleRevision",
+            "Invalid",
+            "Blocked",
+            "NotImplemented"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "explanation": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "revision",
+        "generation",
+        "explanation"
+      ],
+      "additionalProperties": false
+    },
+    "backendCapability": {
+      "type": "object",
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": [
+            "Magnification",
+            "NvidiaDvc",
+            "SdrGamma",
+            "DisplayMode",
+            "Hdr",
+            "Ddc",
+            "Overlay",
+            "Media",
+            "Remote"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Available",
+            "Unsupported",
+            "NeedsUserAction",
+            "Experimental"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "GlobalDesktop",
+            "PerMonitor"
+          ]
+        },
+        "display": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/display"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "backend",
+        "status",
+        "reason",
+        "scope",
+        "display"
+      ],
+      "additionalProperties": false
+    },
+    "capabilityReport": {
+      "type": "object",
+      "properties": {
+        "backends": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/backendCapability"
+          },
+          "maxItems": 256
+        },
+        "advancedColorActive": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "backends",
+        "advancedColorActive"
+      ],
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "desiredEnabled": {
+          "type": "boolean"
+        },
+        "effectiveEnabled": {
+          "type": "boolean"
+        },
+        "held": {
+          "type": "boolean"
+        },
+        "activeProfileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "globalColor": {
+          "$ref": "#/$defs/color"
+        },
+        "monitors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/monitor"
+          },
+          "maxItems": 32
+        },
+        "preview": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/preview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recoveryPending": {
+          "type": "boolean"
+        },
+        "suspensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Pause",
+              "SessionLock",
+              "PowerSuspend",
+              "SessionDisconnected",
+              "AdvancedColor",
+              "Recovery"
+            ]
+          },
+          "maxItems": 6
+        },
+        "capabilities": {
+          "$ref": "#/$defs/capabilityReport"
+        },
+        "lastObservedResult": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/applyResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "revision",
+        "generation",
+        "desiredEnabled",
+        "effectiveEnabled",
+        "held",
+        "activeProfileId",
+        "globalColor",
+        "monitors",
+        "preview",
+        "recoveryPending",
+        "suspensions",
+        "capabilities",
+        "lastObservedResult"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

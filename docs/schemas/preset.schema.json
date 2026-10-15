@@ -1,0 +1,685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chromaticdesktop.invalid/schemas/preset.schema.json",
+  "$defs": {
+    "color": {
+      "type": "object",
+      "properties": {
+        "saturationPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 300
+        },
+        "brightness": {
+          "type": "number",
+          "minimum": -0.25,
+          "maximum": 0.25
+        },
+        "contrast": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "gamma": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5
+        },
+        "warmth": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "vibrance": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "shadows": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.8
+        },
+        "highlights": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.8
+        },
+        "cvdMode": {
+          "type": "string",
+          "enum": [
+            "None",
+            "RedWeak",
+            "GreenWeak",
+            "BlueWeak"
+          ]
+        }
+      },
+      "required": [
+        "saturationPercent",
+        "brightness",
+        "contrast",
+        "gamma",
+        "warmth",
+        "vibrance",
+        "shadows",
+        "highlights",
+        "cvdMode"
+      ],
+      "additionalProperties": false
+    },
+    "rational": {
+      "type": "object",
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "additionalProperties": false
+    },
+    "intent": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 320,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 16384
+        },
+        "refreshRate": {
+          "$ref": "#/$defs/rational"
+        },
+        "scaling": {
+          "type": "string",
+          "enum": [
+            "Unchanged",
+            "Centered",
+            "Stretched",
+            "AspectRatio"
+          ]
+        },
+        "hdr": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "refreshRate",
+        "scaling",
+        "hdr"
+      ],
+      "additionalProperties": false
+    },
+    "crosshair": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "shape": {
+              "type": "string",
+              "enum": [
+                "Cross",
+                "Dot",
+                "Circle",
+                "T",
+                "DotCross"
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 128
+            },
+            "gap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "thickness": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "outline": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{8}$",
+              "minLength": 9,
+              "maxLength": 9
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "offsetX": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "offsetY": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "assetHash": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "minLength": 64,
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "shape",
+            "size",
+            "gap",
+            "thickness",
+            "outline",
+            "color",
+            "opacity",
+            "offsetX",
+            "offsetY",
+            "assetHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "shape": {
+              "const": "Picture"
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 128
+            },
+            "gap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            },
+            "thickness": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "outline": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{8}$",
+              "minLength": 9,
+              "maxLength": 9
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "offsetX": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "offsetY": {
+              "type": "integer",
+              "minimum": -32768,
+              "maximum": 32768
+            },
+            "assetHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "enabled",
+            "shape",
+            "size",
+            "gap",
+            "thickness",
+            "outline",
+            "color",
+            "opacity",
+            "offsetX",
+            "offsetY",
+            "assetHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "kind": {
+          "const": "Color"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        },
+        "crosshair": {
+          "type": "null"
+        },
+        "displayIntent": {
+          "type": "null"
+        },
+        "gameTag": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorMetadata": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                },
+                "createdUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "name",
+                "createdUtc"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "kind",
+        "color",
+        "crosshair",
+        "displayIntent",
+        "gameTag",
+        "authorMetadata",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "kind": {
+          "const": "Crosshair"
+        },
+        "color": {
+          "type": "null"
+        },
+        "crosshair": {
+          "$ref": "#/$defs/crosshair"
+        },
+        "displayIntent": {
+          "type": "null"
+        },
+        "gameTag": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorMetadata": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                },
+                "createdUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "name",
+                "createdUtc"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "kind",
+        "color",
+        "crosshair",
+        "displayIntent",
+        "gameTag",
+        "authorMetadata",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "kind": {
+          "const": "Resolution"
+        },
+        "color": {
+          "type": "null"
+        },
+        "crosshair": {
+          "type": "null"
+        },
+        "displayIntent": {
+          "$ref": "#/$defs/intent"
+        },
+        "gameTag": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorMetadata": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                },
+                "createdUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "name",
+                "createdUtc"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "kind",
+        "color",
+        "crosshair",
+        "displayIntent",
+        "gameTag",
+        "authorMetadata",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "kind": {
+          "const": "FullSetup"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        },
+        "crosshair": {
+          "$ref": "#/$defs/crosshair"
+        },
+        "displayIntent": {
+          "$ref": "#/$defs/intent"
+        },
+        "gameTag": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorMetadata": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                },
+                "createdUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                }
+              },
+              "required": [
+                "name",
+                "createdUtc"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "kind",
+        "color",
+        "crosshair",
+        "displayIntent",
+        "gameTag",
+        "authorMetadata",
+        "assets"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

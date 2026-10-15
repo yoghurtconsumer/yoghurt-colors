@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0-windows10.0.19041": {
+      "chromatic.core": {
+        "type": "Project"
+      },
+      "chromatic.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )"
+        }
+      },
+      "chromatic.media": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )"
+        }
+      },
+      "chromatic.native": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )"
+        }
+      },
+      "chromatic.overlay": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Native": "[1.0.0, )"
+        }
+      },
+      "chromatic.remote": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Infrastructure": "[1.0.0, )"
+        }
+      }
+    },
+    "net10.0-windows10.0.19041/win-x64": {}
+  }
+}

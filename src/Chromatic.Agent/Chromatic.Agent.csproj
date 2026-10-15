@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
+    <ProjectReference Include="../Chromatic.Native/Chromatic.Native.csproj" />
+    <ProjectReference Include="../Chromatic.Infrastructure/Chromatic.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

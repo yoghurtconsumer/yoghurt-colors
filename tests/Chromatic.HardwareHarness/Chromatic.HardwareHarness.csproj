@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Chromatic.Core/Chromatic.Core.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Agent/Chromatic.Agent.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Infrastructure/Chromatic.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Native/Chromatic.Native.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Recovery/Chromatic.Recovery.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Overlay/Chromatic.Overlay.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Remote/Chromatic.Remote.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Media/Chromatic.Media.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<UserControl x:Class="Chromatic.App.Views.CustomizeView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel>
+    <TextBlock Text="{Binding Title}" Style="{StaticResource Title}" />
+    <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}" />
+    <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="Appearance" FontSize="20" Margin="0,0,0,16" />
+      <WrapPanel><Button Content="Default" Command="{Binding DefaultThemeCommand}" AutomationProperties.Name="Use Default theme" /><Button Content="Slate" Command="{Binding SlateThemeCommand}" AutomationProperties.Name="Use Slate theme" /></WrapPanel>
+      <TextBlock Text="Save your theme choice in Settings." Style="{StaticResource Muted}" />
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="{Binding CapabilityStatus}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+      <TextBlock Text="{Binding Deferred}" Margin="0,10,0,0" />
+    </StackPanel></Border>
+  </StackPanel>
+</UserControl>
