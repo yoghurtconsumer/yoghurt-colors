@@ -5,6 +5,11 @@ using Xunit;
 namespace Chromatic.Core.Tests;
 public sealed class ToneCurveTests
 {
+    [Fact] public void NeutralToneMappingPreservesEveryInputExactly()
+    {
+        foreach (var value in Enumerable.Range(0, 256).Select(i => i / 255d).Append(.3).Append(.45))
+            Assert.Equal(value, ToneCurveBuilder.Map(value));
+    }
     private static GammaRamp CapturedCalibration() => new(Enumerable.Range(0, 768).Select(i =>
         (ushort)Math.Round(500 + Math.Pow((i % 256) / 255d, 1.1 + (i / 256) * .1) * 64000)));
     [Fact] public void ShadowCurveHasExactEndpointsAndLeavesHighlightsAlone()

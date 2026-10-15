@@ -19,8 +19,6 @@ public static class ColorMatrixBuilder
     public static Matrix5x5 Build(ColorSettings settings, bool softwareVibrance = true)
     {
         SettingsValidator.ValidateColor(settings);
-        if (settings.CvdMode != "None")
-            throw new NotSupportedException("Experimental accessibility correction awaits checked and attributed simulation coefficients.");
         var saturation = softwareVibrance ? Math.Min(300, settings.SaturationPercent * (1 + settings.Vibrance)) : settings.SaturationPercent;
         var affine = Matrix5x5.Identity.Values.ToArray();
         var warmth = Matrix5x5.Identity.Values.ToArray();
@@ -32,7 +30,8 @@ public static class ColorMatrixBuilder
         warmth[0] = 1 + .1 * settings.Warmth;
         warmth[12] = 1 - .1 * settings.Warmth;
         // Gamma/shadows/highlights are deliberately independent nonlinear LUT operations.
-        return Saturation(saturation) * new Matrix5x5(affine) * new Matrix5x5(warmth);
+        return Saturation(saturation) * DaltonizationBuilder.Correction(settings.CvdMode, settings.CvdStrength)
+            * new Matrix5x5(affine) * new Matrix5x5(warmth);
     }
     public static Matrix5x5 BasicLift(double lift)
     {

@@ -3,6 +3,8 @@
   <PropertyGroup><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>disable</ImplicitUsings><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup>
   <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../Chromatic.Agent/Chromatic.Agent.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Chromatic.Recovery/Chromatic.Recovery.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
     <ProjectReference Include="../Chromatic.Infrastructure/Chromatic.Infrastructure.csproj" />
     <ProjectReference Include="../Chromatic.Native/Chromatic.Native.csproj" />
@@ -10,4 +12,5 @@
     <ProjectReference Include="../Chromatic.Remote/Chromatic.Remote.csproj" />
     <ProjectReference Include="../Chromatic.Media/Chromatic.Media.csproj" />
   </ItemGroup>
+  <Import Project="../../eng/Companions.targets" />
 </Project>

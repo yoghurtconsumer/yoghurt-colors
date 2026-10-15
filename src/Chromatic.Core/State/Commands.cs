@@ -16,6 +16,7 @@ namespace Chromatic.Core.State;
 [JsonDerivedType(typeof(Resume), "resume")]
 [JsonDerivedType(typeof(Restore), "restore")]
 [JsonDerivedType(typeof(Shutdown), "shutdown")]
+[JsonDerivedType(typeof(GetState), "getState")]
 public abstract record EffectsCommand;
 public sealed record Enable(bool Enabled) : EffectsCommand;
 public sealed record SetColor(ColorSettings Color) : EffectsCommand;
@@ -30,4 +31,5 @@ public sealed record Suspend(SuspensionReason Reason) : EffectsCommand;
 public sealed record Resume(SuspensionReason Reason) : EffectsCommand;
 public sealed record Restore : EffectsCommand;
 public sealed record Shutdown : EffectsCommand;
+public sealed record GetState : EffectsCommand;
 public sealed record CommandEnvelope(Guid CommandId, long BaseRevision, long Generation, EffectsCommand Command);

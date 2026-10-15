@@ -30,7 +30,7 @@
       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel>
           <ContentControl Content="{Binding CurrentPage}" />
-          <Expander Header="Backend capabilities · Stage 1" Margin="0,24,0,0" Foreground="{DynamicResource TextBrush}">
+          <Expander Header="Backend capabilities · Stage 2" Margin="0,24,0,0" Foreground="{DynamicResource TextBrush}">
             <ItemsControl ItemsSource="{Binding Capabilities}"><ItemsControl.ItemTemplate><DataTemplate><StackPanel Margin="4,8"><TextBlock><Run Text="{Binding Backend}" /><Run Text=" · " /><Run Text="{Binding Status}" /><Run Text=" · " /><Run Text="{Binding Scope}" /></TextBlock><TextBlock Text="{Binding Reason}" FontSize="12" Foreground="{DynamicResource MutedBrush}" /></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
           </Expander>
         </StackPanel>

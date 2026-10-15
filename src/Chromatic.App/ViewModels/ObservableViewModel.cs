@@ -31,6 +31,6 @@ public abstract class PageViewModel(string title, string description, string def
 {
     public string Title { get; } = title;
     public string Description { get; } = description;
-    public string CapabilityStatus { get; } = "NotImplemented";
+    public virtual string CapabilityStatus { get; } = "NotImplemented";
     public string Deferred { get; } = deferred;
 }

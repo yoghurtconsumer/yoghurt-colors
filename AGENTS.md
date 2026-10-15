@@ -12,6 +12,9 @@ eng/Test.ps1 and eng/Run-App.ps1 select it automatically. Use eng/Install-DotNet
 on a machine missing the SDK; it verifies the official Microsoft archive hash.
 If SDK 10 is absent, use `powershell -File eng/Test-Portable.ps1` for the explicitly
 isolated .NET 8 source probe; it does not qualify WPF, interop or the product.
+At Stage 2 that historical probe covers only Core, persistence and pure framing.
+Automated child-process recovery tests use the separate Chromatic.ProcessHarness
+with injected file adapters. Never run Chromatic.HardwareHarness automatically.
 
 Never read/write game VM, inject DLLs, hook DirectX, modify game files, install
 drivers, or promise anti-cheat approval. Ordinary development/tests must never

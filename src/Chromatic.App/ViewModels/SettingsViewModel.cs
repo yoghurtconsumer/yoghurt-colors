@@ -13,9 +13,19 @@ public sealed class SettingsViewModel : PageViewModel
         set { _session.Current = _session.Current with { CloseBehavior = value ? CloseBehavior.MinimizeToTray : CloseBehavior.ExitAndRestore }; Changed(); }
     }
     public string SaveStatus { get => _saveStatus; private set { _saveStatus = value; Changed(); } }
+    public bool GammaCompatibility
+    {
+        get => _session.Current.Services.GammaCompatibility;
+        set { _session.Current = _session.Current with { Services = _session.Current.Services with { GammaCompatibility = value } }; Changed(); }
+    }
+    public bool NvidiaExperimental
+    {
+        get => _session.Current.Services.NvidiaExperimental;
+        set { _session.Current = _session.Current with { Services = _session.Current.Services with { NvidiaExperimental = value } }; Changed(); }
+    }
     public ICommand SaveCommand { get; }
     public SettingsViewModel(AppSessionSettings session, SettingsRepository repository)
-        : base("Settings", "Local by default. Explicit by choice.", "Phone, startup, Discord, cloud, updates and native compatibility services remain inactive in Stage 1.")
+        : base("Settings", "Local by default. Explicit by choice.", "Compatibility changes take effect after Save and restart. Phone, startup, Discord, cloud and updates remain inactive.")
     {
         _session = session; _repository = repository;
         SaveCommand = new AsyncCommand(async () => { await _repository.SaveAsync(_session.Current); SaveStatus = "Settings saved atomically."; },

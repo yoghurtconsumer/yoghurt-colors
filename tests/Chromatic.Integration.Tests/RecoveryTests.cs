@@ -62,6 +62,6 @@ public sealed class RecoveryTests
             await new DdcMonitorBackend().SetAsync(display, Chromatic.Core.Abstractions.MonitorControl.Brightness, 50, 1, default),
             await new DdcMonitorBackend().UndoAsync(default)
         };
-        Assert.All(results, result => { Assert.False(result.Success); Assert.Equal("NotImplemented", result.ErrorCode); });
+        Assert.All(results, result => { Assert.False(result.Success); Assert.Contains(result.ErrorCode, new[] { "NotImplemented", "SafetyGate" }); });
     }
 }

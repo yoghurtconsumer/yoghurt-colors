@@ -2,7 +2,7 @@ namespace Chromatic.Core.Models;
 
 public sealed record ColorSettings(double SaturationPercent = 100,
     double Brightness = 0, double Contrast = 1, double Gamma = 1, double Warmth = 0,
-    double Vibrance = 0, double Shadows = 0, double Highlights = 0, string CvdMode = "None")
+    double Vibrance = 0, double Shadows = 0, double Highlights = 0, string CvdMode = "None", double CvdStrength = 1)
 {
     public static ColorSettings Neutral { get; } = new();
 }

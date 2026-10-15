@@ -289,6 +289,16 @@
         },
         "persistentUndo": {
           "type": "boolean"
+        },
+        "pendingValue": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/resourceValue"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

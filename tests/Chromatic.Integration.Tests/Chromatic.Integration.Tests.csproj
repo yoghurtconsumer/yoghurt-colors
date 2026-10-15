@@ -2,6 +2,7 @@
   <PropertyGroup><IsTestProject>true</IsTestProject><IsPackable>false</IsPackable></PropertyGroup>
   <ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" /><PackageReference Include="xunit" /><PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" /></ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../Chromatic.ProcessHarness/Chromatic.ProcessHarness.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/Chromatic.Core/Chromatic.Core.csproj" />
     <ProjectReference Include="../../src/Chromatic.Agent/Chromatic.Agent.csproj" />
     <ProjectReference Include="../../src/Chromatic.Infrastructure/Chromatic.Infrastructure.csproj" />

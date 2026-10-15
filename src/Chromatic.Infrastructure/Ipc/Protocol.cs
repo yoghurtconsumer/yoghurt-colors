@@ -16,6 +16,13 @@ public sealed record IpcState(long Revision, long Generation, bool DesiredEnable
     PreviewTransaction? Preview, bool RecoveryPending, ImmutableArray<SuspensionReason> Suspensions,
     CapabilityReport Capabilities, ApplyResult? LastObservedResult)
 {
+    public EffectsState ToEffectsState() => new()
+    {
+        Revision = Revision, Generation = Generation, Enabled = DesiredEnabled, Held = Held,
+        DesktopProfile = new() { Id = ActiveProfileId, GlobalColor = GlobalColor, Monitors = Monitors },
+        Preview = Preview, RecoveryPending = RecoveryPending, Suspensions = Suspensions.ToImmutableHashSet(),
+        Capabilities = Capabilities, Observed = new(Revision, Generation, LastObservedResult)
+    };
     public static IpcState From(EffectsState state) => new(state.Revision, state.Generation, state.Enabled,
         state.Effective.Enabled, state.Held, state.BaseProfile.Id, state.Effective.GlobalColor,
         state.Effective.Monitors, state.Preview, state.RecoveryPending,

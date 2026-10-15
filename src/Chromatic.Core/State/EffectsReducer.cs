@@ -17,6 +17,7 @@ public static class EffectsReducer
             new(status, state.Revision, state.Generation, reason));
         if (envelope.BaseRevision < 0 || envelope.Generation < 0 || envelope.CommandId == Guid.Empty)
             return Reject(CompletionStatus.Invalid, "Invalid command envelope.");
+        if (command is GetState) return new(state, new(CompletionStatus.Accepted, state.Revision, state.Generation, "Authoritative state query."));
         if (!priority && (envelope.BaseRevision != state.Revision || envelope.Generation != state.Generation))
             return Reject(CompletionStatus.StaleRevision, "Rebase on the authoritative revision and generation.");
         if (state.ShuttingDown && command is not Shutdown and not Restore)

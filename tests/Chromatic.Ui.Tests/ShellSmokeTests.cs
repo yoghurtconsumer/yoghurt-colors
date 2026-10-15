@@ -34,7 +34,9 @@ public sealed class ShellSmokeTests
         foreach (var navigation in vm.Navigation)
         {
             vm.Selected = navigation;
-            Assert.Same(navigation.Page, vm.CurrentPage); Assert.Equal("NotImplemented", vm.CurrentPage.CapabilityStatus);
+            Assert.Same(navigation.Page, vm.CurrentPage);
+            if (vm.CurrentPage is DisplayViewModel) Assert.Contains("unavailable", vm.CurrentPage.CapabilityStatus);
+            else Assert.Equal("NotImplemented", vm.CurrentPage.CapabilityStatus);
         }
         Assert.False(services.GetRequiredService<DisplayViewModel>().CanApply);
         Assert.False(services.GetRequiredService<SettingsViewModel>().CloseToTray);

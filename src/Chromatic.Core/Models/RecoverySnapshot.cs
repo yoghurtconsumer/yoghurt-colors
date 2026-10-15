@@ -14,7 +14,7 @@ public sealed record ResourceValue(ImmutableArray<double> Values, string? Topolo
     string? TopologyFormat = null);
 public sealed record OwnedResourceBaseline(Guid OwnershipId, OwnedResourceKind Kind,
     EffectScope Scope, DisplayIdentity? Display, ResourceValue Baseline, ResourceValue LastApplied,
-    long Generation, bool PersistentUndo = false);
+    long Generation, bool PersistentUndo = false, ResourceValue? PendingValue = null);
 public sealed record RecoverySnapshot
 {
     public int SchemaVersion { get; init; } = 1;

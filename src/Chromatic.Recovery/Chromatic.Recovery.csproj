@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <PropertyGroup><OutputType>Exe</OutputType><UseWPF>true</UseWPF></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
     <ProjectReference Include="../Chromatic.Native/Chromatic.Native.csproj" />

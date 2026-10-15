@@ -23,7 +23,7 @@ public sealed class IpcTests
             new ForegroundChanged(null, null), new SetHold(false),
             new PreviewMode(Guid.NewGuid(), new("monitor", null, "DISPLAY1", 1, 1), new(1920, 1080, new(60, 1)), DateTimeOffset.UtcNow),
             new ConfirmMode(Guid.NewGuid()), new CancelPreview(Guid.NewGuid()), new Suspend(SuspensionReason.SessionLock),
-            new Resume(SuspensionReason.SessionLock), new Restore(), new Shutdown()];
+            new Resume(SuspensionReason.SessionLock), new Restore(), new Shutdown(), new GetState()];
         foreach (var command in commands)
         {
             var request = new IpcRequest(1, "command", 1, new(Guid.NewGuid(), 4, 8, command));
@@ -69,12 +69,15 @@ public sealed class IpcTests
         var auth = new PipeAuthorization("S-1-5-21-1", 1, 10, 100, nonce, new Peer(new(pid, start, session, sid, local)));
         Assert.False(auth.Authenticate(new(1, "hello", 10, 100, 1, "S-1-5-21-1", nonce)));
     }
-    [Fact] public async Task ProductionTransportFailsClosed()
+#if !CHROMATIC_PORTABLE_PROBE
+    // The historical probe deliberately excludes native OS transport assemblies.
+    [Fact] public async Task UnconfiguredTransportFailsClosed()
     {
         Assert.Throws<NotSupportedException>(() => new UnavailablePipePeerVerifier().VerifyPeer());
         await Assert.ThrowsAsync<NotSupportedException>(() => EffectsPipeServer.StartAsync(default));
-        var client = new EffectsPipeClient();
+        using var client = new EffectsPipeClient();
         var ack = await client.SendAsync(new(Guid.NewGuid(), 0, 0, new Enable(true)));
-        Assert.False(ack.Completion.Success); Assert.Equal("NotImplemented", ack.Completion.ErrorCode); Assert.False(client.State.Enabled);
+        Assert.False(ack.Completion.Success); Assert.Equal("Disconnected", ack.Completion.ErrorCode); Assert.False(client.State.Enabled);
     }
+#endif
 }

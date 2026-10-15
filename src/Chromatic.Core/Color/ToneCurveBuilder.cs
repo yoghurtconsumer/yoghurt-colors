@@ -20,14 +20,14 @@ public static class ToneCurveBuilder
         SettingsValidator.Range(shadows, 0, .8, nameof(shadows));
         SettingsValidator.Range(highlights, 0, .8, nameof(highlights));
         SettingsValidator.Range(holdStrength, 0, .8, nameof(holdStrength));
-        var normal = Math.Pow(x, 1 / gamma);
+        var normal = gamma == 1 ? x : Math.Pow(x, 1 / gamma);
         var lifted = Lift(normal, shadows);
-        var highlighted = 1 - Lift(1 - lifted, highlights);
+        var highlighted = highlights == 0 ? lifted : 1 - Lift(1 - lifted, highlights);
         return Lift(highlighted, holdStrength);
     }
     private static double Lift(double x, double strength)
     {
-        if (x >= .45) return x;
+        if (strength == 0 || x >= .45) return x;
         var remaining = 1 - x / .45;
         return x + strength * x * remaining * remaining;
     }

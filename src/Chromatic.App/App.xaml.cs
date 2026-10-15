@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using Chromatic.Core.Models;
 using Chromatic.Infrastructure.Persistence;
+using Chromatic.Infrastructure.Ipc;
 using Chromatic.Native;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +10,8 @@ namespace Chromatic.App;
 public partial class App : Application
 {
     private ServiceProvider? _services;
+    private CompanionSession? _companions;
+    private bool _exiting;
     private readonly StartupDiagnostics _startup = new();
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -43,7 +46,11 @@ public partial class App : Application
         }
         catch (Exception error) when (error is ContractException or IOException or UnauthorizedAccessException)
         { warning = $"Settings could not be loaded ({error.GetType().Name}). Safe defaults loaded; files preserved."; }
-        _services = CompositionRoot.Build(settings, repository);
+        if (!smokeTest)
+        {
+            _companions = new CompanionSession();
+        }
+        _services = CompositionRoot.Build(settings, repository, _companions);
         _services.GetRequiredService<ViewModels.MainViewModel>().StartupWarning = warning;
         ApplyTheme(settings.Theme);
         var window = _services.GetRequiredService<MainWindow>();
@@ -59,6 +66,18 @@ public partial class App : Application
         window.ShowActivated = true;
         window.Show();
         window.Activate();
+        if (_companions is not null) _ = ConnectCompanionsAsync(settings.Services);
+    }
+    private async Task ConnectCompanionsAsync(OptionalServices services)
+    {
+        if (_companions is null || _services is null) return;
+        await _companions.StartAsync(services, snapshot => MessageBox.Show(MainWindow,
+            $"An unfinished display journal from {snapshot.TimestampUtc:g} was found.\n\nRecover only its captured baselines before continuing? Conflicting values will be left for local review.",
+            "Chromatic Desktop - recovery", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes);
+        if (_exiting) return;
+        var viewModel = _services.GetRequiredService<ViewModels.MainViewModel>();
+        if (_companions.Failure is not null) viewModel.StartupWarning = _companions.Failure;
+        viewModel.Refresh();
     }
     public static void ApplyTheme(ThemeKind theme)
     {
@@ -68,6 +87,6 @@ public partial class App : Application
     }
     protected override void OnExit(ExitEventArgs e)
     {
-        _services?.Dispose(); base.OnExit(e);
+        _exiting = true; _companions?.Dispose(); _services?.Dispose(); base.OnExit(e);
     }
 }

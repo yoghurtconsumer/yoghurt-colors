@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><UseWPF>true</UseWPF><IsPackable>false</IsPackable></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Chromatic.Agent/Chromatic.Agent.csproj" />
+    <ProjectReference Include="../../src/Chromatic.Recovery/Chromatic.Recovery.csproj" />
+  </ItemGroup>
+</Project>

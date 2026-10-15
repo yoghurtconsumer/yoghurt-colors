@@ -161,6 +161,11 @@
             "GreenWeak",
             "BlueWeak"
           ]
+        },
+        "cvdStrength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         }
       },
       "required": [
@@ -850,6 +855,12 @@
               "required": [
                 "type"
               ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": { "type": { "const": "getState" } },
+              "required": [ "type" ],
               "additionalProperties": false
             }
           ]

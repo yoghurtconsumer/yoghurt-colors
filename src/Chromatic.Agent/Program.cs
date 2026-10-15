@@ -1,9 +1,10 @@
 namespace Chromatic.Agent;
 internal static class Program
 {
-    private static int Main()
+    private static async Task<int> Main()
     {
-        Console.Error.WriteLine("NotImplemented: Stage 1 defines Agent contracts; no pipe listener, hooks or native writes are active.");
-        return 2;
+        try { return await AgentHost.RunAsync(await Chromatic.Infrastructure.Ipc.CompanionLaunch.ReadAsync()); }
+        catch (Exception error)
+        { Chromatic.Infrastructure.Ipc.CompanionLaunch.Log("Agent", error.ToString()); return 2; }
     }
 }

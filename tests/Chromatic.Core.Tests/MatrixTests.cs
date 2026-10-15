@@ -56,13 +56,13 @@ public sealed class MatrixTests
         Assert.Equal(.15, matrix.Transform(new(0, 0, 0)).R, 12);
         Assert.True(matrix.Transform(new(.8, .8, .8)).R > .8);
     }
-    [Fact] public void RejectsInvalidCoefficientsAndUnimplementedAccessibility()
+    [Fact] public void RejectsInvalidCoefficientsAndAccessibilityStrength()
     {
         Assert.Throws<ArgumentException>(() => new Matrix5x5([1, 2]));
         Assert.Throws<ArgumentException>(() => new Matrix5x5(Enumerable.Repeat(double.NaN, 25)));
         Assert.Throws<ArgumentException>(() => ColorMatrixBuilder.Saturation(double.PositiveInfinity));
         Assert.Throws<ArgumentException>(() => ColorMatrixBuilder.BasicLift(.16));
-        Assert.Throws<NotSupportedException>(() => ColorMatrixBuilder.Build(new(CvdMode: "RedWeak")));
+        Assert.Throws<ArgumentException>(() => ColorMatrixBuilder.Build(new(CvdMode: "RedWeak", CvdStrength: 1.1)));
         Assert.Throws<ArgumentException>(() => new Matrix5x5(Enumerable.Repeat(double.MaxValue, 25)).ToSinglePrecision());
     }
 }

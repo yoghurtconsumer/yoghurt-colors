@@ -1,0 +1,10 @@
+<Project>
+  <Target Name="CopyCompanions" AfterTargets="Build">
+    <ItemGroup>
+      <AgentOutputs Include="$(MSBuildThisFileDirectory)../src/Chromatic.Agent/bin/$(Platform)/$(Configuration)/$(TargetFramework)/$(RuntimeIdentifier)/**/*" />
+      <RecoveryOutputs Include="$(MSBuildThisFileDirectory)../src/Chromatic.Recovery/bin/$(Platform)/$(Configuration)/$(TargetFramework)/$(RuntimeIdentifier)/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AgentOutputs)" DestinationFiles="@(AgentOutputs->'$(OutDir)companions/Agent/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(RecoveryOutputs)" DestinationFiles="@(RecoveryOutputs->'$(OutDir)companions/Recovery/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

@@ -15,11 +15,11 @@ public sealed class AppSessionSettings(AppSettings settings)
 }
 public static class CompositionRoot
 {
-    public static ServiceProvider Build(AppSettings settings, SettingsRepository repository)
+    public static ServiceProvider Build(AppSettings settings, SettingsRepository repository, IEffectsClient? effects = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(new AppSessionSettings(settings)); services.AddSingleton(repository);
-        services.AddSingleton<IEffectsClient, EffectsPipeClient>();
+        services.AddSingleton<IEffectsClient>(effects ?? new EffectsPipeClient());
         services.AddSingleton<IMediaController, GsmtcController>();
         services.AddSingleton<OverlayHost>(); services.AddSingleton<PhoneServer>();
         services.AddSingleton<DisplayViewModel>(); services.AddSingleton<PresetsViewModel>();

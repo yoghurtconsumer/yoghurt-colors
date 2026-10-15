@@ -1,9 +1,10 @@
 namespace Chromatic.Recovery;
 internal static class Program
 {
-    private static int Main()
+    private static async Task<int> Main()
     {
-        Console.Error.WriteLine("NotImplemented: recovery ownership/liveness and native baseline restoration are Stage 2 prerequisites.");
-        return 2;
+        try { return await RecoveryHost.RunAsync(await Chromatic.Infrastructure.Ipc.CompanionLaunch.ReadAsync()); }
+        catch (Exception error)
+        { Chromatic.Infrastructure.Ipc.CompanionLaunch.Log("Recovery", error.ToString()); return 2; }
     }
 }

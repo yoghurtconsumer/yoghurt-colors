@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chromatic.Ui.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chromatic.HardwareHarness", "tests\Chromatic.HardwareHarness\Chromatic.HardwareHarness.csproj", "{72660CA9-1166-5C08-AC8C-D322324A2BB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chromatic.ProcessHarness", "tests\Chromatic.ProcessHarness\Chromatic.ProcessHarness.csproj", "{A5240652-7D48-42E5-8022-4D76C38B7980}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -86,5 +88,9 @@ Global
 		{72660CA9-1166-5C08-AC8C-D322324A2BB2}.Debug|x64.Build.0 = Debug|x64
 		{72660CA9-1166-5C08-AC8C-D322324A2BB2}.Release|x64.ActiveCfg = Release|x64
 		{72660CA9-1166-5C08-AC8C-D322324A2BB2}.Release|x64.Build.0 = Release|x64
+		{A5240652-7D48-42E5-8022-4D76C38B7980}.Debug|x64.ActiveCfg = Debug|x64
+		{A5240652-7D48-42E5-8022-4D76C38B7980}.Debug|x64.Build.0 = Debug|x64
+		{A5240652-7D48-42E5-8022-4D76C38B7980}.Release|x64.ActiveCfg = Release|x64
+		{A5240652-7D48-42E5-8022-4D76C38B7980}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

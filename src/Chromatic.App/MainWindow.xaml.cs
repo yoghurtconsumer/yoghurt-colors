@@ -11,9 +11,12 @@ public partial class MainWindow : Window
     private bool _exiting;
     private bool _shutdownComplete;
     private bool _shutdownInProgress;
+    private readonly System.Windows.Threading.DispatcherTimer _statusTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     public MainWindow(MainViewModel viewModel, AppSessionSettings settings, TrayService tray)
     {
         InitializeComponent(); DataContext = _viewModel = viewModel; _settings = settings; _tray = tray;
+        _statusTimer.Tick += (_, _) => _viewModel.Refresh();
+        Loaded += (_, _) => _statusTimer.Start(); Closed += (_, _) => _statusTimer.Stop();
     }
     private async void Window_Closing(object? sender, CancelEventArgs e)
     {

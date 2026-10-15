@@ -3,8 +3,8 @@ using Chromatic.Core.Models;
 using Chromatic.Core.State;
 namespace Chromatic.Agent;
 
-// In-process foundation used only by injected tests. The Stage 1 WPF app uses the
-// disconnected pipe client, so production never substitutes an in-process writer.
+// In-process foundation for simple injected tests. Production uses the
+// JournaledEffectsCoordinator in a separate Agent, never an App-hosted writer.
 public sealed class EffectsCoordinator(IColorBackend backend, EffectsState? initial = null) : IEffectsClient, IDisposable
 {
     private readonly SemaphoreSlim _queue = new(1, 1);

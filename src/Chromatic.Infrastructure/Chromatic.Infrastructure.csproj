@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../Chromatic.Core/Chromatic.Core.csproj" />
+    <ProjectReference Include="../Chromatic.Native/Chromatic.Native.csproj" />
   </ItemGroup>
   <ItemGroup><EmbeddedResource Include="../../docs/schemas/*.schema.json" LogicalName="Chromatic.Schemas.%(Filename)%(Extension)" /></ItemGroup>
 </Project>

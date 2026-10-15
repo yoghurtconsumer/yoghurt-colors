@@ -8,6 +8,13 @@
       "chromatic.infrastructure": {
         "type": "Project",
         "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Native": "[1.0.0, )"
+        }
+      },
+      "chromatic.native": {
+        "type": "Project",
+        "dependencies": {
           "Chromatic.Core": "[1.0.0, )"
         }
       }

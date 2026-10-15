@@ -1,22 +1,23 @@
-# Requirements traceability — Stage 1
+# Requirements traceability — Stage 2
 
-Status records implemented behavior, not hardware qualification. All 13 .NET 10
-x64 projects build with SDK 10.0.402; all 95 VSTest tests pass. The real app starts
-and closes cleanly on Windows build 26200. Native APIs always return
-NotImplemented. Foundation does not mean native features are operational.
+Status records implemented behavior, not hardware qualification. All 14 .NET 10
+x64 projects build with SDK 10.0.402; 140 VSTest tests pass (52 Core, 81 integration,
+7 UI/launcher). Native color routes now require authenticated ownership, verified
+SDR, journal-before-write, readback and live independent recovery. All automated
+resource tests inject fakes. No physical display qualification was run.
 
-| ID | Requirement | Actual Stage 1 status | Evidence / boundary | Remaining stage |
+| ID | Requirement | Actual Stage 2 status | Evidence / boundary | Remaining stage / qualification |
 | --- | --- | --- | --- | --- |
-| F01 | Whole-screen saturation through 300%; 100% neutral | Pure math/local preview implemented; desktop apply unavailable | Matrix5x5; exact 300% matrix and gray-invariance tests; Display sample preview | 2 |
-| F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Software math/routing implemented; native unavailable | Software vibrance cap; planner fallback and advanced-combination tests; NVIDIA stub | 2 |
-| F03 | Brightness, contrast, temperature and gamma | Pure math and affine sample preview implemented | Composed affine controls; ToneCurveBuilder; GammaRampComposer; no physical writes | 2 |
-| F04 | Highlights and shadows sliders in phone UI | Pure tone curves implemented; phone deferred | Bounded shadow/highlight math and monotonicity tests; no phone listener | 2 / 6 |
+| F01 | Whole-screen saturation through 300%; 100% neutral | Guarded native matrix and explicit Apply implemented | Exact 300% math, MAG ABI, owning STA, real baseline/readback/restore; injected API tests | Physical GPU/OS qualification |
+| F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter and safe software fallback implemented; experimental | System32-only known IDs/Cdecl ABI, GDI driving-output/ranges, route restore, no double vibrance; fake mapping tests | Private ABI/hybrid/driver hardware matrix |
+| F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
+| F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
 | F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Deferred | PresetDocument contract; no built-in scene payloads | 3 |
 | F06 | Saved custom looks | Foundation only | Atomic ProfileRepository/PresetRepository; no library CRUD UI | 3 |
 | F07 | Automatic game-specific colors | Foundation only | GameRule, ExecutableIdentity, pure ProfileResolver and reducer | 3 |
 | F08 | Preset hotkeys | Deferred | No global hotkey registration | 3 |
-| F09 | Red-/green-/blue-weak color modes | Foundation only | Bounded CvdMode enum; no daltonization math/native apply | 2 |
-| F10 | Hold Dark Boost, selectable tint; release restores normal look; Mouse 5 demo | Reducer and pure tone/tint composition implemented | Temporary hold; highlight preservation; exact baseline release tests; no hooks/native writes | 2–3 |
+| F09 | Red-/green-/blue-weak color modes | Adjustable global approximation implemented | Attributed severity-1 coefficients; row orientation/correction tests; UI mode/strength; COLOR-PROVENANCE.md | Visual qualification; approximation remains explicit |
+| F10 | Hold Dark Boost, selectable tint; release restores normal look; Mouse 5 demo | Curve/tint/reducer and injectable qualified gamma route implemented; live hold unavailable | Generation fences direct/real pipe; baseline composition; measured write duration; unqualified holds refused; basic affine lift math | 3 input + explicit latency/hardware qualification |
 | F11 | Resolution and refresh switching | Foundation only | Rational DisplayIntent; PreviewTransaction states; Resolution shell | 4 |
 | F12 | HDR on/off | Foundation only | HDR intent/capability; HdrBackend returns NotImplemented | 4 |
 | F13 | Stretched 4:3 | Foundation only | ScalingIntent.Stretched; no mode/scaling write | 4 |
@@ -28,9 +29,9 @@ NotImplemented. Foundation does not mean native features are operational.
 | F19 | Catalog filter by type/game, newest/most-copied, author/date; publish/report; image moderation | Optional, deferred | No catalog/publish/report endpoints | optional 7 |
 | F20 | Wi-Fi phone color sliders/scene presets via QR; server lives only while Phone window is open | Foundation only | Remote schema/color whitelist/sequence validation; PhoneServer always off | 6 |
 | F21 | Music controls, improved app support (2.1.10) | Foundation only | Music panel and typed IMediaController; GSMTC NotImplemented | 6 |
-| F22 | Per-monitor gamma/warmth | Pure captured-baseline composition implemented; native unavailable | GammaRampComposer; 1536-byte round trip; calibration monotonicity; explicit per-monitor scope | 2 / 4 |
+| F22 | Per-monitor gamma/warmth | Explicit selected-output route implemented; multiple outputs blocked pending alias qualification | Display DC, stable path/runtime mapping checks, 1536-byte capture/restore, per-output warmth; shared-ramp limitation disclosed | Hardware/shared-ramp qualification / 4 |
 | F23 | Monitor hardware brightness/color over display cable | Foundation only | IMonitorBackend allowlisted controls; DDC returns NotImplemented | 4 |
-| F24 | Color watchdog following game/display changes | Foundation only | Revision/generation fences; watchdog not implemented | 2 / 4 |
+| F24 | Color watchdog following game/display changes | Process liveness and event-driven safety suspension/restoration implemented | Hidden top-level broadcast window; UI/Agent/Recovery handles, STA heartbeat, exclusive lease, conflict journal; five fake child-process cases | 4 bounded reapply/hotplug qualification |
 | F25 | Default/Slate appearance; user picture/GIF background | Partial implementation | Default/Slate XAML and theme commands; local media deferred | 1 / 5 |
 | F26 | Windows appearance customization: dark mode, accent, taskbar alignment/transparency, some Explorer options | Deferred | Customize shell; no registry or Windows appearance calls | 5 |
 | F27 | Start with Windows | Deferred, default off | OptionalServices.Startup=false; no registration adapter | 5 |
@@ -41,7 +42,7 @@ NotImplemented. Foundation does not mean native features are operational.
 | F32 | Account sign-in using short-lived loopback browser callback; licence key entry/account page | Optional, deferred | No account required; no identity callback or endpoint | optional 7 |
 | F33 | Plans, feature locks, separate Dark Boost entitlement, PC activation/release/move | Optional, deferred | Local utility has no feature locks; no commerce/activation service | optional 7 |
 | F34 | Automatic signed update verification, release notes/What's New; status/revocation/check-in | Deferred, default off | OptionalServices.Updates=false; signing/updater absent | 7 |
-| F35 | Local crash logs with build/OS; bug-report form with user-triggered technical report | Startup diagnostics implemented; full reporting deferred | Local launcher/build/first-render/failure logs; rotation/export/report not implemented | 5 / 7 |
+| F35 | Local crash logs with build/OS; bug-report form with user-triggered technical report | Startup diagnostics and bounded companion logs implemented; full reporting deferred | Local launcher/first-render logs and per-session Agent/Recovery failure/restore logs; report/export absent | 5 / 7 |
 | F36 | Legal/licences page, uninstall retains user data, explicit cleanup | Deferred | No data deletion/uninstall; licensing selection remains a release gate | 5 / 7 |
 | F37 | Repair action can relaunch elevated | Deferred | asInvoker manifest; no elevation/repair path | 5 / 7 |
 | F38 | Update rating controls documented but inactive | Inactive by reference | No update-rating controls or telemetry implemented/enabled | remains inactive |
@@ -53,7 +54,8 @@ navigation, XAML and theme resource loading without showing windows. Exact test
 results and qualification limits are recorded in IMPLEMENTATION-STATE.md.
 
 The complete Section 2 directory tree is the final multi-stage target. All nine source
-projects and four test/harness projects exist now. Math/native binding implementation,
-active process hosts, later views/dialogs/assets, packaging/CI and optional-cloud
-service trees remain scoped to their later stages; empty files are not used to imply
-implementation.
+projects, three test projects and two separate hardware/process harnesses exist now.
+Native color/math and active authenticated process hosts are implemented. Later
+views/dialogs/assets, packaging/CI and optional-cloud service trees remain scoped
+to later stages; empty files are not used to imply implementation. The manual
+hardware harness was compiled but never executed.
