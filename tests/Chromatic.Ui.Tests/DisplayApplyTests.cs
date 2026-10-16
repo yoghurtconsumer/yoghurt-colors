@@ -10,6 +10,18 @@ namespace Chromatic.Ui.Tests;
 
 public sealed class DisplayApplyTests
 {
+    [Fact] public void NvidiaPreparationSelectsSingleOutputAndOnlyChangesTheDraft()
+    {
+        var client = new FakeClient(false); var display = new DisplayIdentity("fake-monitor", null, @"\\.\DISPLAY1", 1, 1);
+        client.State = client.State with { Capabilities = new([new(BackendKind.NvidiaDvc, Capability.Experimental,
+            "Injected opt-in", EffectScope.PerMonitor, display)]) };
+        var vm = new DisplayViewModel(client) { Saturation = 220, Gamma = 1.4, OutputWarmth = .5 };
+        vm.PrepareNvidiaCommand.Execute(null);
+        Assert.Equal(100, vm.Saturation); Assert.Equal(75, vm.VibranceScale); Assert.Equal(1, vm.Gamma);
+        Assert.Equal(0, vm.OutputWarmth); Assert.Equal(display, vm.SelectedOutput);
+        Assert.Empty(client.Commands); Assert.Contains("Nothing applied", vm.ApplyStatus);
+        Assert.Contains("Magnification+NvidiaDvc", vm.FullscreenStatus);
+    }
     [Theory] [InlineData(true)] [InlineData(false)]
     public async Task DisplayUsesTypedCommandsAndShowsBackendFailureWithoutSavingHeldState(bool fail)
     {

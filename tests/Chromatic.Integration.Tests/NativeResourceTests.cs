@@ -1,4 +1,6 @@
 using Chromatic.Agent;
+using Chromatic.Agent.Backends;
+using Chromatic.Core.State;
 using System.Collections.Immutable;
 using Chromatic.Core.Color;
 using Chromatic.Core.Models;
@@ -12,6 +14,41 @@ namespace Chromatic.Integration.Tests;
 
 public sealed class NativeResourceTests
 {
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public async Task FullscreenCandidateUsesNativeVibranceOrExplicitlyReportsSoftwareFallback(bool rejectPrivateApi)
+    {
+        using var directory = new TestDirectory(); using var worker = new AgentStaWorker();
+        var coordinator = new JournaledEffectsCoordinator(worker, new()
+        { Capabilities = new([new(BackendKind.Magnification, Capability.Available, "Injected", EffectScope.GlobalDesktop)]) }) { RecoveryReady = true };
+        var magApi = new MagFake(); var nvApi = new NvFake { Invalid = rejectPrivateApi };
+        var matrix = new MagnificationResource(magApi, () => true);
+        var native = new NvidiaDvcResource(Display, () => nvApi, _ => true, () => true);
+        using var owned = new OwnedResourceController(new RecoveryJournalStore(directory.File()),
+            new() { UserSid = "S-1-5-21-1", SessionId = 1, AgentPid = 42, AgentStartTicks = 100 }, coordinator, () => true);
+        coordinator.AttachBackend(new PlannedColorBackend(owned, [matrix, native], matrix, () => coordinator.State, new(NvidiaExperimental: true)));
+        try
+        {
+            var profile = new DisplayProfile { GlobalColor = new(Vibrance: .5), Monitors = [new(Display)] };
+            var result = await coordinator.SendAsync(new(Guid.NewGuid(), 0, 0, new ApplyProfile(profile)));
+            Assert.True(result.Completion.Success, result.Completion.Explanation);
+            Assert.Equal(rejectPrivateApi ? "Magnification" : "Magnification+NvidiaDvc", result.Completion.Backend);
+            if (rejectPrivateApi)
+            {
+                Assert.Contains("Private DVC unavailable", result.Completion.Explanation);
+                Assert.Equal(0, nvApi.Writes);
+            }
+            else
+            {
+                Assert.Equal(55, nvApi.Level); // 75/100 on the discovered asymmetric driver range.
+                var current = await worker.InvokeAsync(() => matrix.ReadAsync(default));
+                Assert.Equal(Matrix5x5.Identity.Values.ToArray(), current.Values.ToArray()); // No double software vibrance.
+            }
+            var state = coordinator.State;
+            var restored = await coordinator.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, new Restore()));
+            Assert.True(restored.Completion.Success); Assert.Equal(20, nvApi.Level);
+        }
+        finally { await worker.InvokeAsync(() => { native.Dispose(); matrix.Dispose(); return true; }); }
+    }
     [Fact] public async Task SupersessionDuringFinalSdrProbeCannotReachTheNativeSetter()
     {
         using var directory = new TestDirectory(); using var worker = new AgentStaWorker();

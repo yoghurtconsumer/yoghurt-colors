@@ -38,19 +38,14 @@ public static class AgentHost
         coordinator.AttachBackend(new PlannedColorBackend(owned, catalog.Resources, catalog.Matrix, () => coordinator.State, launch.Services));
         using var lifetime = new CancellationTokenSource();
         var broadcast = await worker.InvokeAsync(() => new HiddenBroadcastWindow());
+        var displayEvents = new AgentDisplayEvents(coordinator, inventory, runtime.Inventory,
+            report => Capabilities(report, launch.Services), message => CompanionLaunch.Log("Agent", message));
         broadcast.Broadcast += kind => _ = HandleBroadcastAsync(kind);
         async Task HandleBroadcastAsync(AgentBroadcast kind)
         {
             try
             {
-                CompanionLaunch.Log("Agent", $"OS notification: {kind}; effects require explicit Apply after a safety suspension.");
-                if (kind is AgentBroadcast.SessionSuspended or AgentBroadcast.PowerSuspended or AgentBroadcast.DisplayChanged)
-                    await SendSafetyAsync(new Suspend(kind == AgentBroadcast.PowerSuspended ? SuspensionReason.PowerSuspend :
-                        kind == AgentBroadcast.SessionSuspended ? SuspensionReason.SessionLock : SuspensionReason.AdvancedColor));
-                inventory = runtime.Inventory(); coordinator.UpdateCapabilities(Capabilities(inventory, launch.Services));
-                if (kind == AgentBroadcast.SessionUnlocked) await SendSafetyAsync(new Resume(SuspensionReason.SessionLock));
-                if (kind == AgentBroadcast.PowerResumed) await SendSafetyAsync(new Resume(SuspensionReason.PowerSuspend));
-                if (inventory.AllSdr) await SendSafetyAsync(new Resume(SuspensionReason.AdvancedColor));
+                await displayEvents.HandleAsync(kind);
             }
             catch (Exception error) { coordinator.RecoveryReady = false; CompanionLaunch.Log("Agent", error.Message); lifetime.Cancel(); }
         }

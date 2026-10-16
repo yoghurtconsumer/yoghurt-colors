@@ -1,15 +1,15 @@
 # Chromatic Desktop implementation state
 
-Updated: 16 October 2026. Requested checkpoint: Stage 2, followed by launcher/Apply fixes.
-Previous GitHub checkpoint: 1e26ea8 (Stage 2 guarded color engines and recovery).
+Updated: 16 October 2026. Requested checkpoint: Stage 2, followed by launcher/Apply/game-transition fixes.
+Previous GitHub checkpoint: 032b27c (false HDR detection, atomic Apply and launcher diagnostics).
 
 ## Current outcome
 
 Stage 2 color-engine and process-safety implementation is present and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
-(14 projects total). Release/x64 builds with zero warnings/errors; 166 VSTest
-tests pass: 58 Core, 94 integration and 14 UI/launcher tests.
+(14 projects total). Release/x64 builds with zero warnings/errors; 186 VSTest
+tests pass: 58 Core, 113 integration and 15 UI/launcher tests.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -96,7 +96,9 @@ Smoke mode uses in-memory defaults, launches no companions and closes after rend
 ## Stage 2 ownership, IPC and recovery
 
 Agent owns a pumping STA and a hidden top-level broadcast window. Session lock,
-power/display changes suspend and restore before considering any new plan.
+power and unsafe display changes suspend and restore before considering any new plan.
+Resolution/refresh notifications preserve only confirmed matrix/native DVC routes
+when exact output mappings remain verified SDR; no setter/reapply is issued.
 Automatic reapply/resume is deferred to Stage 4's bounded watchdog; an explicit
 Apply can resume after fresh SDR checks.
 
@@ -154,7 +156,7 @@ restart. The UI is shown before asynchronous companion connection/recovery,
 so a failed companion cannot reproduce a silent launcher flash.
 
 eng/Test.ps1 -Locked restored locked dependencies, built the whole solution and
-ran the 166 tests above. Six isolated child-process scenarios cover graceful
+ran the 186 tests above. Six isolated child-process scenarios cover graceful
 exit, crash after setter/before confirmed journal, a hung setter, UI death and a
 foreign writer, and DisplayViewModel Apply through authenticated Agent IPC with
 exact expected matrix/readback and baseline restoration. These use the real
@@ -193,6 +195,33 @@ hardware writes. --diagnostics records runtime, companion files and per-output
 metadata without initializing Magnification. NativeBoundaryTests checks compiled
 imports and Core separation. See ANTI-CHEAT-BOUNDARY.md; no vendor/game approval
 or zero-false-flag promise is made. Later-stage features remain deferred.
+
+## Follow-up: game fullscreen transitions
+
+The user reports Rainbow Six Siege works in Borderless but loses color in Fullscreen,
+and colors do not return on Alt+Tab. The prior display-event handler unconditionally
+suspended/restored on WM_DISPLAYCHANGE, which can be caused by resolution changes.
+AgentDisplayEvents now uses an exact-mapping/SDR/confirmed-observation policy to
+preserve simple global matrix and native DVC plans. It never replays native writes,
+recaptures baselines or clears another suspension on that shortcut. Unconfirmed,
+failed, gamma/tonal, HDR/unknown/mapping-changing cases retain suspension/restoration;
+failed safety completion now tears down the Agent through its existing recovery path.
+
+This fixes Chromatic's own unwanted disable path, not an exclusive-fullscreen
+presentation bypass. The Display page explains that limit and has a draft-only
+NVIDIA preparation action, with explicit opt-in/Save/restart/output selection and
+actual backend-result instructions. Native uses neutral saturation and separate
+vibrance; failed private calls report software fallback. No claim of fullscreen
+coverage follows from software fallback. Tests exercise repeated notifications
+through the actual event handler with a fake backend, safety suspensions, pending/
+failed/gamma exclusions, native-versus-software planning, no double vibrance and
+exact DVC restoration. The preparation action sends no IPC or hardware command.
+
+Read-only GPU metadata reports RTX 3060, driver 32.0.16.1692. This is inventory,
+not a tested support listing. No game process/window/memory or files were accessed;
+no private NVIDIA setter, physical display change or game input was performed in
+development/tests. The user closed Chromatic so its binaries could be replaced.
+Game/fullscreen/NVIDIA visual and anti-cheat qualification remain unperformed.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

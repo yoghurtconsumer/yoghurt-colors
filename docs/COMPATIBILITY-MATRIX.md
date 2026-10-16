@@ -4,10 +4,10 @@
 | --- | --- |
 | .NET 10 Windows x64 build | SDK 10.0.402; 14 Release/x64 projects; zero warnings/errors |
 | Core math/reducer/planner/ranges | 58 passing Core tests |
-| Storage/schema/migration/ownership/ABI/IPC/native fakes | Included in 94 passing integration tests |
+| Storage/schema/migration/ownership/ABI/IPC/native fakes | Included in 113 passing integration tests |
 | Independent process recovery | Six passing scenarios: normal shutdown, crash after setter, hung setter, UI death, foreign writer, UI Apply-to-Agent/readback/restore; file-backed resources only |
 | Safety through real named pipes | Verified SID/session/PID/start-time/nonce; restricted Recovery role; Disable fences a pending journal; correlated responses |
-| WPF/DI/themes/preview/Apply results | Included in 14 passing UI/launcher tests; blocked/failed/superseded Apply, progress, stable selection and optional-tone reset |
+| WPF/DI/themes/preview/Apply results | Included in 15 passing UI/launcher tests; blocked/failed/superseded Apply, progress, stable selection, optional-tone reset and draft-only NVIDIA preparation |
 | Actual .cmd and rendered window | Regression tests cover spaces, unrelated working directory, older SDK precedence, unavailable pinned SDK with full stderr, missing executable and clean smoke exit |
 | Windows 10 19041 / 22H2 / other Windows 11 builds | Target and runtime gates present; OS-by-OS qualification untested |
 | Magnification visible output on AMD/Intel/NVIDIA | Native implementation present; physical hardware NOT tested |
@@ -18,6 +18,8 @@
 | Local read-only color detection | BenQ XL2540X+, build 26200: legacy flags=5 falsely implied advanced color; fixed modern flags=69/active SDR correctly permits SDR. No setter executed |
 | Modes/stretch/custom timings/DDC | NotImplemented; Stage 4 |
 | Exclusive fullscreen / capture / anti-cheat | No compatibility claim |
+| Display-notification preservation | Actual handler with injected backend: repeated unchanged SDR mappings preserve confirmed matrix/DVC; unsafe or unconfirmed/tonal cases restore; zero reapply writes |
+| Fullscreen NVIDIA candidate | Injected private API plan, native/software result distinction, no double vibrance and exact restoration tested; physical fullscreen behavior unqualified |
 | Phone/browser/Private LAN / GSMTC | NotImplemented; no listener/transport |
 
 The current test machine is Windows build 26200. Automated process tests use only
@@ -26,3 +28,7 @@ was compiled but NOT run. No driver version is listed as supported.
 Windows Settings inspection on 16 October showed HDR unsupported and automatic
 color management off. No Windows setting was changed. This validates the probe
 correction only, not physical saturation or fullscreen/capture behavior.
+The user reports desktop and Borderless operation, but Fullscreen Siege loses
+color and Alt+Tab did not recover it before this fix. This is user-reported visual
+evidence, not an automated game test. Read-only GPU inventory: RTX 3060, driver
+32.0.16.1692. No game interaction or physical driver setter was performed here.

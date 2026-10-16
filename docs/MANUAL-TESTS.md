@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 2
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 166 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 186 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -27,6 +27,14 @@ After restarting the updated app on SDR, move saturation to a visibly different
 value, press Apply and inspect its nearby result. A human must verify visible
 color change and captured-baseline restoration. If blocked, the reason must be
 shown beside Apply; connection/optional-tone failures must not appear successful.
+
+For a human fullscreen NVIDIA check, opt in to experimental private NVIDIA DVC
+in Settings, Save and restart. Prepare NVIDIA vibrance, select one output and
+explicitly Apply. Confirm the backend result names Magnification+NvidiaDvc and
+check the visible game, Alt+Tab back and baseline return on Restore/Exit. Software
+fallback is explicit and does not establish exclusive-fullscreen support. Changing
+Saturation away from 100% selects software again; use the separate Vibrance scale.
+Do not automate the game, alter its files or bypass its protection/policies.
 
 Check keyboard navigation, high contrast, screen reader labels, mixed DPI, tray
 Show/Pause/Restore/Exit and actual close-to-tray behavior manually. Those checks

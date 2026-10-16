@@ -49,6 +49,10 @@ public sealed class DisplayViewModel : PageViewModel
     public ICommand ApplyCommand { get; }
     public ICommand ResetTonesCommand { get; }
     public ICommand OpenDisplaySettingsCommand { get; }
+    public ICommand PrepareNvidiaCommand { get; }
+    public string FullscreenStatus => _client?.State.Capabilities.Backends.Any(b => b.Backend == BackendKind.NvidiaDvc && b.Status == Capability.Experimental) == true
+        ? "Experimental NVIDIA vibrance is opted in. Select one output, keep Saturation at 100%, adjust Vibrance and Apply. Check for Magnification+NvidiaDvc in the result; a software fallback does not cover exclusive fullscreen. Driver/game behavior needs your visual check."
+        : "Exclusive fullscreen can bypass desktop saturation. For NVIDIA vibrance: Settings → opt in to experimental NVIDIA DVC → Save → restart, then select one output and use Prepare NVIDIA vibrance. This uses the display driver, without game hooks. Fullscreen support is unqualified.";
     public bool IsApplying { get => _isApplying; private set { _isApplying = value; Changed(); RefreshAvailability(); } }
     public bool CanApply => _client is not null && (_client is not CompanionSession session || session.Connected)
         && !_client.State.RecoveryPending && _client.State.Capabilities.Supports(BackendKind.Magnification);
@@ -73,6 +77,15 @@ public sealed class DisplayViewModel : PageViewModel
     {
         _client = client; _session = settings; _draft = settings?.Current.GlobalColor ?? new();
         ApplyCommand = new AsyncCommand(ApplyAsync, error => ApplyStatus = $"Apply failed: {error.Message}");
+        PrepareNvidiaCommand = new RelayCommand(_ =>
+        {
+            _draft = new(Vibrance: .5); _outputWarmth = 0;
+            foreach (var property in new[] { nameof(Saturation), nameof(Brightness), nameof(Contrast), nameof(Warmth), nameof(Gamma),
+                nameof(Shadows), nameof(Highlights), nameof(Vibrance), nameof(VibranceScale), nameof(CvdMode), nameof(CvdStrength), nameof(OutputWarmth) }) Changed(property);
+            if (Outputs.Length == 1) SelectedOutput = Outputs[0];
+            RebuildPreview();
+            ApplyStatus = "Draft prepared: Saturation 100% (neutral), Vibrance 75/100, other controls neutral. Nothing applied. Enable NVIDIA DVC in Settings, Save + restart if needed, then select one output and Apply. The result must name NvidiaDvc for native vibrance.";
+        });
         ResetTonesCommand = new RelayCommand(_ =>
         { Gamma = 1; Shadows = 0; Highlights = 0; OutputWarmth = 0; ApplyStatus = "Optional tones reset. Global saturation and affine controls are preserved; press Apply."; });
         OpenDisplaySettingsCommand = new RelayCommand(_ =>
@@ -111,6 +124,7 @@ public sealed class DisplayViewModel : PageViewModel
     {
         Changed(nameof(CanApply)); Changed(nameof(CapabilityStatus)); Changed(nameof(ConnectionStatus));
         Changed(nameof(CanUseGamma)); Changed(nameof(GammaStatus));
+        Changed(nameof(FullscreenStatus));
     }
     public async Task ApplyAsync()
     {
@@ -121,7 +135,7 @@ public sealed class DisplayViewModel : PageViewModel
         var profile = new DisplayProfile { GlobalColor = _draft,
             Monitors = SelectedOutput is null ? [] : [new(SelectedOutput, Warmth: _outputWarmth)] };
         IsApplying = true;
-        ApplyStatus = $"Applying {profile.GlobalColor.SaturationPercent:0}% saturation to the desktop… waiting for Agent readback.";
+        ApplyStatus = $"Applying {profile.GlobalColor.SaturationPercent:0}% saturation / vibrance {(profile.GlobalColor.Vibrance + 1) * 50:0}/100… waiting for Agent readback.";
         try
         {
             var state = _client.State;
@@ -129,7 +143,7 @@ public sealed class DisplayViewModel : PageViewModel
             var superseded = ack.State.Revision != ack.Decision.Revision || ack.State.Generation != ack.Decision.Generation;
             var success = ack.Decision.Status == CompletionStatus.Accepted && ack.Completion.Success && ack.State.Effective.Enabled
                 && !superseded && ack.Completion.Revision == ack.Decision.Revision;
-            ApplyStatus = success ? $"Applied {profile.GlobalColor.SaturationPercent:0}% saturation · {ack.Completion.Backend}. {ack.Completion.Explanation}" :
+            ApplyStatus = success ? $"Applied {profile.GlobalColor.SaturationPercent:0}% saturation · vibrance {(profile.GlobalColor.Vibrance + 1) * 50:0}/100 · {ack.Completion.Backend}. {ack.Completion.Explanation}" :
                 superseded ? "Not applied: another command superseded this Apply. Review the current state and press Apply again." :
                 $"Not applied · {ack.Completion.ErrorCode ?? ack.Decision.Status.ToString()}: {ack.Completion.Explanation ?? ack.Decision.Explanation}";
             if (success && _session is not null)

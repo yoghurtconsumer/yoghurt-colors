@@ -29,3 +29,10 @@ Display Apply uses one typed profile transaction with progress and visible failu
 reasons. A current successful backend acknowledgment is required before reporting
 Applied. It resumes user Pause only; OS safety suspensions cannot be cleared from
 the UI pipe. OS resume leaves effects off until a new explicit Apply.
+
+Display-change notifications alone preserve a confirmed simple matrix/native DVC
+route when exact output mappings remain verified SDR. No setter or automatic
+reapply is issued. HDR/unknown/topology/tonal cases still suspend and restore.
+The NVIDIA preparation action only edits the draft; opt-in, Save/restart and
+explicit Apply remain required. Native versus software completion is shown.
+Neither route's API readback establishes exclusive-fullscreen visual support.

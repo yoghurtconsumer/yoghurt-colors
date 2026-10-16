@@ -1,15 +1,15 @@
 # Requirements traceability — Stage 2
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build with SDK 10.0.402; 166 VSTest tests pass (58 Core, 94 integration,
-14 UI/launcher). Native color routes now require authenticated ownership, verified
+x64 projects build with SDK 10.0.402; 186 VSTest tests pass (58 Core, 113 integration,
+15 UI/launcher). Native color routes now require authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No physical display qualification was run.
 
 | ID | Requirement | Actual Stage 2 status | Evidence / boundary | Remaining stage / qualification |
 | --- | --- | --- | --- | --- |
 | F01 | Whole-screen saturation through 300%; 100% neutral | Guarded native matrix and atomic explicit Apply implemented; false SDR block fixed | Exact 300% math, MAG ABI, owning STA, real baseline/readback/restore; UI-to-Agent fake-process test; modern active-color-mode regression | Physical GPU/OS qualification |
-| F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter and safe software fallback implemented; experimental | System32-only known IDs/Cdecl ABI, GDI driving-output/ranges, route restore, no double vibrance; fake mapping tests | Private ABI/hybrid/driver hardware matrix |
+| F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
 | F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
 | F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Deferred | PresetDocument contract; no built-in scene payloads | 3 |
@@ -31,7 +31,7 @@ resource tests inject fakes. No physical display qualification was run.
 | F21 | Music controls, improved app support (2.1.10) | Foundation only | Music panel and typed IMediaController; GSMTC NotImplemented | 6 |
 | F22 | Per-monitor gamma/warmth | Explicit selected-output route implemented; multiple outputs blocked pending alias qualification | Display DC, stable path/runtime mapping checks, 1536-byte capture/restore, per-output warmth; shared-ramp limitation disclosed | Hardware/shared-ramp qualification / 4 |
 | F23 | Monitor hardware brightness/color over display cable | Foundation only | IMonitorBackend allowlisted controls; DDC returns NotImplemented | 4 |
-| F24 | Color watchdog following game/display changes | Process liveness and event-driven safety suspension/restoration implemented | Hidden top-level broadcast window; UI/Agent/Recovery handles, STA heartbeat, exclusive lease, conflict journal; six fake child-process cases; explicit Apply after OS safety resume | 4 bounded reapply/hotplug qualification |
+| F24 | Color watchdog following game/display changes | Process liveness, safety suspension/restoration and preservation of confirmed SDR routes on unchanged mappings implemented | Actual handler/fake tests: repeated resolution notifications do not disable matrix/native DVC or issue setters; unsafe mappings/tonal routes still restore; no automatic reapply | 4 bounded reapply/hotplug/fullscreen qualification |
 | F25 | Default/Slate appearance; user picture/GIF background | Partial implementation | Default/Slate XAML and theme commands; local media deferred | 1 / 5 |
 | F26 | Windows appearance customization: dark mode, accent, taskbar alignment/transparency, some Explorer options | Deferred | Customize shell; no registry or Windows appearance calls | 5 |
 | F27 | Start with Windows | Deferred, default off | OptionalServices.Startup=false; no registration adapter | 5 |

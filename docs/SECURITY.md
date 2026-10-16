@@ -64,3 +64,10 @@ Windows 11 build 26100+ uses the SDK-generated read-only ColorInfo2 packet to
 distinguish active SDR from WCG/HDR. Legacy support/bit-2 flags do not override
 verified modern SDR; unknown mode/query errors still fail closed. The native
 import regression allowlist and policy limits are in ANTI-CHEAT-BOUNDARY.md.
+
+The display-event preservation shortcut performs read-only inventory refresh;
+it preserves only a current successful matrix/native DVC observation on identical
+verified SDR mappings, with no gamma/hold/suspension/preview work. It does not
+send setters, acquire new baselines, reapply a reset resource or fight another
+writer. Unsafe/uncertain events use existing restoration. No new native imports,
+game hooks, process discovery or game interaction were added for fullscreen.

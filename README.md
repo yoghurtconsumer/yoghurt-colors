@@ -28,6 +28,24 @@ disable the session's route. HDR/ACM/unknown mappings refuse SDR grading.
 Native DVC remains experimental and can fall back to software after safe restore.
 CVD correction and software vibrance are explicitly approximate.
 
+For exclusive fullscreen games on NVIDIA, the desktop saturation matrix may be
+bypassed. To try the separate experimental driver vibrance route:
+
+1. In **Settings**, opt in to **experimental private NVIDIA DVC**, then Save and restart.
+2. In **Display**, press **Prepare NVIDIA vibrance (resets draft)**. This selects
+   the output when there is only one and prepares saturation 100%, vibrance 75/100
+   with other controls neutral; it applies nothing yet.
+3. Select the intended output and press Apply. The result must name
+   **Magnification+NvidiaDvc**. A **Magnification** result means software was used
+   and does not establish exclusive-fullscreen coverage. Adjust Vibrance, not
+   Saturation, for this route. The driver limit differs from 300% software saturation.
+
+Confirmed matrix/native DVC effects now remain enabled across display notifications
+when the same output mappings remain verified SDR. Unknown/HDR/topology changes,
+pending/failed applies, gamma/tonal routes, lock and sleep retain the restore path.
+There is no repeated reapply or attempt to override another utility. Driver resets
+and fullscreen-visible output still need a human check; no fullscreen guarantee.
+
 If Apply reports HDR/advanced color, open **Windows Display settings** from the
 Display page, select your monitor, open **HDR**, and turn **Use HDR** off yourself.
 If advanced color remains active, check **Display → Color profile → Automatically
@@ -74,8 +92,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 166 passing VSTest tests**
-(58 Core, 94 integration, 14 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 186 passing VSTest tests**
+(58 Core, 113 integration, 15 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

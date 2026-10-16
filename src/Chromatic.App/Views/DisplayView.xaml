@@ -8,6 +8,9 @@
       <Button Content="Windows Display settings" Command="{Binding OpenDisplaySettingsCommand}" HorizontalAlignment="Left" ToolTip="Opens Settings; Chromatic does not change HDR or automatic color management." />
       <Button Content="Apply colors to desktop" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply global desktop colors" />
       <TextBlock Text="{Binding ApplyStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Desktop apply result" />
+      <TextBlock Text="Games: desktop saturation targets Borderless/Windowed. Safe resolution/refresh notifications preserve confirmed SDR colors; HDR or monitor changes still suspend them." Style="{StaticResource Muted}" Margin="0,12,0,0" />
+      <TextBlock Text="{Binding FullscreenStatus}" Style="{StaticResource Muted}" Margin="0,12,0,0" />
+      <Button Content="Prepare NVIDIA vibrance (resets draft)" Command="{Binding PrepareNvidiaCommand}" HorizontalAlignment="Left" ToolTip="Preview only: sets saturation to neutral, vibrance to 75/100 and other controls to neutral. Requires explicit opt-in and Apply." />
       <TextBlock Text="Saturation" FontSize="20" Margin="0,18,0,4" />
       <TextBlock Text="{Binding Saturation, StringFormat={}{0:0}% · draft value}" />
       <Slider Minimum="0" Maximum="300" Value="{Binding Saturation}" TickFrequency="25" Margin="0,16,0,20" AutomationProperties.Name="Saturation draft percentage" />
