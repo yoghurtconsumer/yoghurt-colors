@@ -68,6 +68,7 @@ try {
         (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + $relative
     }
     $hashes | Set-Content -LiteralPath (Join-Path $package 'files.sha256') -Encoding UTF8
+    Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     # Windows PowerShell's .NET Framework CreateFromDirectory can emit backslash
     # entry names. Write standard ZIP separators explicitly for all extractors.
