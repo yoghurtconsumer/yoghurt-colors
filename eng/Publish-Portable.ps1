@@ -69,7 +69,17 @@ try {
     }
     $hashes | Set-Content -LiteralPath (Join-Path $package 'files.sha256') -Encoding UTF8
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [IO.Compression.ZipFile]::CreateFromDirectory($package, $archive, [IO.Compression.CompressionLevel]::Optimal, $true)
+    # Windows PowerShell's .NET Framework CreateFromDirectory can emit backslash
+    # entry names. Write standard ZIP separators explicitly for all extractors.
+    $zipWriter = [IO.Compression.ZipFile]::Open($archive, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in Get-ChildItem -LiteralPath $package -Recurse -File) {
+            $entryName = 'ChromaticDesktop/' + $file.FullName.Substring($package.Length + 1).Replace('\', '/')
+            [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipWriter, $file.FullName, $entryName,
+                [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+        }
+    }
+    finally { $zipWriter.Dispose() }
     $expectedHashes = @{}
     foreach ($line in $hashes) { $expectedHashes['ChromaticDesktop/' + $line.Substring(66)] = $line.Substring(0, 64) }
     $zip = [IO.Compression.ZipFile]::OpenRead($archive)
