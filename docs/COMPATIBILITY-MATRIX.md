@@ -32,3 +32,10 @@ The user reports desktop and Borderless operation, but Fullscreen Siege loses
 color and Alt+Tab did not recover it before this fix. This is user-reported visual
 evidence, not an automated game test. Read-only GPU inventory: RTX 3060, driver
 32.0.16.1692. No game interaction or physical driver setter was performed here.
+
+Private testing ZIP: App/Agent/Recovery are self-contained .NET 10.0.13 win-x64.
+Each startup smoke verified its bundled CoreLib with SDK/runtime paths removed;
+App rendered/closed without providers. ZIP entries are SHA-256 checked. No clean
+Windows VM, hardware or game qualification is implied. Latest whole-solution
+Debug/x64 validation: zero warnings/errors and 186 tests; Release rebuild was
+blocked by the user's running Release app and was not forced closed.

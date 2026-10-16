@@ -12,6 +12,16 @@ public sealed record CompanionBootstrap(int Version, NativePeerIdentity Ui, stri
 
 public static class CompanionLaunch
 {
+    // Startup/package verification only: no bootstrap, pipes, providers or writes.
+    public static int StartupSmoke(string role)
+    {
+        var supported = RuntimeCapabilities.MeetsMinimum;
+        Console.WriteLine(JsonSerializer.Serialize(new { role, supported, hardwareWritesPerformed = false,
+            framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+            architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
+            coreLibrary = typeof(object).Assembly.Location }));
+        return supported ? 0 : 1;
+    }
     public static string SessionDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ChromaticDesktop", "sessions", PipeInterop.Current.SessionId.ToString(System.Globalization.CultureInfo.InvariantCulture));
     public static VerifiedPipePeer Peer(NativePeerIdentity identity) => new(identity.ProcessId, identity.StartTicks, identity.SessionId, identity.UserSid, true);

@@ -79,6 +79,27 @@ and conservative legacy fallback on older Windows. No Windows setting was change
 
 ## Build and automated tests
 
+For an invited friend who has no SDK or .NET installed, create a private Windows
+x64 ZIP with:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File eng/Publish-Portable.ps1
+
+Send the entire ZIP printed by the script. The friend extracts it and opens
+**Chromatic.App.exe**; no SDK, separate .NET installation or administrator rights
+are needed. App, Agent and Recovery each include .NET 10.0.13. Keep every DLL and
+the companions folders. This is an unsigned private test package, not a public
+release. It includes READ-ME-FIRST.txt, runtime/dependency terms, build information
+and SHA-256 checksums. No personal settings, recovery journals, driver DLLs or
+test harnesses are packaged. The source's project licence status remains unchanged.
+
+The script uses a separate optimized PortableTest configuration, checks all three
+apphosts with SDK/runtime environment paths removed, and verifies each loaded its
+own bundled CoreLib. App smoke mode renders/closes without companions; companion
+smoke modes return before bootstrap/providers. Every archived file is hash-checked
+against the verified folder. These checks establish startup/package integrity,
+not GPU/game/anti-cheat qualification. Windows 10 build 19041+/11 x64 is required.
+The last generated ZIP path is in artifacts/latest-private-test-package.txt.
+
 Microsoft SDK **10.0.402 x64** and .NET/Desktop/ASP.NET Core **10.0.13** are
 installed in %LOCALAPPDATA%/ChromaticDesktop/dotnet. The helpers select that
 installation for their process. global.json pins it exactly; the Windows target

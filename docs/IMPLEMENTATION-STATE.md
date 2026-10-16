@@ -1,7 +1,7 @@
 # Chromatic Desktop implementation state
 
-Updated: 16 October 2026. Requested checkpoint: Stage 2, followed by launcher/Apply/game-transition fixes.
-Previous GitHub checkpoint: 032b27c (false HDR detection, atomic Apply and launcher diagnostics).
+Updated: 16 October 2026. Requested checkpoint: Stage 2 fixes and a private friend-test package.
+Previous GitHub checkpoint: c67b087 (safe display-change preservation and fullscreen vibrance UI).
 
 ## Current outcome
 
@@ -222,6 +222,37 @@ not a tested support listing. No game process/window/memory or files were access
 no private NVIDIA setter, physical display change or game input was performed in
 development/tests. The user closed Chromatic so its binaries could be replaced.
 Game/fullscreen/NVIDIA visual and anti-cheat qualification remain unperformed.
+
+## Private friend-test packaging (explicit follow-up request)
+
+eng/Publish-Portable.ps1 builds an optimized PortableTest configuration so a live
+Release application is not replaced. It publishes App and each fixed sibling
+Agent/Recovery separately, self-contained win-x64 on the unchanged .NET 10/Windows
+19041 target. SDK 10.0.402 selects bundled .NET/Desktop/ASP.NET Core 10.0.13;
+includedFrameworks versions are checked. Restore stays locked. No SDK/runtime
+installation, administrator privileges, driver redistribution or security-setting
+changes are required on the tester's machine.
+
+The ZIP includes a private-testing read-me, original project licence status,
+runtime terms/notices, SDK/generated-binding provenance, build/source/runtime
+metadata and file/archive SHA-256 hashes. It excludes personal settings/logs,
+recovery journals, test binaries/harnesses, PDBs and nvapi64.dll. Verification
+metadata includes only relative component names, not this developer's paths.
+The private test request does not choose a public source licence, publish a
+public release or complete Stage 7 signing/installer/updater/SBOM/security gates.
+
+All three packaged executables passed real startup checks with PATH restricted
+to Windows and DOTNET_ROOT pointing to a nonexistent directory. The loaded
+CoreLib path was verified under each executable's own directory. App renders and
+closes in no-provider smoke mode; companion smoke modes return before bootstrap,
+pipes or providers. Final ZIP entries are decompressed and SHA-256 checked against
+the verified folder. This is not a clean-machine VM or physical hardware test.
+
+The latest whole-solution Release rebuild was blocked by the user's live App
+holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 tests
+passed instead; optimized self-contained publishing and three independent runtime
+startup checks passed separately. No product target was downgraded. The earlier
+Release/x64 186-test checkpoint remains recorded above.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

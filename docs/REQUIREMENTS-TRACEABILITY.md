@@ -6,6 +6,12 @@ x64 projects build with SDK 10.0.402; 186 VSTest tests pass (58 Core, 113 integr
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No physical display qualification was run.
 
+Private friend-test packaging is now available on the same target: optimized
+self-contained App/Agent/Recovery with bundled .NET 10.0.13, three startup checks
+with SDK/runtime discovery paths removed and complete ZIP-entry hash verification.
+The follow-up full solution validation used Debug/x64 (186 tests), because a live
+Release app held its files. This is not a public release or Stage 7 completion.
+
 | ID | Requirement | Actual Stage 2 status | Evidence / boundary | Remaining stage / qualification |
 | --- | --- | --- | --- | --- |
 | F01 | Whole-screen saturation through 300%; 100% neutral | Guarded native matrix and atomic explicit Apply implemented; false SDR block fixed | Exact 300% math, MAG ABI, owning STA, real baseline/readback/restore; UI-to-Agent fake-process test; modern active-color-mode regression | Physical GPU/OS qualification |
@@ -43,7 +49,7 @@ resource tests inject fakes. No physical display qualification was run.
 | F33 | Plans, feature locks, separate Dark Boost entitlement, PC activation/release/move | Optional, deferred | Local utility has no feature locks; no commerce/activation service | optional 7 |
 | F34 | Automatic signed update verification, release notes/What's New; status/revocation/check-in | Deferred, default off | OptionalServices.Updates=false; signing/updater absent | 7 |
 | F35 | Local crash logs with build/OS; bug-report form with user-triggered technical report | Startup diagnostics, read-only metadata report and bounded companion logs implemented; full reporting deferred | Full SDK/build stderr, first-render logs, per-output raw flags/active mode, Agent apply/recovery logs; export/upload absent | 5 / 7 |
-| F36 | Legal/licences page, uninstall retains user data, explicit cleanup | Deferred | No data deletion/uninstall; licensing selection remains a release gate | 5 / 7 |
+| F36 | Legal/licences page, uninstall retains user data, explicit cleanup | In-app page/uninstall deferred; private ZIP includes terms/notices | Original project licence status retained; runtime/SDK/generated-binding notices included; no installer or cleanup writes | 5 / public release 7 |
 | F37 | Repair action can relaunch elevated | Deferred | asInvoker manifest; no elevation/repair path | 5 / 7 |
 | F38 | Update rating controls documented but inactive | Inactive by reference | No update-rating controls or telemetry implemented/enabled | remains inactive |
 
