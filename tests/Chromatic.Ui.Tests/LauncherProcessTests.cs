@@ -7,6 +7,19 @@ namespace Chromatic.Ui.Tests;
 public sealed class LauncherProcessTests
 {
     [Fact]
+    public async Task UnavailablePinnedSdkPreservesNativeStderrAndActionableError()
+    {
+        using var fixture = new LauncherFixture(includeApplication: false);
+        fixture.RequireUnavailableSdk();
+        var result = await fixture.RunAsync(build: true);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("99.0.999", result.Output);
+        Assert.Contains("Installed SDKs", result.Output);
+        Assert.Contains("eng/Install-DotNet.ps1", result.Output);
+        Assert.Contains("product target has not been changed", result.Output);
+    }
+
+    [Fact]
     public async Task ExactCmdLaunchesRenderedWindowFromAnotherDirectoryWithSpaces()
     {
         using var fixture = new LauncherFixture(includeApplication: true);
@@ -55,12 +68,14 @@ public sealed class LauncherProcessTests
                 File.Copy(file, target);
             }
         }
-        public async Task<(int ExitCode, string Output)> RunAsync()
+        public void RequireUnavailableSdk() => File.WriteAllText(Path.Combine(_directory, "global.json"),
+            "{\"sdk\":{\"version\":\"99.0.999\",\"rollForward\":\"disable\"}}");
+        public async Task<(int ExitCode, string Output)> RunAsync(bool build = false)
         {
             var batchPath = Path.Combine(_directory, "Run-Chromatic.cmd");
             var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe")
             {
-                Arguments = $"/d /c \"\"{batchPath}\" -NoBuild -SmokeTest\"",
+                Arguments = $"/d /c \"\"{batchPath}\" {(build ? "" : "-NoBuild")} -SmokeTest\"",
                 WorkingDirectory = _foreignDirectory,
                 UseShellExecute = false, CreateNoWindow = true,
                 RedirectStandardOutput = true, RedirectStandardError = true

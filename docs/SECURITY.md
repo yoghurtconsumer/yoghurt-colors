@@ -19,6 +19,9 @@ are at most 32 in-flight correlated requests, one response reader and serialized
 frame writes. Timeouts tear down the connection. Recovery's separate channel
 permits only GetState, Restore and Shutdown. No IPC command exposes raw pointers,
 native handles, arbitrary library loading, shell execution or arbitrary registers.
+UI commands cannot Resume session/power/advanced-color suspensions; those require
+Agent OS events. ApplyProfile releases only the user's Pause in one fenced state
+transition. OS resume never automatically re-enables effects at this stage.
 
 Agent alone owns normal writes on its STA. The reducer accepts safety commands
 before slow disk/native completion; immutable revision AND ownership-generation
@@ -57,3 +60,7 @@ Native DLL loading is limited to Windows APIs and installed System32 nvapi64.dll
 Only pinned known private DVC IDs are resolved; no downloaded/probed driver code.
 HDR/ACM/unknown mappings fail closed. Resource constructors do not mutate hardware.
 No phone, firewall or external service listener is enabled.
+Windows 11 build 26100+ uses the SDK-generated read-only ColorInfo2 packet to
+distinguish active SDR from WCG/HDR. Legacy support/bit-2 flags do not override
+verified modern SDR; unknown mode/query errors still fail closed. The native
+import regression allowlist and policy limits are in ANTI-CHEAT-BOUNDARY.md.

@@ -16,6 +16,9 @@ public sealed class DisplayViewModel : PageViewModel
     private readonly IEffectsClient? _client;
     private readonly AppSessionSettings? _session;
     private double _outputWarmth;
+    private DisplayIdentity? _selectedOutput;
+    private bool _isApplying;
+    private ImmutableArray<DisplayIdentity> _outputs = [];
     private string _applyStatus = "Effects off. Sliders change the local sample preview until you press Apply.";
     public double Saturation { get => _draft.SaturationPercent; set => Set(_draft with { SaturationPercent = value }, nameof(Saturation)); }
     public double Brightness { get => _draft.Brightness; set => Set(_draft with { Brightness = value }, nameof(Brightness)); }
@@ -29,9 +32,12 @@ public sealed class DisplayViewModel : PageViewModel
     public string CvdMode { get => _draft.CvdMode; set => Set(_draft with { CvdMode = value }, nameof(CvdMode)); }
     public double CvdStrength { get => _draft.CvdStrength; set => Set(_draft with { CvdStrength = value }, nameof(CvdStrength)); }
     public string[] CvdModes { get; } = ["None", "RedWeak", "GreenWeak", "BlueWeak"];
-    public ImmutableArray<DisplayIdentity> Outputs => _client?.State.Capabilities.Backends.Where(b => b.Display is not null)
-        .Select(b => b.Display!).Distinct().ToImmutableArray() ?? [];
-    public DisplayIdentity? SelectedOutput { get; set; }
+    public ImmutableArray<DisplayIdentity> Outputs => _outputs;
+    public DisplayIdentity? SelectedOutput
+    {
+        get => _selectedOutput;
+        set { if (_selectedOutput == value) return; _selectedOutput = value; Changed(); RefreshAvailability(); }
+    }
     public double OutputWarmth
     {
         get => _outputWarmth;
@@ -41,14 +47,43 @@ public sealed class DisplayViewModel : PageViewModel
     public ImmutableArray<PreviewSwatch> Swatches { get; private set; } = [];
     public ICommand ResetCommand { get; }
     public ICommand ApplyCommand { get; }
+    public ICommand ResetTonesCommand { get; }
+    public ICommand OpenDisplaySettingsCommand { get; }
+    public bool IsApplying { get => _isApplying; private set { _isApplying = value; Changed(); RefreshAvailability(); } }
     public bool CanApply => _client is not null && (_client is not CompanionSession session || session.Connected)
         && !_client.State.RecoveryPending && _client.State.Capabilities.Supports(BackendKind.Magnification);
     public override string CapabilityStatus => CanApply ? "Agent ready for explicit Apply · hardware unqualified" : "Agent/SDR unavailable · review backend diagnostics";
+    public string ConnectionStatus => _client switch
+    {
+        CompanionSession { Failure: { } failure } => failure,
+        CompanionSession { Connected: false } => "Agent is not connected. Start with Run-Chromatic.cmd; connection errors are also shown here.",
+        null => "Agent is not connected. The sample preview remains available.",
+        _ when _client.State.RecoveryPending => "Recovery is required before display effects can be enabled.",
+        _ when !_client.State.Capabilities.Supports(BackendKind.Magnification) => _client.State.Capabilities.Backends
+            .FirstOrDefault(b => b.Backend == BackendKind.Magnification)?.Reason ?? "Global color is unavailable.",
+        _ => "Agent connected. Sliders edit the preview; Apply sends them to the desktop. Restore returns your captured original colors."
+    };
+    public bool CanUseGamma => !_isApplying && SelectedOutput is not null && _client is not null &&
+        _client.State.Capabilities.Supports(BackendKind.SdrGamma, SelectedOutput) &&
+        _client.State.Capabilities.Backends.Count(b => b.Backend == BackendKind.SdrGamma) == 1;
+    public string GammaStatus => CanUseGamma ? "SDR tonal controls target only the selected output." :
+        "Gamma/shadows/highlights require gamma compatibility enabled in Settings, Save + restart, and one selected active SDR output. Multiple-output LUTs remain unqualified.";
     public DisplayViewModel(IEffectsClient? client = null, AppSessionSettings? settings = null) : base("Display", "Your desktop, in balance.",
         "The matrix affects every display. Gamma is an opt-in SDR compatibility route on the explicitly selected output. CVD is an experimental approximation. Native DVC requires its separate opt-in and a single output; extra saturation uses software. Capture and driver support remain unqualified.")
     {
         _client = client; _session = settings; _draft = settings?.Current.GlobalColor ?? new();
         ApplyCommand = new AsyncCommand(ApplyAsync, error => ApplyStatus = $"Apply failed: {error.Message}");
+        ResetTonesCommand = new RelayCommand(_ =>
+        { Gamma = 1; Shadows = 0; Highlights = 0; OutputWarmth = 0; ApplyStatus = "Optional tones reset. Global saturation and affine controls are preserved; press Apply."; });
+        OpenDisplaySettingsCommand = new RelayCommand(_ =>
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:display") { UseShellExecute = true });
+                ApplyStatus = "Windows Display settings opened. Turn off HDR/automatic color management yourself to use SDR controls, then return and press Apply.";
+            }
+            catch (Exception error) { ApplyStatus = $"Could not open Windows Display settings: {error.Message}"; }
+        });
         ResetCommand = new RelayCommand(_ =>
         {
             _draft = new(); _outputWarmth = 0; Changed(nameof(OutputWarmth)); RebuildPreview();
@@ -57,27 +92,51 @@ public sealed class DisplayViewModel : PageViewModel
             Changed(nameof(VibranceScale));
         });
         RebuildPreview();
+        Refresh();
     }
-    public void Refresh() { Changed(nameof(CanApply)); Changed(nameof(Outputs)); Changed(nameof(CapabilityStatus)); }
+    public void Refresh()
+    {
+        var next = _client?.State.Capabilities.Backends.Where(b => b.Display is not null)
+            .Select(b => b.Display!).Distinct().ToImmutableArray() ?? [];
+        if (!_outputs.SequenceEqual(next))
+        {
+            var previous = _selectedOutput; _outputs = next;
+            _selectedOutput = previous is null ? null : next.SingleOrDefault(d =>
+                d.MonitorDevicePath.Equals(previous.MonitorDevicePath, StringComparison.OrdinalIgnoreCase) && d.EdidSerial == previous.EdidSerial);
+            Changed(nameof(Outputs)); Changed(nameof(SelectedOutput));
+        }
+        RefreshAvailability();
+    }
+    private void RefreshAvailability()
+    {
+        Changed(nameof(CanApply)); Changed(nameof(CapabilityStatus)); Changed(nameof(ConnectionStatus));
+        Changed(nameof(CanUseGamma)); Changed(nameof(GammaStatus));
+    }
     public async Task ApplyAsync()
     {
-        if (!CanApply || _client is null) { ApplyStatus = "Agent or SDR capability unavailable. Review diagnostics."; return; }
-        async Task<bool> Send(EffectsCommand command)
-        {
-            var state = _client.State;
-            var ack = await _client.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, command));
-            ApplyStatus = $"{ack.Completion.ErrorCode ?? "Completed"}: {ack.Completion.Explanation}";
-            return ack.Decision.Status == CompletionStatus.Accepted && ack.Completion.Success;
-        }
-        if (!await Send(new Enable(false))) return;
+        if (IsApplying) return;
+        if (!CanApply || _client is null) { ApplyStatus = $"Cannot apply: {ConnectionStatus}"; return; }
+        if ((_draft.Gamma != 1 || _draft.Shadows != 0 || _draft.Highlights != 0 || _outputWarmth != 0) && !CanUseGamma)
+        { ApplyStatus = "Cannot apply optional tones: " + GammaStatus + " Use Reset optional tones for saturation-only changes."; return; }
         var profile = new DisplayProfile { GlobalColor = _draft,
             Monitors = SelectedOutput is null ? [] : [new(SelectedOutput, Warmth: _outputWarmth)] };
-        if (!await Send(new ActivatePreset(profile))) return;
-        foreach (var reason in _client.State.Suspensions)
-            if (!await Send(new Resume(reason))) return;
-        if (await Send(new Enable(true)) && _session is not null)
-            _session.Current = _session.Current with { GlobalColor = profile.GlobalColor, Monitors = profile.Monitors, EffectsEnabled = false };
-        Refresh();
+        IsApplying = true;
+        ApplyStatus = $"Applying {profile.GlobalColor.SaturationPercent:0}% saturation to the desktop… waiting for Agent readback.";
+        try
+        {
+            var state = _client.State;
+            var ack = await _client.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, new ApplyProfile(profile)));
+            var superseded = ack.State.Revision != ack.Decision.Revision || ack.State.Generation != ack.Decision.Generation;
+            var success = ack.Decision.Status == CompletionStatus.Accepted && ack.Completion.Success && ack.State.Effective.Enabled
+                && !superseded && ack.Completion.Revision == ack.Decision.Revision;
+            ApplyStatus = success ? $"Applied {profile.GlobalColor.SaturationPercent:0}% saturation · {ack.Completion.Backend}. {ack.Completion.Explanation}" :
+                superseded ? "Not applied: another command superseded this Apply. Review the current state and press Apply again." :
+                $"Not applied · {ack.Completion.ErrorCode ?? ack.Decision.Status.ToString()}: {ack.Completion.Explanation ?? ack.Decision.Explanation}";
+            if (success && _session is not null)
+                _session.Current = _session.Current with { GlobalColor = profile.GlobalColor, Monitors = profile.Monitors, EffectsEnabled = false };
+        }
+        catch (Exception error) { ApplyStatus = $"Not applied: {error.Message}. Check Agent connection or restart using Run-Chromatic.cmd."; }
+        finally { IsApplying = false; Refresh(); }
     }
     private void Set(ColorSettings value, string property)
     {

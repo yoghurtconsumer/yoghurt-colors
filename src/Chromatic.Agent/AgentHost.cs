@@ -43,11 +43,14 @@ public static class AgentHost
         {
             try
             {
-                var reason = kind == AgentBroadcast.PowerSuspended ? SuspensionReason.PowerSuspend
-                    : kind == AgentBroadcast.SessionSuspended ? SuspensionReason.SessionLock : SuspensionReason.AdvancedColor;
-                // Safety first. Automatic resume/reapply is deliberately deferred to Stage 4's bounded watchdog.
-                await SendSafetyAsync(new Suspend(reason));
+                CompanionLaunch.Log("Agent", $"OS notification: {kind}; effects require explicit Apply after a safety suspension.");
+                if (kind is AgentBroadcast.SessionSuspended or AgentBroadcast.PowerSuspended or AgentBroadcast.DisplayChanged)
+                    await SendSafetyAsync(new Suspend(kind == AgentBroadcast.PowerSuspended ? SuspensionReason.PowerSuspend :
+                        kind == AgentBroadcast.SessionSuspended ? SuspensionReason.SessionLock : SuspensionReason.AdvancedColor));
                 inventory = runtime.Inventory(); coordinator.UpdateCapabilities(Capabilities(inventory, launch.Services));
+                if (kind == AgentBroadcast.SessionUnlocked) await SendSafetyAsync(new Resume(SuspensionReason.SessionLock));
+                if (kind == AgentBroadcast.PowerResumed) await SendSafetyAsync(new Resume(SuspensionReason.PowerSuspend));
+                if (inventory.AllSdr) await SendSafetyAsync(new Resume(SuspensionReason.AdvancedColor));
             }
             catch (Exception error) { coordinator.RecoveryReady = false; CompanionLaunch.Log("Agent", error.Message); lifetime.Cancel(); }
         }
@@ -81,7 +84,8 @@ public static class AgentHost
     {
         var backends = CapabilityReport.Stage1.Backends.Where(b => b.Backend is not BackendKind.Magnification and not BackendKind.SdrGamma and not BackendKind.NvidiaDvc).ToList();
         backends.Add(new(BackendKind.Magnification, inventory.AllSdr ? Capability.Available : Capability.Unsupported,
-            inventory.Reason + " Native API success is reported only after explicit Apply and readback.", EffectScope.GlobalDesktop));
+            inventory.Reason + (inventory.AdvancedColorActive ? " To use saturation, switch off HDR/automatic color management yourself in Windows Display settings, then return and press Apply." : "") +
+            " Native API success is reported only after explicit Apply and readback.", EffectScope.GlobalDesktop));
         foreach (var display in inventory.Displays)
         {
             backends.Add(new(BackendKind.SdrGamma, services.GammaCompatibility && inventory.AllSdr ? Capability.Available : Capability.NeedsUserAction,

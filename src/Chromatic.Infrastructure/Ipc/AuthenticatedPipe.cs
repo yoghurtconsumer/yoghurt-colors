@@ -87,6 +87,8 @@ public static class AuthenticatedPipe
                 if (request.Kind != "command" || request.SessionId != sessionId) throw new UnauthorizedAccessException("Wrong pipe session/route.");
                 if (recoveryControl && request.Envelope.Command is not GetState and not Restore and not Shutdown)
                     throw new UnauthorizedAccessException("Recovery channel permits only state/liveness queries and safety restoration.");
+                if (!recoveryControl && request.Envelope.Command is Resume { Reason: not SuspensionReason.Pause })
+                    throw new UnauthorizedAccessException("Only Agent OS events can release session/power/display safety suspensions.");
                 foreach (var completed in pending.Where(p => p.Value.IsCompleted).ToArray()) pending.TryRemove(completed.Key, out _);
                 if (pending.Count >= 32 || pending.ContainsKey(request.Envelope.CommandId)) throw new ContractException("IPC command concurrency limit or duplicate command ID.");
                 pending[request.Envelope.CommandId] = DispatchAsync(request);

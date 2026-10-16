@@ -62,7 +62,27 @@ public sealed class ReducerTests
         state = Dispatch(state, new Resume(SuspensionReason.SessionLock)).State;
         Assert.False(state.Effective.Enabled);
         state = Dispatch(state, new Resume(SuspensionReason.PowerSuspend)).State;
-        Assert.True(state.Effective.Enabled); Assert.False(state.Held);
+        Assert.False(state.Effective.Enabled); Assert.False(state.Held);
+        Assert.True(Dispatch(state, new ApplyProfile(new())).State.Effective.Enabled);
+    }
+    [Fact] public void ExplicitApplyIsAtomicAndResumesOnlyUserPause()
+    {
+        var state = Dispatch(Enabled(), new Suspend(SuspensionReason.Pause)).State;
+        var result = Dispatch(state, new ApplyProfile(new() { GlobalColor = new(175) }));
+        Assert.Equal(CompletionStatus.Accepted, result.Result.Status); Assert.Equal(state.Revision + 1, result.State.Revision);
+        Assert.True(result.State.Effective.Enabled); Assert.False(result.State.Held);
+        Assert.Equal(175, result.State.BaseProfile.GlobalColor.SaturationPercent);
+    }
+    [Theory] [InlineData(SuspensionReason.SessionLock)] [InlineData(SuspensionReason.PowerSuspend)]
+    [InlineData(SuspensionReason.SessionDisconnected)] [InlineData(SuspensionReason.AdvancedColor)] [InlineData(SuspensionReason.Recovery)]
+    public void ExplicitApplyCannotRemoveSafetySuspensions(SuspensionReason reason)
+    {
+        var state = Dispatch(Enabled(), new Suspend(reason)).State;
+        var result = Dispatch(state, new ApplyProfile(new()));
+        Assert.Equal(CompletionStatus.Blocked, result.Result.Status); Assert.Same(state, result.State); Assert.False(result.State.Effective.Enabled);
+        Assert.Equal(CompletionStatus.Blocked, Dispatch(state, new Enable(true)).Result.Status);
+        var resumed = Dispatch(state, new Resume(reason)).State;
+        Assert.False(resumed.Enabled); Assert.False(resumed.Effective.Enabled);
     }
     [Fact] public void RecoveryAndShutdownBlockActivation()
     {

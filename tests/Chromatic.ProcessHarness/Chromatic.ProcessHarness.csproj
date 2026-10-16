@@ -3,5 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Chromatic.Agent/Chromatic.Agent.csproj" />
     <ProjectReference Include="../../src/Chromatic.Recovery/Chromatic.Recovery.csproj" />
+    <ProjectReference Include="../../src/Chromatic.App/Chromatic.App.csproj" />
   </ItemGroup>
 </Project>

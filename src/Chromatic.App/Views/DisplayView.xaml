@@ -4,6 +4,10 @@
     <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}" />
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="DESKTOP-WIDE COLOR" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+      <TextBlock Text="{Binding ConnectionStatus}" Margin="0,10,0,8" AutomationProperties.Name="Display connection status" />
+      <Button Content="Windows Display settings" Command="{Binding OpenDisplaySettingsCommand}" HorizontalAlignment="Left" ToolTip="Opens Settings; Chromatic does not change HDR or automatic color management." />
+      <Button Content="Apply colors to desktop" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply global desktop colors" />
+      <TextBlock Text="{Binding ApplyStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Desktop apply result" />
       <TextBlock Text="Saturation" FontSize="20" Margin="0,18,0,4" />
       <TextBlock Text="{Binding Saturation, StringFormat={}{0:0}% · draft value}" />
       <Slider Minimum="0" Maximum="300" Value="{Binding Saturation}" TickFrequency="25" Margin="0,16,0,20" AutomationProperties.Name="Saturation draft percentage" />
@@ -20,18 +24,20 @@
       <Slider Minimum="0" Maximum="1" Value="{Binding CvdStrength}" AutomationProperties.Name="CVD approximation strength" />
       <TextBlock Text="Optional SDR output · gamma/shadows/highlights (enable compatibility in Settings, save and restart)" TextWrapping="Wrap" Margin="0,16,0,4" />
       <ComboBox ItemsSource="{Binding Outputs}" SelectedItem="{Binding SelectedOutput}" DisplayMemberPath="GdiName" AutomationProperties.Name="Explicit SDR output" />
+      <TextBlock Text="{Binding GammaStatus}" Style="{StaticResource Muted}" />
+      <StackPanel IsEnabled="{Binding CanUseGamma}">
       <TextBlock Text="{Binding Gamma, StringFormat=Gamma · {0:0.00}}" /><Slider Minimum="0.5" Maximum="2.5" Value="{Binding Gamma}" AutomationProperties.Name="Gamma draft" />
       <TextBlock Text="Shadows" /><Slider Minimum="0" Maximum="0.8" Value="{Binding Shadows}" AutomationProperties.Name="Shadows draft" />
       <TextBlock Text="Highlights" /><Slider Minimum="0" Maximum="0.8" Value="{Binding Highlights}" AutomationProperties.Name="Highlights draft" />
       <TextBlock Text="Selected-output warmth · separate from global matrix warmth" /><Slider Minimum="-1" Maximum="1" Value="{Binding OutputWarmth}" AutomationProperties.Name="Per-output LUT warmth" />
+      </StackPanel>
+      <Button Content="Reset optional tones" Command="{Binding ResetTonesCommand}" HorizontalAlignment="Left" />
       <TextBlock Text="APPROXIMATE SAMPLE PREVIEW · neutral calibration · original above, adjusted below" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource MutedBrush}" />
       <ItemsControl ItemsSource="{Binding Swatches}" Margin="0,10,0,18">
         <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate><DataTemplate><StackPanel Margin="0,0,8,0"><Border Height="34" Background="{Binding Original}" /><Border Height="34" Background="{Binding Adjusted}" Margin="0,3,0,4" /><TextBlock Text="{Binding Label}" FontSize="11" /></StackPanel></DataTemplate></ItemsControl.ItemTemplate>
       </ItemsControl>
       <Button Content="Reset draft" Command="{Binding ResetCommand}" HorizontalAlignment="Left" />
-      <Button Content="Apply colors to desktop" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanApply}" HorizontalAlignment="Left" AutomationProperties.Name="Apply global desktop colors" />
-      <TextBlock Text="{Binding ApplyStatus}" TextWrapping="Wrap" Style="{StaticResource Muted}" />
     </StackPanel></Border>
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="{Binding CapabilityStatus}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />

@@ -14,7 +14,7 @@ start off. Native constructors/default unconfigured backends fail closed.
 | CVD modes | Adjustable red/green/blue-weak approximation in the global matrix | Experimental encoded-SDR approximation; see COLOR-PROVENANCE.md |
 | Local IPC | OS-authenticated current-user/session local pipes, bounded typed frames, nonce and concurrent correlation | Fixed peer processes, no public raw native operations; Recovery channel is read/restore/shutdown only |
 | Recovery | Journal-before-write, pending/confirmed values, conflict checks, pinned Agent death then exclusive lease | No blind restore from older backup or foreign/conflicting values |
-| Display inventory | Read-only CCD mapping and legacy advanced-color safety probe | Full enumeration/mode/HDR changes remain Stage 4 |
+| Display inventory | Read-only CCD mapping; runtime-gated Windows 11 active SDR/WCG/HDR mode, legacy fallback on older Windows; raw diagnostic flags | Unknown/failed/active advanced color blocked; full enumeration/mode/HDR changes remain Stage 4 |
 | Modes / HDR / DDC | NotImplemented | Stage 4 guarded transactions and hardware qualification |
 | Overlay / capture | NotImplemented | Stage 5 |
 | Phone / GSMTC | NotImplemented, no network listener | Stage 6 |
@@ -24,3 +24,8 @@ Magnification is global across the desktop. A monitor selection scopes only its
 independent LUT/DVC intentions. Gamma never substitutes for saturation. Native
 and software vibrance are never silently applied twice. See COMPATIBILITY-MATRIX.md
 for what has actually been tested.
+
+Display Apply uses one typed profile transaction with progress and visible failure
+reasons. A current successful backend acknowledgment is required before reporting
+Applied. It resumes user Pause only; OS safety suspensions cannot be cleared from
+the UI pipe. OS resume leaves effects off until a new explicit Apply.

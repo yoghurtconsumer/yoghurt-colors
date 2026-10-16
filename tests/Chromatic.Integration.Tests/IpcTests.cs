@@ -23,7 +23,7 @@ public sealed class IpcTests
             new ForegroundChanged(null, null), new SetHold(false),
             new PreviewMode(Guid.NewGuid(), new("monitor", null, "DISPLAY1", 1, 1), new(1920, 1080, new(60, 1)), DateTimeOffset.UtcNow),
             new ConfirmMode(Guid.NewGuid()), new CancelPreview(Guid.NewGuid()), new Suspend(SuspensionReason.SessionLock),
-            new Resume(SuspensionReason.SessionLock), new Restore(), new Shutdown(), new GetState()];
+            new Resume(SuspensionReason.SessionLock), new Restore(), new Shutdown(), new GetState(), new ApplyProfile(new())];
         foreach (var command in commands)
         {
             var request = new IpcRequest(1, "command", 1, new(Guid.NewGuid(), 4, 8, command));

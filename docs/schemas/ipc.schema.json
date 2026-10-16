@@ -648,6 +648,12 @@
             },
             {
               "type": "object",
+              "properties": { "type": { "const": "applyProfile" }, "profile": { "$ref": "#/$defs/profile" } },
+              "required": [ "type", "profile" ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
               "properties": {
                 "type": {
                   "const": "foregroundChanged"

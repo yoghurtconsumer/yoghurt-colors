@@ -5,6 +5,17 @@ using Xunit;
 namespace Chromatic.Integration.Tests;
 public sealed class AbiTests
 {
+    [Theory]
+    [InlineData(69u, 0u, false)] // Actual build 26200: legacy flags=5, modern flags=69, SDR.
+    [InlineData(0u, 0u, false)]
+    [InlineData(0xF1u, 0u, false)] // Supported/user-enabled does not mean currently active.
+    [InlineData(2u, 0u, true)] // Inconsistent active flag still blocks conservatively.
+    [InlineData(0u, 1u, true)]
+    [InlineData(0u, 2u, true)]
+    public void ModernColorProbeUsesActiveModeInsteadOfLegacyOrCapabilityFlags(uint flags, uint mode, bool advanced)
+        => Assert.Equal(advanced, DisplaySafetyProbe.IsModernAdvancedColor(flags, mode));
+    [Fact] public void UnknownModernColorModeIsNeverTreatedAsSdr()
+        => Assert.Throws<ArgumentOutOfRangeException>(() => DisplaySafetyProbe.IsModernAdvancedColor(0, 3));
     [Fact] public void NativeSizesOffsetsAndMatrixOrientationMatchTheSdk()
     {
         AbiAssertions.Verify();

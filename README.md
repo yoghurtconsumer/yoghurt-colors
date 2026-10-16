@@ -28,6 +28,19 @@ disable the session's route. HDR/ACM/unknown mappings refuse SDR grading.
 Native DVC remains experimental and can fall back to software after safe restore.
 CVD correction and software vibrance are explicitly approximate.
 
+If Apply reports HDR/advanced color, open **Windows Display settings** from the
+Display page, select your monitor, open **HDR**, and turn **Use HDR** off yourself.
+If advanced color remains active, check **Display → Color profile → Automatically
+manage color for apps** where available. Return to Chromatic and press Apply;
+restart the app if Windows has not delivered a display-change notification.
+Chromatic never changes these Windows settings automatically. Restore/exit before
+returning to HDR content. HDR switching is separate from HDR color processing.
+
+Apply now shows connection/safety reasons and progress beside saturation. It sends
+one profile transaction and reports success only for completed, current readback.
+Optional tones are disabled until the gamma route is available; **Reset optional
+tones** preserves global saturation. Monitor selection survives status refreshes.
+
 On an unfinished journal, the app offers local baseline recovery before starting
 a new writer. Foreign/conflicting values and corrupt journals are preserved for
 review. Session/companion logs are at
@@ -36,6 +49,15 @@ review. Session/companion logs are at
 A safe launcher check is **Run-Chromatic.cmd -SmokeTest**: in-memory defaults,
 no companions/providers, first rendered frame, automatic close. No administrator
 rights or permanent PATH change are needed.
+
+For a metadata-only report after building, run the app executable with
+**--diagnostics**. It writes
+%LOCALAPPDATA%/ChromaticDesktop/logs/read-only-diagnostics.json without starting
+companions, initializing Magnification or applying colors. It includes per-output
+raw color flags and the modern active mode where supported. On 16 October the
+legacy probe falsely blocked a BenQ SDR display (legacy flags 5). The fixed probe
+uses Windows 11's explicit active mode (modern flags 69, SDR), with a runtime gate
+and conservative legacy fallback on older Windows. No Windows setting was changed.
 
 ## Build and automated tests
 
@@ -52,11 +74,12 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 140 passing VSTest tests**
-(52 Core, 81 integration, 7 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 166 passing VSTest tests**
+(58 Core, 94 integration, 14 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
-baselines, stale revisions, real OS-authenticated pipes and five independent
-child-process recovery cases. Those processes use file-backed fake resources.
+baselines, stale revisions, real OS-authenticated pipes and six independent
+child-process cases, including Display Apply through the Agent and exact restore.
+Those processes use file-backed fake resources.
 No automated test mutates a physical display, registry, firewall or startup state.
 
 The manual hardware harness is built but **was not run**. Its explicit flags,
@@ -78,7 +101,8 @@ Core is pure. Agent owns normal display writes on its STA. Recovery verifies Age
 termination and acquires the exclusive writer lease before restoring. Baselines
 and pending writes are atomically journaled before setters; no foreign value is
 silently overwritten. No game VM access, injection, DirectX hooks, game-file edits,
-drivers or anti-cheat guarantees.
+drivers or anti-cheat guarantees. See the reviewed
+[anti-cheat boundary](docs/ANTI-CHEAT-BOUNDARY.md); game policies still apply.
 
 Input/game profiles and library/imports are Stage 3; full display/HDR/DDC
 transactions Stage 4; overlay/capture Stage 5; phone/media Stage 6. Those

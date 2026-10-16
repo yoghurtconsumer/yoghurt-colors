@@ -16,6 +16,7 @@ public sealed class ProcessRecoveryTests
     [InlineData("crash")]
     [InlineData("hang")]
     [InlineData("foreign")]
+    [InlineData("ui-apply")]
     public async Task IndependentRecoveryUsesCapturedBaselineAfterVerifiedChildExit(string mode)
     {
         using var fixture = new Fixture();

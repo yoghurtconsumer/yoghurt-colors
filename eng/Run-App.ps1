@@ -8,18 +8,55 @@ $buildLog = Join-Path $logDirectory "build-$launchId.log"
 $startupReport = Join-Path $logDirectory "startup-$launchId.json"
 $launchLog = Join-Path $logDirectory 'latest-launch.log'
 $previousLaunchId = $env:CHROMATIC_LAUNCH_ID
+# Windows PowerShell 5 can turn the first native stderr line into a terminating
+# NativeCommandError under ErrorActionPreference=Stop. Capture both OS streams
+# directly so SDK-resolution failures cannot lose their diagnostic details.
+function Invoke-ChromaticDotnet([string]$Executable, [string]$Arguments, [string]$LogPath) {
+    $start = New-Object System.Diagnostics.ProcessStartInfo
+    $start.FileName = $Executable
+    $start.Arguments = $Arguments
+    $start.WorkingDirectory = (Get-Location).Path
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $start
+    try {
+        if (-not $process.Start()) { throw 'Could not start the selected .NET host.' }
+        $outputTask = $process.StandardOutput.ReadToEndAsync()
+        $errorTask = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        $output = $outputTask.GetAwaiter().GetResult() + $errorTask.GetAwaiter().GetResult()
+        $output | Set-Content -LiteralPath $LogPath -Encoding UTF8
+        return [PSCustomObject]@{ ExitCode = $process.ExitCode; Output = $output }
+    }
+    finally { $process.Dispose() }
+}
 Push-Location (Join-Path $PSScriptRoot '..')
 try {
     New-Item -ItemType Directory -Force $logDirectory | Out-Null
     "$(Get-Date -Format o) Starting Chromatic Desktop from $((Get-Location).Path)" | Set-Content -LiteralPath $launchLog
     . (Join-Path $PSScriptRoot 'Use-DotNet.ps1')
-    $dotnetExecutable = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $localDotnetExecutable = Join-Path $env:LOCALAPPDATA 'ChromaticDesktop/dotnet/dotnet.exe'
+    if (Test-Path -LiteralPath $localDotnetExecutable) { $dotnetExecutable = $localDotnetExecutable }
+    else { $dotnetExecutable = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
     "dotnet: $dotnetExecutable" | Add-Content -LiteralPath $launchLog
     if (-not $NoBuild) {
+        $expectedSdk = (Get-Content -LiteralPath 'global.json' -Raw | ConvertFrom-Json).sdk.version
+        Write-Host "Checking .NET SDK $expectedSdk..."
+        "Required SDK: $expectedSdk" | Add-Content -LiteralPath $launchLog
+        $sdkCheck = Invoke-ChromaticDotnet $dotnetExecutable '--version' (Join-Path $logDirectory "sdk-$launchId.log")
+        if ($sdkCheck.ExitCode -ne 0 -or $sdkCheck.Output.Trim() -ne $expectedSdk) {
+            Write-Host $sdkCheck.Output
+            $sdkCheck.Output | Add-Content -LiteralPath $launchLog
+            throw "Required .NET SDK $expectedSdk could not be selected using $dotnetExecutable. Run eng/Install-DotNet.ps1; the product target has not been changed."
+        }
         Write-Host 'Building Chromatic Desktop (.NET 10 x64)...'
-        & $dotnetExecutable build 'src/Chromatic.App/Chromatic.App.csproj' --configuration Release -p:Platform=x64 --nologo *> $buildLog
-        if ($LASTEXITCODE -ne 0) {
-            Get-Content -LiteralPath $buildLog -Tail 25 | ForEach-Object { Write-Host $_ }
+        $build = Invoke-ChromaticDotnet $dotnetExecutable 'build "src/Chromatic.App/Chromatic.App.csproj" --configuration Release -p:Platform=x64 --nologo' $buildLog
+        if ($build.ExitCode -ne 0) {
+            Write-Host $build.Output
+            $build.Output | Add-Content -LiteralPath $launchLog
             throw "Build failed. Details: $buildLog"
         }
     }

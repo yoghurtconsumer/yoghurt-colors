@@ -26,7 +26,7 @@ public sealed class HiddenBroadcastWindow : IDisposable
             0x0218 when wParam == 4 => AgentBroadcast.PowerSuspended,
             0x0218 when wParam == 0x12 || wParam == 7 => AgentBroadcast.PowerResumed,
             0x02B1 when wParam == 7 || wParam == 2 || wParam == 4 => AgentBroadcast.SessionSuspended,
-            0x02B1 when wParam == 8 => AgentBroadcast.SessionUnlocked,
+            0x02B1 when wParam == 8 || wParam == 1 || wParam == 3 => AgentBroadcast.SessionUnlocked,
             _ => null
         };
         if (broadcast is not null)

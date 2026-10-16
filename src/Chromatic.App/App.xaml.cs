@@ -19,7 +19,12 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) => _startup.Failed(args.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
             _startup.Failed(args.ExceptionObject as Exception ?? new InvalidOperationException("Unhandled application failure."));
-        try { await StartAsync(e.Args.Contains("--startup-smoke-test", StringComparer.Ordinal)); }
+        try
+        {
+            if (e.Args.Contains("--diagnostics", StringComparer.Ordinal))
+            { Console.WriteLine(ReadOnlyDiagnostics.Save()); Shutdown(0); return; }
+            await StartAsync(e.Args.Contains("--startup-smoke-test", StringComparer.Ordinal));
+        }
         catch (Exception error)
         {
             _startup.Failed(error);
@@ -58,7 +63,7 @@ public partial class App : Application
         void FirstRender(object? sender, EventArgs args)
         {
             window.ContentRendered -= FirstRender;
-            _startup.Ready(window.IsVisible && window.WindowState != WindowState.Minimized);
+            _startup.Ready(window.IsVisible && window.WindowState != WindowState.Minimized, smokeTest);
             if (smokeTest) _ = window.Dispatcher.BeginInvoke(new Action(window.Close));
         }
         MainWindow = window;

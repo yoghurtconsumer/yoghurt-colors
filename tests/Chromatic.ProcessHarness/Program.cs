@@ -10,6 +10,8 @@ using Chromatic.Infrastructure.Ipc;
 using Chromatic.Infrastructure.Persistence;
 using Chromatic.Native;
 using Chromatic.Recovery;
+using Chromatic.App;
+using Chromatic.App.ViewModels;
 
 namespace Chromatic.ProcessHarness;
 
@@ -24,7 +26,7 @@ internal static class Program
             if (args.Length != 2) return 64;
             var mode = args[0]; var directory = Path.GetFullPath(args[1]);
             Directory.CreateDirectory(directory);
-            var runtime = new CompanionRuntime(directory, () => new([], true, false, "Injected test SDR inventory."),
+            var runtime = new CompanionRuntime(directory, () => new([new("fake-monitor", null, @"\\.\DISPLAY1", 1, 1)], true, false, "Injected test SDR inventory."),
                 (_, _, _) => new FileCatalog(directory));
             if (mode == "agent") return await AgentHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime);
             if (mode == "recovery") return await RecoveryHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime);
@@ -44,22 +46,36 @@ internal static class Program
                 var ack = await client.SendAsync(new(Guid.NewGuid(), client.State.Revision, client.State.Generation, command));
                 if (!ack.Completion.Success) throw new IOException($"{ack.Completion.ErrorCode}: {ack.Completion.Explanation}");
             }
-            await Send(new SetColor(new(SaturationPercent: 180)));
-            if (mode is "crash" or "hang") File.WriteAllText(Path.Combine(directory, mode), "1");
-            try { await Send(new Enable(true)); }
-            catch (Exception) when (mode is "crash" or "hang") { }
-            if (mode == "ui-death")
+            if (mode == "ui-apply")
             {
-                File.WriteAllText(Path.Combine(directory, "ready"), "1");
-                await Task.Delay(Timeout.Infinite);
+                var viewModel = new DisplayViewModel(client, new AppSessionSettings(new())) { Saturation = 180 };
+                if (!viewModel.CanApply) throw new IOException("Display did not receive authenticated SDR capability.");
+                await viewModel.ApplyAsync();
+                if (!viewModel.ApplyStatus.StartsWith("Applied 180%", StringComparison.Ordinal)) throw new IOException(viewModel.ApplyStatus);
+                var applied = JsonSerializer.Deserialize<ResourceValue>(File.ReadAllText(Path.Combine(directory, "state.json")), JsonContract.Options)!;
+                if (!applied.Values.SequenceEqual(ColorMatrixBuilder.Build(new(SaturationPercent: 180)).Values))
+                    throw new IOException("UI reported success without the fake display receiving the expected matrix.");
+                await Send(new Shutdown());
             }
-            if (mode == "foreign")
+            else
             {
-                FileResource.Save(Path.Combine(directory, "state.json"), Value(230));
-                // This is our fixture child, never a discovered machine process.
-                agent.Kill();
+                await Send(new SetColor(new(SaturationPercent: 180)));
+                if (mode is "crash" or "hang") File.WriteAllText(Path.Combine(directory, mode), "1");
+                try { await Send(new Enable(true)); }
+                catch (Exception) when (mode is "crash" or "hang") { }
+                if (mode == "ui-death")
+                {
+                    File.WriteAllText(Path.Combine(directory, "ready"), "1");
+                    await Task.Delay(Timeout.Infinite);
+                }
+                if (mode == "foreign")
+                {
+                    FileResource.Save(Path.Combine(directory, "state.json"), Value(230));
+                    // This is our fixture child, never a discovered machine process.
+                    agent.Kill();
+                }
+                if (mode == "graceful") await Send(new Shutdown());
             }
-            if (mode == "graceful") await Send(new Shutdown());
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             await agent.WaitForExitAsync(deadline.Token); await recovery.WaitForExitAsync(deadline.Token);
             File.WriteAllText(Path.Combine(directory, "finished"), $"{agent.ExitCode},{recovery.ExitCode}");

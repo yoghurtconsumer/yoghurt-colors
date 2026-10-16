@@ -31,9 +31,12 @@ public static class EffectsReducer
         {
             next = command switch
             {
+                Enable { Enabled: true } when state.Suspensions.Any(reason => reason != SuspensionReason.Pause) =>
+                    throw new InvalidOperationException("OS safety suspension must end before effects can be enabled."),
                 Enable c => state with { Enabled = c.Enabled, Held = false },
                 SetColor c => SetBaseColor(state, c.Color),
                 ActivatePreset c => Activate(state, c.Profile),
+                ApplyProfile c => ApplyExplicitProfile(state, c.Profile),
                 ForegroundChanged c => ChangeForeground(state, c),
                 SetHold c when !c.Held => state with { Held = false },
                 SetHold when !state.Effective.Enabled || !state.HoldBoost.Enabled =>
@@ -43,6 +46,7 @@ public static class EffectsReducer
                 ConfirmMode c => EndPreview(state, c.TransactionId, PreviewStatus.Confirmed),
                 CancelPreview c => EndPreview(state, c.TransactionId, PreviewStatus.RollingBack),
                 Suspend c => state with { Suspensions = state.Suspensions.Add(c.Reason), Held = false,
+                    Enabled = c.Reason == SuspensionReason.Pause && state.Enabled,
                     Preview = CancelActivePreview(state) },
                 Resume c => state with { Suspensions = state.Suspensions.Remove(c.Reason), Held = false },
                 Restore => state with { Enabled = false, Held = false, ManualProfile = null,
@@ -77,6 +81,13 @@ public static class EffectsReducer
     {
         SettingsValidator.ValidateProfile(profile);
         return state with { ManualProfile = profile };
+    }
+    private static EffectsState ApplyExplicitProfile(EffectsState state, DisplayProfile profile)
+    {
+        if (state.PreviewActive || state.Suspensions.Any(reason => reason != SuspensionReason.Pause))
+            throw new InvalidOperationException("Desktop apply is blocked by session/power/display/recovery suspension. It cannot override OS safety state.");
+        return Activate(state, profile) with { Enabled = true, Held = false,
+            Suspensions = state.Suspensions.Remove(SuspensionReason.Pause) };
     }
     private static EffectsState ChangeForeground(EffectsState state, ForegroundChanged command)
     {

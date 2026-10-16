@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 2
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 140 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 166 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -15,6 +15,18 @@ Run-Chromatic.cmd -SmokeTest verifies first render and closes with in-memory
 defaults, without launching companions or native resource providers. Logs are at
 %LOCALAPPDATA%/ChromaticDesktop/logs/latest-launch.log and startup reports.
 Automated launcher tests cover spaces/foreign working directory and visible errors.
+
+The built app's --diagnostics switch writes read-only-diagnostics.json beside the
+launcher log without companions or resource initialization. On newer Windows it
+records ColorInfo2 active SDR/WCG/HDR separately from legacy flags. The local
+BenQ display reported legacy flags 5 but modern flags 69 and active SDR; this
+regression is fixed and tested. Windows Settings showed HDR unsupported and
+automatic color management off. No setting was changed while inspecting them.
+
+After restarting the updated app on SDR, move saturation to a visibly different
+value, press Apply and inspect its nearby result. A human must verify visible
+color change and captured-baseline restoration. If blocked, the reason must be
+shown beside Apply; connection/optional-tone failures must not appear successful.
 
 Check keyboard navigation, high contrast, screen reader labels, mixed DPI, tray
 Show/Pause/Restore/Exit and actual close-to-tray behavior manually. Those checks

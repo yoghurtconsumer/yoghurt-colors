@@ -2,6 +2,7 @@ using Chromatic.Core.Abstractions;
 using Chromatic.Core.Models;
 using Chromatic.Core.State;
 using Chromatic.Infrastructure.Effects;
+using Chromatic.Infrastructure.Ipc;
 
 namespace Chromatic.Agent;
 
@@ -37,6 +38,13 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
         Reduction reduction;
         lock (_stateLock)
         {
+            if (envelope.Command is ApplyProfile && (!RecoveryReady || !_state.Capabilities.Supports(BackendKind.Magnification)))
+            {
+                var reason = !RecoveryReady ? "Independent recovery is not ready; desktop effects remain off." :
+                    _state.Capabilities.Backends.FirstOrDefault(b => b.Backend == BackendKind.Magnification)?.Reason ?? "Global color backend is unavailable.";
+                return new(new(CompletionStatus.Blocked, _state.Revision, _state.Generation, reason), _state,
+                    new(false, "Agent", "SafetyGate", reason, _state.Revision));
+            }
             reduction = EffectsReducer.Reduce(_state, envelope); _state = reduction.State;
         }
         if (reduction.Result.Status != CompletionStatus.Accepted)
@@ -72,6 +80,7 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
             { RequireRecovery(); return new ApplyResult(false, "Agent", "BackendFailure", error.Message, requested.Revision); }
         }, priority);
         lock (_stateLock) _state = EffectsReducer.Observe(_state, completion, requested.Generation);
+        CompanionLaunch.Log("Agent", $"{envelope.Command.GetType().Name} rev={requested.Revision} gen={requested.Generation} saturation={requested.Effective.GlobalColor.SaturationPercent:0.##} success={completion.Success} code={completion.ErrorCode ?? "none"}: {completion.Explanation}");
         return new(reduction.Result, State, completion);
     }
     public void UpdateCapabilities(CapabilityReport report)

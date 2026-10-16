@@ -1,15 +1,15 @@
 # Chromatic Desktop implementation state
 
-Updated: 15 October 2026. Requested checkpoint: Stage 2.
-Previous GitHub checkpoint: 8cb392b (Stage 1, reliable launcher and pure color groundwork).
+Updated: 16 October 2026. Requested checkpoint: Stage 2, followed by launcher/Apply fixes.
+Previous GitHub checkpoint: 1e26ea8 (Stage 2 guarded color engines and recovery).
 
 ## Current outcome
 
 Stage 2 color-engine and process-safety implementation is present and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
-(14 projects total). Release/x64 builds with zero warnings/errors; 140 VSTest
-tests pass: 52 Core, 81 integration and 7 UI/launcher tests.
+(14 projects total). Release/x64 builds with zero warnings/errors; 166 VSTest
+tests pass: 58 Core, 94 integration and 14 UI/launcher tests.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -88,7 +88,9 @@ Smoke mode uses in-memory defaults, launches no companions and closes after rend
   Native plus extra saturation is conservatively routed to software in this UI;
   the pure planner retains the explicit advanced-combination contract.
 - Read-only, bounded/retried CCD inventory validates device-path/GDI/LUID/target
-  mappings and legacy advanced-color state. Unknown, HDR/ACM, clone/ambiguous
+  mappings and advanced-color state. Windows 11 build 26100+ uses the generated
+  ColorInfo2 packet's active SDR/WCG/HDR mode; older Windows uses legacy flags.
+  Unknown, active HDR/ACM, clone/ambiguous
   mappings fail closed. No mode/HDR setter is generated or used.
 
 ## Stage 2 ownership, IPC and recovery
@@ -152,12 +154,45 @@ restart. The UI is shown before asynchronous companion connection/recovery,
 so a failed companion cannot reproduce a silent launcher flash.
 
 eng/Test.ps1 -Locked restored locked dependencies, built the whole solution and
-ran the 140 tests above. Five isolated child-process scenarios cover graceful
+ran the 166 tests above. Six isolated child-process scenarios cover graceful
 exit, crash after setter/before confirmed journal, a hung setter, UI death and a
-foreign writer. These use the real AgentHost/RecoveryHost with JSON-file resources.
+foreign writer, and DisplayViewModel Apply through authenticated Agent IPC with
+exact expected matrix/readback and baseline restoration. These use the real
+AgentHost/RecoveryHost with JSON-file resources.
 Native API wrappers, ABI, OS pipe authentication, restricted roles, slow gamma,
 journal corruption, schema/range validation, migration and first-render launcher
 behavior have automated coverage.
+
+## Follow-up: silent Apply and launcher diagnostics
+
+The user reported no color change and no message on Apply. A metadata-only probe
+initially reported advanced color from legacy flags=5 on build 26200. Direct
+inspection of Windows Settings showed HDR unsupported on the BenQ XL2540X+ and
+automatic color management already off. A new read-only ColorInfo2 query returned
+flags=69, activeColorMode=SDR, 8 bits/channel. The legacy bit-2 interpretation was
+therefore falsely blocking this machine. The fixed runtime-gated probe uses the
+modern active mode, ignores support/user-enabled/reserved bits as evidence of
+activity, and still blocks WCG/HDR/unknown modes. The updated local diagnostic
+reports Known=true, AdvancedColorActive=false, AllSdr=true. No Windows setting
+was changed; no physical color apply or hardware harness was run.
+
+Apply/result/connection reasons are visible at the top of Display. Clicking an
+unavailable route explains why. One typed ApplyProfile atomically sets the base
+profile, enables effects and releases only user Pause; UI IPC cannot clear OS
+safety suspensions. OS resume clears its corresponding reason but leaves effects
+off until explicit Apply. Progress, pipe failures and superseded acknowledgments
+are explicit; only current successful readback updates saved base intent.
+Optional gamma tones are disabled without the required route, with a reset path
+that preserves saturation. Stable monitor selection survives polling and remaps.
+
+The launcher captures both native output streams under Windows PowerShell 5,
+preflights the exact pinned SDK and preserves the complete SDK/build error. A
+fixture with an unavailable SDK verifies multiline stderr and installation help.
+The real build-and-smoke command also renders and exits without companions or
+hardware writes. --diagnostics records runtime, companion files and per-output
+metadata without initializing Magnification. NativeBoundaryTests checks compiled
+imports and Core separation. See ANTI-CHEAT-BOUNDARY.md; no vendor/game approval
+or zero-false-flag promise is made. Later-stage features remain deferred.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

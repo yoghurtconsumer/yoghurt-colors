@@ -10,6 +10,17 @@
           "Chromatic.Native": "[1.0.0, )"
         }
       },
+      "chromatic.app": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Infrastructure": "[1.0.0, )",
+          "Chromatic.Media": "[1.0.0, )",
+          "Chromatic.Native": "[1.0.0, )",
+          "Chromatic.Overlay": "[1.0.0, )",
+          "Chromatic.Remote": "[1.0.0, )"
+        }
+      },
       "chromatic.core": {
         "type": "Project"
       },
@@ -20,10 +31,23 @@
           "Chromatic.Native": "[1.0.0, )"
         }
       },
+      "chromatic.media": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )"
+        }
+      },
       "chromatic.native": {
         "type": "Project",
         "dependencies": {
           "Chromatic.Core": "[1.0.0, )"
+        }
+      },
+      "chromatic.overlay": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Native": "[1.0.0, )"
         }
       },
       "chromatic.recovery": {
@@ -32,6 +56,13 @@
           "Chromatic.Core": "[1.0.0, )",
           "Chromatic.Infrastructure": "[1.0.0, )",
           "Chromatic.Native": "[1.0.0, )"
+        }
+      },
+      "chromatic.remote": {
+        "type": "Project",
+        "dependencies": {
+          "Chromatic.Core": "[1.0.0, )",
+          "Chromatic.Infrastructure": "[1.0.0, )"
         }
       }
     },
