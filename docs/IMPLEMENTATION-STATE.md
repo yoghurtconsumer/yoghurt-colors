@@ -1,7 +1,7 @@
 # Chromatic Desktop implementation state
 
-Updated: 16 October 2026. Requested checkpoint: Stage 2 fixes and a private friend-test package.
-Previous GitHub checkpoint: c67b087 (safe display-change preservation and fullscreen vibrance UI).
+Updated: 17 October 2026. Requested checkpoint: Stage 2 fixes, private friend-test package and user compatibility feedback.
+Previous GitHub checkpoint: ef086dc (self-contained private test packaging).
 
 ## Current outcome
 
@@ -16,6 +16,16 @@ display, registry, startup, firewall or LAN setting was changed during developme
 or automated tests. The hardware harness was built but NEVER run. All native
 resource tests inject memory/file adapters. The child-process tests execute the
 real host/supervisor logic with test-only adapters.
+
+On 17 October the user reported successful Rainbow Six Siege Fullscreen play on
+16 October using the Saturation slider up to 300%, rather than the separate
+NVIDIA vibrance control. Record this as user-reported visual success on the known
+RTX 3060/BenQ setup. Desktop saturation is therefore not categorically unavailable
+in the game's Fullscreen mode. Exact presentation path, build/settings and backend
+acknowledgment were not captured, so this does not establish exclusive-scanout,
+all-system, capture or anti-cheat qualification. Native DVC remains separately
+unverified on hardware. No code change or additional hardware test was made for
+this documentation update.
 
 Stop here after Stage 2. Stage 3 input/game/library work is not authorized by the
 current next-phase request.

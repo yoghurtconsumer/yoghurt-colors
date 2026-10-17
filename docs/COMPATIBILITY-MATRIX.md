@@ -17,7 +17,8 @@
 | HDR/ACM, hotplug, mixed DPI/negative coordinates | Safety refuses unknown/advanced color and suspends on events; actual transitions untested |
 | Local read-only color detection | BenQ XL2540X+, build 26200: legacy flags=5 falsely implied advanced color; fixed modern flags=69/active SDR correctly permits SDR. No setter executed |
 | Modes/stretch/custom timings/DDC | NotImplemented; Stage 4 |
-| Exclusive fullscreen / capture / anti-cheat | No compatibility claim |
+| Siege Fullscreen saturation | User reports successful play on 16 October with Saturation up to 300%, confirmed on 17 October; exact presentation path/backend acknowledgment not captured |
+| Exclusive fullscreen / capture / anti-cheat | No blanket compatibility claim; the user report does not identify exclusive scanout, capture parity or anti-cheat approval |
 | Display-notification preservation | Actual handler with injected backend: repeated unchanged SDR mappings preserve confirmed matrix/DVC; unsafe or unconfirmed/tonal cases restore; zero reapply writes |
 | Fullscreen NVIDIA candidate | Injected private API plan, native/software result distinction, no double vibrance and exact restoration tested; physical fullscreen behavior unqualified |
 | Phone/browser/Private LAN / GSMTC | NotImplemented; no listener/transport |
@@ -28,9 +29,13 @@ was compiled but NOT run. No driver version is listed as supported.
 Windows Settings inspection on 16 October showed HDR unsupported and automatic
 color management off. No Windows setting was changed. This validates the probe
 correction only, not physical saturation or fullscreen/capture behavior.
-The user reports desktop and Borderless operation, but Fullscreen Siege loses
-color and Alt+Tab did not recover it before this fix. This is user-reported visual
-evidence, not an automated game test. Read-only GPU inventory: RTX 3060, driver
+The user initially reported desktop/Borderless operation but lost color in
+Fullscreen Siege with no Alt+Tab recovery. On 17 October they subsequently reported
+successful Fullscreen play on 16 October using the Saturation slider up to 300%,
+not the separate NVIDIA vibrance control. This corrects a blanket assumption that
+desktop saturation cannot affect the game's Fullscreen mode. Both observations
+are user-reported; exact build/settings and exclusive/flip presentation mode were
+not captured. Read-only GPU inventory: RTX 3060, driver
 32.0.16.1692. No game interaction or physical driver setter was performed here.
 
 Private testing ZIP: App/Agent/Recovery are self-contained .NET 10.0.13 win-x64.

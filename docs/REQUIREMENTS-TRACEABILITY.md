@@ -4,7 +4,11 @@ Status records implemented behavior, not hardware qualification. All 14 .NET 10
 x64 projects build with SDK 10.0.402; 186 VSTest tests pass (58 Core, 113 integration,
 15 UI/launcher). Native color routes now require authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
-resource tests inject fakes. No physical display qualification was run.
+resource tests inject fakes. No agent-run physical display qualification was run.
+User feedback on 17 October confirms Saturation up to 300% worked during Siege
+Fullscreen play on 16 October on their setup; exact presentation path/build/
+backend acknowledgment was not captured. This is user-reported visual evidence,
+not broad GPU, exclusive-scanout, capture or anti-cheat qualification.
 
 Private friend-test packaging is now available on the same target: optimized
 self-contained App/Agent/Recovery with bundled .NET 10.0.13, three startup checks
@@ -14,7 +18,7 @@ Release app held its files. This is not a public release or Stage 7 completion.
 
 | ID | Requirement | Actual Stage 2 status | Evidence / boundary | Remaining stage / qualification |
 | --- | --- | --- | --- | --- |
-| F01 | Whole-screen saturation through 300%; 100% neutral | Guarded native matrix and atomic explicit Apply implemented; false SDR block fixed | Exact 300% math, MAG ABI, owning STA, real baseline/readback/restore; UI-to-Agent fake-process test; modern active-color-mode regression | Physical GPU/OS qualification |
+| F01 | Whole-screen saturation through 300%; 100% neutral | Guarded matrix/atomic Apply implemented; user reports 300% slider working in Siege Fullscreen | Exact math/ABI/STA/baseline tests; fake-process UI Apply; modern SDR regression; user feedback recorded 17 October | Broader GPU/OS and exact presentation-path qualification |
 | F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
 | F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
