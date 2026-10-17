@@ -8,7 +8,7 @@ namespace Chromatic.Agent;
 
 // Accept reductions immediately, independently of a slow writer. Queued operations
 // recheck the resulting generation after disk flush, immediately before mutation.
-public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGate
+public sealed partial class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGate
 {
     private readonly object _stateLock = new();
     private readonly AgentStaWorker _worker;
@@ -22,8 +22,8 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
     private readonly Func<bool> _dependenciesAlive;
     public bool RecoveryReady { get => _recoveryReady && _dependenciesAlive(); set => _recoveryReady = value; }
     public EffectsState State { get { lock (_stateLock) return _state; } }
-    public JournaledEffectsCoordinator(AgentStaWorker worker, EffectsState? initial = null, Func<bool>? dependenciesAlive = null, Func<DisplayInventorySnapshot>? readDisplays = null)
-    { _worker = worker; _state = initial ?? new(); _dependenciesAlive = dependenciesAlive ?? (() => true); _readDisplays = readDisplays; }
+    public JournaledEffectsCoordinator(AgentStaWorker worker, EffectsState? initial = null, Func<bool>? dependenciesAlive = null, Func<DisplayInventorySnapshot>? readDisplays = null, TimeProvider? clock = null)
+    { _worker = worker; _state = initial ?? new(); _dependenciesAlive = dependenciesAlive ?? (() => true); _readDisplays = readDisplays; _clock = clock ?? TimeProvider.System; }
     public void AttachBackend(IColorBackend backend)
     {
         lock (_stateLock)
@@ -49,15 +49,57 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
                 return new(new(CompletionStatus.Blocked, _state.Revision, _state.Generation, reason), _state,
                     new(false, "Agent", "SafetyGate", reason, _state.Revision));
             }
+            if (envelope.Command is PreviewMode mode)
+            {
+                if (_previewOperations != 0)
+                    return new(new(CompletionStatus.Blocked, _state.Revision, _state.Generation, "A previous display transaction is still completing."), _state,
+                        new(false, "DisplayPreview", "TransactionPending", "Wait for the previous display operation to finish.", _state.Revision));
+                if (_modeResource is null || _modeOwned is null || !RecoveryReady)
+                    return PreviewUnavailable();
+                envelope = envelope with { Command = mode with { DeadlineUtc = _clock.GetUtcNow().AddSeconds(15) } };
+            }
+            if (envelope.Command is ConfirmMode && PreviewExpired())
+                return new(new(CompletionStatus.Blocked, _state.Revision, _state.Generation, "Preview expired; Revert is pending."), _state,
+                    new(false, "DisplayPreview", "PreviewExpired", "Deadline passed; Keep was refused.", _state.Revision));
             reduction = EffectsReducer.Reduce(_state, envelope);
-            if (reduction.Result.Status == CompletionStatus.Accepted && (envelope.Command is PreviewMode or ConfirmMode or CancelPreview))
+            if (reduction.Result.Status == CompletionStatus.Accepted && _modeResource is null && (envelope.Command is PreviewMode or ConfirmMode or CancelPreview))
                 return new(new(CompletionStatus.NotImplemented, _state.Revision, _state.Generation,
                     "Mode preview/rollback is not wired; desired state was left unchanged."), _state, ApplyResult.NotImplemented("DisplayTransaction", _state.Revision));
             _state = reduction.State;
+            if (reduction.Result.Status == CompletionStatus.Accepted && envelope.Command is PreviewMode or ConfirmMode)
+            {
+                _previewOperations++;
+                if (envelope.Command is PreviewMode) StartPreviewDeadline(_state.Preview!);
+            }
         }
         if (reduction.Result.Status != CompletionStatus.Accepted)
             return new(reduction.Result, State, new(false, "Coordinator", reduction.Result.Status.ToString(), reduction.Result.Explanation, State.Revision));
         var requested = reduction.State;
+        if (envelope.Command is SetHold { Held: false } && requested.PreviewActive)
+            return new(reduction.Result, State, new(true, "DisplayPreview", null, "Hold already cleared; preview unchanged.", requested.Revision));
+        if (envelope.Command is PreviewMode)
+        {
+            try
+            {
+                var result = await _worker.InvokeAsync(() => BeginPreviewAsync(requested, cancellationToken));
+                return new(reduction.Result, State, result);
+            }
+            finally { lock (_stateLock) _previewOperations--; }
+        }
+        if (envelope.Command is ConfirmMode)
+        {
+            try
+            {
+                var result = await _worker.InvokeAsync(() => KeepPreviewAsync(requested), true);
+                return new(reduction.Result, State, result);
+            }
+            finally { lock (_stateLock) _previewOperations--; }
+        }
+        if (envelope.Command is CancelPreview)
+        {
+            var result = await _worker.InvokeAsync(() => RollbackPreviewAsync(requested.Revision, requested.Preview?.Id), true);
+            return new(reduction.Result, State, result);
+        }
         if (envelope.Command is QueryDisplays query)
         {
             return await _worker.InvokeAsync(() =>
@@ -90,6 +132,11 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
         var priority = envelope.Command is Restore or Shutdown or Suspend or SetHold { Held: false } or Enable { Enabled: false };
         var completion = await _worker.InvokeAsync(async () =>
         {
+            if (!requested.Effective.Enabled && _modeOwned is not null && (!_modeOwned.Snapshot.Resources.IsEmpty || requested.Preview?.Status is PreviewStatus.Prepared or PreviewStatus.Applying or PreviewStatus.AwaitingConfirmation or PreviewStatus.RollingBack))
+            {
+                var rolled = await RollbackPreviewAsync(requested.Revision, requested.Preview?.Id);
+                if (!rolled.Success) return rolled;
+            }
             if (_backend is null) return new ApplyResult(false, "Agent", "SafetyGate", "No owned backend is configured.", requested.Revision);
             if (envelope.Command is PreviewMode or ConfirmMode or CancelPreview)
                 return ApplyResult.NotImplemented("DisplayTransaction", requested.Revision);

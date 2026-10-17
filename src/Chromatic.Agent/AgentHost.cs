@@ -29,6 +29,10 @@ public static class AgentHost
         var old = await journal.LoadAsync(CancellationToken.None);
         if (old is not null && old.Status != JournalStatus.Restored)
             throw new InvalidOperationException("Unfinished recovery journal requires local review before effects can be enabled.");
+        var modeJournal = new RecoveryJournalStore(Path.Combine(directory, "display-preview.json"));
+        var oldMode = await modeJournal.LoadAsync(CancellationToken.None);
+        if (oldMode is not null && oldMode.Status != JournalStatus.Restored)
+            throw new InvalidOperationException("Unfinished display preview requires local recovery before starting a new writer.");
         using var worker = new AgentStaWorker();
         var inventory = runtime.Inventory();
         var coordinator = new JournaledEffectsCoordinator(worker, new EffectsState { Capabilities = Capabilities(inventory, launch.Services) },
@@ -38,6 +42,10 @@ public static class AgentHost
         { UserSid = own.UserSid, SessionId = own.SessionId, AgentPid = own.ProcessId, AgentStartTicks = own.StartTicks }, coordinator, () => lease.IsHeld);
         var catalog = runtime.CreateResources(inventory, launch.Services.GammaCompatibility, launch.Services.NvidiaExperimental);
         coordinator.AttachBackend(new PlannedColorBackend(owned, catalog.Resources, catalog.Matrix, () => coordinator.State, launch.Services));
+        using var modeOwned = new OwnedResourceController(modeJournal, new()
+        { UserSid = own.UserSid, SessionId = own.SessionId, AgentPid = own.ProcessId, AgentStartTicks = own.StartTicks }, coordinator.ModeSafetyGate, () => lease.IsHeld);
+        if (launch.Services.DisplayPreviewExperimental && runtime.CreateDisplayMode is { } createMode)
+            coordinator.AttachDisplayPreview(createMode(), modeOwned);
         using var lifetime = new CancellationTokenSource();
         await using var automation = new AutomationRuntime(coordinator, launch.Ui.ProcessId, coordinator.UpdateAutomationStatus, injectedInput);
         var automationTask = automation.RunAsync(lifetime.Token);
@@ -97,6 +105,9 @@ public static class AgentHost
             backends.Add(new(BackendKind.NvidiaDvc, services.NvidiaExperimental && inventory.AllSdr ? Capability.Experimental : Capability.NeedsUserAction,
                 "Private driver ABI; explicit single output and opt-in required. Unsupported outputs fall back to software.", EffectScope.PerMonitor, display));
         }
+        backends.RemoveAll(b => b.Backend == BackendKind.DisplayMode);
+        backends.Add(new(BackendKind.DisplayMode, services.DisplayPreviewExperimental && inventory.AllSdr ? Capability.Experimental : Capability.NeedsUserAction,
+            "Explicit experimental SDR source-size/scaling preview at current physical refresh; independent Recovery and 15-second Keep/Revert. No saved custom mode or HDR toggle.", EffectScope.GlobalDesktop));
         return new(backends.ToImmutableArray(), inventory.AdvancedColorActive || !inventory.Known);
     }
 }

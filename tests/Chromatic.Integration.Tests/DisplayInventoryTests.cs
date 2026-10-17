@@ -35,7 +35,7 @@ public sealed class DisplayInventoryTests
         var api = new Api(); var snapshot = new DisplayInventoryReader(api).Read();
         Assert.Equal(-1920, snapshot.Outputs[0].X); Assert.Equal(-100, snapshot.Outputs[0].Y);
         Assert.Equal(2u, snapshot.Outputs[0].SourceId); Assert.Equal(9u, snapshot.Outputs[0].Display.TargetId);
-        var modes = snapshot.Page(snapshot.Outputs[0].Display, 0).Modes; Assert.Equal(3, modes.Length);
+        var modes = snapshot.Page(snapshot.Outputs[0].Display, 0).Modes; Assert.Equal(4, modes.Length);
         Assert.Equal(new Rational(60000, 1001), modes[0].Mode.RefreshRate); Assert.Equal(new Rational(60, 1), modes[1].Mode.RefreshRate);
         Assert.Contains(modes, m => m.Mode.Width == 1280 && m.Mode.Height == 960);
         var plan = DisplayModePlanner.Draft(snapshot, snapshot.Id, snapshot.Outputs[0].Display, "driver-1", ScalingIntent.Stretched);

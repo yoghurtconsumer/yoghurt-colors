@@ -12,6 +12,7 @@ public sealed class AgentDisplayEvents(JournaledEffectsCoordinator coordinator, 
     public async Task HandleAsync(AgentBroadcast kind)
     {
         if (kind is AgentBroadcast.DisplayChanged or AgentBroadcast.PowerResumed) coordinator.InvalidateDisplayInventory();
+        if (kind == AgentBroadcast.DisplayChanged && await coordinator.CheckPreviewDisplayChangeAsync()) return;
         if (kind == AgentBroadcast.DisplayChanged)
         {
             var refreshed = readInventory();

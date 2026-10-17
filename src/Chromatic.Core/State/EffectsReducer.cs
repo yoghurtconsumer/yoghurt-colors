@@ -12,7 +12,7 @@ public static class EffectsReducer
         var command = envelope.Command;
         if (command is null) return new(state, new(CompletionStatus.Invalid, state.Revision, state.Generation, "Command is required."));
         // Safety commands fence even previously queued work. Held=true can never bypass revisions.
-        var priority = command is Restore or Shutdown or Suspend or SetHold { Held: false } or Enable { Enabled: false };
+        var priority = command is CancelPreview or Restore or Shutdown or Suspend or SetHold { Held: false } or Enable { Enabled: false };
         Reduction Reject(CompletionStatus status, string reason) => new(state,
             new(status, state.Revision, state.Generation, reason));
         if (envelope.BaseRevision < 0 || envelope.Generation < 0 || envelope.CommandId == Guid.Empty)
@@ -36,6 +36,10 @@ public static class EffectsReducer
             return Reject(CompletionStatus.Blocked, "Recovery must complete before accepting effects.");
         if (command is Suspend suspend && !Enum.IsDefined(suspend.Reason) || command is Resume resume && !Enum.IsDefined(resume.Reason))
             return Reject(CompletionStatus.Invalid, "Unknown suspension reason.");
+        if (state.PreviewActive && command is SetHold { Held: false })
+            return new(state, new(CompletionStatus.Accepted, state.Revision, state.Generation, "Hold already cleared by preview."));
+        if (state.PreviewActive && !priority && command is not ConfirmMode)
+            return Reject(CompletionStatus.Blocked, "Mode preview freezes colour/profile/hold changes until Keep or Revert.");
         EffectsState next;
         try
         {
@@ -124,10 +128,10 @@ public static class EffectsReducer
     {
         SettingsValidator.ValidateIntent(command.Intent);
         SettingsValidator.ValidateDisplay(command.Display);
-        if (state.PreviewActive || !state.Suspensions.IsEmpty || command.TransactionId == Guid.Empty)
+        if (state.PreviewActive || state.Suspensions.Any(r => r != SuspensionReason.Pause) || command.TransactionId == Guid.Empty)
             throw new InvalidOperationException("Preview is blocked by another preview or suspension.");
         // Clock/deadline validation belongs to the coordinator, not this deterministic reducer.
-        return state with { Held = false, Preview = new(command.TransactionId, PreviewStatus.Prepared,
+        return state with { Enabled = false, Held = false, Suspensions = state.Suspensions.Remove(SuspensionReason.Pause), Preview = new(command.TransactionId, PreviewStatus.Prepared,
             command.Display, command.Intent, command.DeadlineUtc, checked(state.Generation + 1)) };
     }
     private static EffectsState EndPreview(EffectsState state, Guid id, PreviewStatus target)

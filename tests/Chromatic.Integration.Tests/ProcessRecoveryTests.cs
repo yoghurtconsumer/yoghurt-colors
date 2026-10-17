@@ -32,6 +32,29 @@ public sealed class ProcessRecoveryTests
         if (mode != "foreign") Assert.True(OwnedResourceController.Equivalent(snapshot.Resources[0].Baseline, ReadValue(fixture.StateDirectory)),
             "Recovery must preserve every captured baseline value exactly, including rounding.");
     }
+    [Theory] [InlineData("mode-graceful")] [InlineData("mode-crash")] [InlineData("mode-hang")] [InlineData("mode-timeout")]
+    public async Task IndependentProcessesRestorePreviewTopologyUsingOnlyFileAdapters(string mode)
+    {
+        using var fixture = new Fixture(); using var child = fixture.Start(mode);
+        var error = child.StandardError.ReadToEndAsync(); using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(35));
+        await child.WaitForExitAsync(timeout.Token); Assert.True(child.ExitCode == 0, await error);
+        var value = JsonSerializer.Deserialize<ResourceValue>(File.ReadAllText(Path.Combine(fixture.StateDirectory, "mode.json")), JsonContract.Options)!;
+        Assert.Equal("original complete fake topology", System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(value.TopologyBase64!)));
+        var journal = await new RecoveryJournalStore(Path.Combine(fixture.StateDirectory, "display-preview.json")).LoadAsync(timeout.Token);
+        Assert.Equal(JournalStatus.Restored, journal!.Status);
+    }
+    [Fact] public async Task UnexpectedUiDeathDuringPreviewRestoresTopologyBeforeRecoveryExits()
+    {
+        using var fixture = new Fixture(); using var ui = fixture.Start("mode-ui-death"); using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        while (!File.Exists(Path.Combine(fixture.StateDirectory, "ready"))) { Assert.False(ui.HasExited); await Task.Delay(30, timeout.Token); }
+        var children = JsonSerializer.Deserialize<NativePeerIdentity[]>(await File.ReadAllTextAsync(Path.Combine(fixture.StateDirectory, "children.json"), timeout.Token))!;
+        using var agent = new VerifiedProcess(children[0], Path.Combine(fixture.Root, "companions", "Agent", "Chromatic.Agent.exe"));
+        using var recovery = new VerifiedProcess(children[1], Path.Combine(fixture.Root, "companions", "Recovery", "Chromatic.Recovery.exe"));
+        ui.Kill(); await ui.WaitForExitAsync(timeout.Token); await agent.WaitForExitAsync(timeout.Token); await recovery.WaitForExitAsync(timeout.Token);
+        var value = JsonSerializer.Deserialize<ResourceValue>(File.ReadAllText(Path.Combine(fixture.StateDirectory, "mode.json")), JsonContract.Options)!;
+        Assert.Equal("original complete fake topology", System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(value.TopologyBase64!)));
+        Assert.Equal(JournalStatus.Restored, (await new RecoveryJournalStore(Path.Combine(fixture.StateDirectory, "display-preview.json")).LoadAsync(timeout.Token))!.Status);
+    }
     [Fact] public async Task UnexpectedUiDeathMakesAgentRestoreBeforeExiting()
     {
         using var fixture = new Fixture();

@@ -1,6 +1,6 @@
 # Game and anti-cheat boundary
 
-Reviewed 17 October 2026 against Stage 3 input/profile/link and Stage 4 read-only inventory. No game or anti-cheat
+Reviewed 17 October 2026 against Stage 3 input/profile/link and Stage 4 experimental SDR display preview. No game or anti-cheat
 was launched for this review. This is an architecture review, not certification
 or a promise that a game will permit Chromatic.
 
@@ -11,10 +11,13 @@ separate opt-in Windows display API; private NVIDIA DVC is experimental and off
 by default. These are display operations. The application does not access game
 memory, inject a DLL, attach a debugger, intercept DirectX, edit game files or
 install a driver. Crosshair overlay and phone listeners remain unavailable.
-Resolution inventory adds only EnumDisplaySettingsExW to the reviewed native
-entry-point allowlist. It queries desktop modes and CCD identity metadata in
-Agent on an explicit Refresh/Load request; no mode/HDR/DDC setter or game access
-was added. The Vivid clarity preset uses existing global affine display controls.
+Resolution inventory uses EnumDisplaySettingsExW and CCD queries. Experimental
+SDR source-size/scaling previews add SDK-generated User32 SetDisplayConfig to
+the reviewed entry-point allowlist. Agent validates then applies only an explicit
+local preview; verified-death Recovery uses the same API for owned baselines.
+This changes Windows desktop display configuration, with no game-process access,
+input synthesis, hook expansion or saved display-database write. The opt-in is off
+by default. HDR/DDC setters and automatic game-mode switching remain unavailable. The Vivid clarity preset uses existing global affine display controls.
 Local game bookmarks are data. Automatic foreground matching is a separate,
 explicit opt-in: Agent uses EVENT_SYSTEM_FOREGROUND with OUTOFCONTEXT, querying
 only path/PID/creation metadata via PROCESS_QUERY_LIMITED_INFORMATION. Denied

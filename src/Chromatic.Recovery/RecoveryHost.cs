@@ -38,6 +38,9 @@ public static class RecoveryHost
                     new(id, 0, 0, new GetState()))), heartbeat.Token);
                 var response = Protocol.Decode<IpcResponse>(await Protocol.ReadFrameAsync(server, heartbeat.Token));
                 if (response.CommandId != id) throw new IOException("Recovery heartbeat correlation failed.");
+                var pendingMode = await new RecoveryJournalStore(Path.Combine(runtime.SessionDirectory, "display-preview.json")).LoadAsync(heartbeat.Token);
+                if (pendingMode is { Status: not JournalStatus.Restored, Preview: { } preview } && preview.DeadlineUtc <= DateTimeOffset.UtcNow)
+                    throw new IOException("Unfinished display preview exceeded its durable deadline; requesting shutdown before recovery takeover.");
                 await Task.Delay(1000);
             }
         }
@@ -85,6 +88,18 @@ public static class RecoveryHost
                     if (!exited()) throw new InvalidOperationException("Agent termination has not been verified.");
                     // The exclusive lease is acquired only AFTER the pinned process is signaled.
                     using var lease = new OwnedSessionLease(Path.Combine(runtime.SessionDirectory, "writer.lock"));
+                    var modeJournal = new RecoveryJournalStore(Path.Combine(runtime.SessionDirectory, "display-preview.json"));
+                    var modeSnapshot = await modeJournal.LoadAsync(CancellationToken.None);
+                    var current = PipeInterop.Current;
+                    if (modeSnapshot is not null && modeSnapshot.Status != JournalStatus.Restored)
+                    {
+                        if (modeSnapshot.AgentPid != expected.ProcessId || modeSnapshot.AgentStartTicks != expected.StartTicks || runtime.CreateDisplayMode is null)
+                            throw new UnauthorizedAccessException("Mode journal does not match the verified Agent or no mode recovery adapter exists.");
+                        var modeResult = await new RestoreExecutor(modeJournal, [runtime.CreateDisplayMode()], _ => exited(), () => lease.IsHeld,
+                            current.UserSid, current.SessionId).RestoreAsync(modeSnapshot, CancellationToken.None);
+                        CompanionLaunch.Log("Recovery", $"Display preview restore: {modeResult.Success} {modeResult.Explanation}");
+                        if (!modeResult.Success) { result.SetResult(3); return; }
+                    }
                     var snapshot = await journal.LoadAsync(CancellationToken.None);
                     if (snapshot is null || snapshot.Status == JournalStatus.Restored) { result.SetResult(0); return; }
                     if (snapshot.AgentPid != expected.ProcessId || snapshot.AgentStartTicks != expected.StartTicks)
@@ -92,7 +107,6 @@ public static class RecoveryHost
                     using var catalog = runtime.CreateResources(runtime.Inventory(),
                         snapshot.Resources.Any(r => r.Kind == OwnedResourceKind.GammaRamp),
                         snapshot.Resources.Any(r => r.Kind == OwnedResourceKind.NativeVibrance));
-                    var current = PipeInterop.Current;
                     var restored = await new RestoreExecutor(journal, catalog.Resources, _ => exited(), () => lease.IsHeld,
                         current.UserSid, current.SessionId).RestoreAsync(snapshot, CancellationToken.None);
                     CompanionLaunch.Log("Recovery", $"Baseline restoration: {restored.Success} {restored.ErrorCode} {restored.Explanation}");

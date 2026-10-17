@@ -31,7 +31,10 @@ public sealed class RestoreExecutor
             return new(false, "Recovery", "Conflict", "Conflicting journal requires local review; no blind retries.", 0);
         using var controller = new OwnedResourceController(_journal, snapshot with { Resources = [] }, new RestoreOnlyGate(), _leaseHeld);
         controller.AdoptAfterAgentExit(snapshot, verifiedAgentExited: _agentExited(snapshot));
-        return await controller.RestoreAsync(_resources, 0, cancellationToken);
+        var result = await controller.RestoreAsync(_resources, 0, cancellationToken);
+        if (result.Success && controller.Snapshot.Preview is { } preview)
+            await _journal.SaveAsync(controller.Snapshot with { Preview = preview with { Status = PreviewStatus.Reverted } }, cancellationToken);
+        return result;
     }
     private sealed class RestoreOnlyGate : IWriteSafetyGate
     {

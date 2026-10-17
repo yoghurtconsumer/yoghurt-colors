@@ -6,6 +6,8 @@ public sealed record ResourceDescriptor(OwnedResourceKind Kind, EffectScope Scop
 public interface IResourceAdapter
 {
     ResourceDescriptor Descriptor { get; }
+    bool Equivalent(ResourceValue first, ResourceValue second) => first.Values.SequenceEqual(second.Values)
+        && first.TopologyBase64 == second.TopologyBase64 && first.TopologyFormat == second.TopologyFormat;
     ResourceValue Canonicalize(ResourceValue value);
     bool CanOwn(ResourceValue baseline);
     Task<ResourceValue> ReadAsync(CancellationToken cancellationToken);
@@ -29,4 +31,9 @@ public interface IWriteSafetyGate
 {
     bool RecoveryReady { get; }
     bool CanWrite(WriteFence fence);
+}
+
+public interface IDisplayModeResource : IResourceAdapter
+{
+    ResourceValue Plan(ResourceValue capturedBaseline, DisplayIdentity display, DisplayIntent intent);
 }

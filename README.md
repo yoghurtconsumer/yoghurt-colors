@@ -152,10 +152,15 @@ before applying another look. [Scope and limits](docs/RUST-COLOUR-DARKENING.md).
 modest global lift for shaded areas. [Import it in your current build](docs/RUST-VIVID-CLARITY.md);
 it does not remove game shadows or change existing presets.
 
-Stage 4 step 1 adds **Resolution → Refresh monitors / Load supported modes / Review
-mode plan**. These actions are read-only. Exact current refresh stays distinct
-from integer driver enumeration; Apply/HDR/DDC transactions remain unavailable.
-[Checkpoint and remaining work](docs/STAGE4-REVIEW.md).
+Stage 4 adds **Resolution → Refresh monitors / Load supported modes / Review
+mode plan** (read-only), plus an explicit **experimental SDR source-size/scaling
+preview**. Enable it in Settings, Save and restart, then Preview a supported
+source-size option at the current target timing. A global Keep/Revert banner and
+Escape accompany an Agent-owned 15-second deadline and independent Recovery.
+Colours remain off until you Apply them again. Physical refresh changes, HDR,
+custom timing and DDC are still unavailable. Native GPU/driver qualification and
+the Windows SDK compile-only ABI check remain open; this opt-in is off by default.
+[Review instructions and limits](docs/STAGE4-REVIEW.md).
 
 ## Build and automated tests
 
@@ -193,11 +198,12 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 324 passing VSTest tests**
-(107 Core, 181 integration, 36 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 357 passing VSTest tests**
+(107 Core, 213 integration, 37 UI/launcher). Current TRX results are under each automated test project’s TestResults folder.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
-baselines, stale revisions, real OS-authenticated pipes and six independent
-child-process cases, including Display Apply through the Agent and exact restore.
+baselines, stale revisions, real OS-authenticated pipes and independent
+child-process cases, including Display Apply, mode timeout, UI death, Agent crash
+and hung setter recovery.
 Those processes use file-backed fake resources.
 No automated test mutates a physical display, registry, firewall or startup state.
 
@@ -224,8 +230,8 @@ drivers or anti-cheat guarantees. See the reviewed
 [anti-cheat boundary](docs/ANTI-CHEAT-BOUNDARY.md); game policies still apply.
 
 Input/game profiles and library/imports are implemented in Stage 3; full display/HDR/DDC
-transactions Stage 4; overlay/capture Stage 5; phone/media Stage 6. Those
-providers remain honest NotImplemented. No phone/LAN listener, registry startup,
+transactions are partially implemented in Stage 4; overlay/capture Stage 5; phone/media Stage 6.
+Deferred providers remain honest NotImplemented. No phone/LAN listener, registry startup,
 cloud, Discord or updater service is enabled. Packaging/signing/licensing are
 Stage 7. See [capabilities](docs/CAPABILITIES.md),
 [compatibility evidence](docs/COMPATIBILITY-MATRIX.md),

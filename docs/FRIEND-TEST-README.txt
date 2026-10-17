@@ -46,8 +46,20 @@ or fully black detail. Existing presets are preserved.
 
 RESOLUTION CHECKPOINT
 Refresh monitors, Load supported modes and Review mode plan are read-only.
-Mode/HDR/scaling Apply, custom timing creation and monitor hardware writes remain
-unavailable until the independent rollback transaction is implemented.
+Optional experimental SDR source-size/scaling preview:
+Settings -> Experimental SDR display mode preview -> Save -> exit and restart.
+Resolution -> Refresh monitors -> select monitor -> Load supported modes.
+Choose a source-size option at current target timing, scaling, then Preview.
+Keep within 15 seconds, or Revert / Escape. The banner stays visible on every page.
+Agent owns the deadline; independent Recovery handles UI/Agent failure.
+Colours stay OFF until you explicitly Apply again. Keep does not save Windows'
+display database or enable automatic game-mode switches. Fullscreen games can
+select their own resolution; this changes the Windows desktop only.
+Physical refresh switching, HDR toggles, custom timings and DDC remain unavailable.
+The backend is unqualified on physical GPUs and off by default. On hotplug,
+foreign changes or unavailable topology, recovery can require local review; no
+blind overwrite or guaranteed rollback is claimed. Prefer testing with games
+closed. No display change was made during development or automated tests.
 
 PLEASE REPORT
 Windows version, GPU, whether desktop/borderless/fullscreen works, the exact Apply

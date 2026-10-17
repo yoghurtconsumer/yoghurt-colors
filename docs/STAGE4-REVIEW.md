@@ -1,43 +1,69 @@
-# Stage 4, step 1 review — read-only inventory
+# Stage 4, step 2 review — experimental SDR display preview
 
-The user authorized continued step-by-step work while testing a separate portable
-copy. This checkpoint does not change that copy or run any physical display test.
-Stage 4 as a whole remains incomplete. No mode/HDR/scaling/DDC setter is enabled.
+This is a partial development checkpoint on .NET 10 / Windows x64. Stage 4 is
+not complete. Existing colour presets and your running portable copy are retained.
+No hardware harness or physical display test was run. The new backend is off by
+default and remains unqualified on actual GPUs/drivers.
 
-## Review this build
+## Review without changing displays
 
-Exit the older Chromatic before switching builds. On Resolution, click Refresh
-monitors (read only), select a target and Load supported modes (read only).
-Check the name, source/target IDs, negative positions if applicable, current exact
-refresh and SDR/WCG/HDR description. Driver-enumerated integral refresh remains
-separate from CCD current fractional refresh. Modes with incomplete required
-fields, interlacing, private data or less than 32 bpp are omitted; a driver may
-therefore show only the current observed mode.
+Resolution → Refresh monitors, select a target, Load supported modes and Review
+mode plan are read-only. Check monitor name/mapping, current rational refresh,
+SDR/WCG/HDR description, positions and other outputs. Driver integer refresh is
+separate from captured CCD physical timing. Incomplete/interlaced/private-extra
+records are omitted. Shared-source clones are refused for planning/preview.
 
-Select an enumerated choice/scaling and Review mode plan. It must clearly say
-Draft only / no display change and preserve the other active target metadata.
-No arbitrary dimensions, custom timing, FOV control, Keep/Revert countdown or
-working Apply is claimed. Cloned shared sources refuse draft planning. A topology
-change/resume invalidates the Agent snapshot; Refresh again before loading pages.
-Actual inventory on physical hardware remains a user-run check, not development
-qualification. Automated tests use injected APIs and isolated authenticated pipes.
+## Explicit experimental preview
 
-## Next implementation gates
+1. Exit the old build before opening the new portable build; preserve its whole
+   extracted folder. Prefer this optional display test with games closed.
+2. Settings → Experimental SDR display mode preview → Save, then exit/restart.
+   Independent Recovery must be ready and every active output verified SDR.
+3. Resolution → Refresh monitors → select target → Load supported modes. Choose
+   a **source-size option at current target timing**. A regular driver entry at a
+   different refresh will be refused, even when its dimensions look identical.
+   Choose Unchanged, Centered, Stretched or AspectRatio scaling; review the draft.
+4. Click Preview selected source mode for 15 seconds. Agent restores owned SDR
+   colours first, journals complete topology, validates/applies and reads it back.
+5. Keep within the remaining Agent-owned deadline, or Revert / press Escape while
+   Chromatic is focused. The banner remains above every page. Closing/tray hiding,
+   UI death, timeout and OS safety suspension request baseline restoration.
+6. Colours remain off after Keep or Revert. Apply them explicitly again if desired.
+   Keep records confirmed intent and releases temporary topology ownership. It
+   does not save Windows' database, create a custom timing or bind a game rule.
 
-- Capture/validate the complete native CCD path/mode arrays and per-target HDR
-  baseline in the recovery journal, not just output metadata from this checkpoint.
-- Independently compare managed ABI with a Windows-SDK native sizeof/offsetof
-  harness. Implement canonical CCD validate/apply and safe single-display legacy
-  CDS_TEST / temporary CDS_FULLSCREEN, without saved database changes.
-- Recovery must already be ready; Agent must own the 15-second deadline. Wire
-  Keep/Revert/Escape and timeout/UI-death/hotplug/failure compensation before any
-  UI mode application. Re-query and fence every step. No auto mode changes yet.
-- Qualify HDR prerequisites / type 16 vs legacy 10, policy refusal and mixed SDR
-  effects; then DDC capability/ranges/handle lifetime and separate persistent Undo.
-- Add bounded watchdog retries/cooldown and foreign-writer conflict handling.
-  Public NvAPI custom timing stays Unsupported without qualification; no EDID hack.
+This changes the desktop source size/scaling, preserving all captured physical
+target timing. A fullscreen game can choose its own mode; no game setting/FOV is
+changed. Scaling can be unsupported or constrained by the driver/monitor. Actual
+4:3 stretch needs human inspection with a geometric test pattern.
 
-Native read-only references used for this checkpoint:
-[EnumDisplaySettingsExW](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumdisplaysettingsexw),
-[QueryDisplayConfig](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-querydisplayconfig),
-[DEVMODEW](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-devmodew).
+## Recovery and qualification limits
+
+The separate display-preview.json journal is protected by the same exclusive
+writer lease as colours. Native packets are internal bounded CCD data, never
+preset imports or raw public IPC. After a verified Agent exit, Recovery takes
+the lease and restores topology before colour resources. Crash immediately after
+write, hung setter, UI death and timeout use fake file adapters in process tests.
+
+Foreign/unreadable/HDR/hotplug mappings preserve the journal and require local
+review rather than overwriting an unknown configuration. Degraded rollback to
+Windows' saved connected-display configuration is still pending. Exact rollback
+cannot be guaranteed after a disconnect. No invalid-topology retry loop exists.
+
+The compile-only eng/Test-DisplayAbi.ps1 checks eng/native/DisplayAbi.cpp against
+real Windows SDK headers in an **x64 Developer PowerShell with MSVC C++ Build
+Tools and Windows SDK installed**. Neither compiler nor headers are available in
+this build environment, so it was not qualified here. Managed ABI assertions and
+synthetic packet/readback/fence tests pass. No native setter is run by those tests.
+
+## Remaining Stage 4 work
+
+- Independent SDK ABI compilation and explicit GPU/driver/Windows qualification.
+- Physical refresh timing selection and legacy CDS_TEST / temporary CDS_FULLSCREEN.
+- Degraded hotplug fallback; confirmed combinations for explicit profile application.
+- Qualified HDR prerequisite/set/readback/rollback and mixed SDR/HDR policy.
+- DDC ranges/handle lifetime/bounded workers and separate persistent Undo.
+- Bounded watchdog retries/cooldown and foreign-writer conflict handling.
+- Public NvAPI custom timing remains Unsupported without qualification; no EDID hacks.
+
+Stage 5 overlay/capture has not started.

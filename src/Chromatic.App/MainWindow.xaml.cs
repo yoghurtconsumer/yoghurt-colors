@@ -18,12 +18,21 @@ public partial class MainWindow : Window
         _statusTimer.Tick += (_, _) => _viewModel.Refresh();
         Loaded += (_, _) => _statusTimer.Start(); Closed += (_, _) => _statusTimer.Stop();
     }
+    private async void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Escape || !_viewModel.Resolution.IsPreviewActive) return;
+        e.Handled = true;
+        try { await _viewModel.Resolution.RevertAsync(); }
+        catch (Exception error) { _viewModel.StartupWarning = error.Message; }
+    }
     private async void Window_Closing(object? sender, CancelEventArgs e)
     {
         if (_shutdownComplete) return;
         e.Cancel = true;
         if (!_exiting && _settings.Current.CloseBehavior == CloseBehavior.MinimizeToTray)
         {
+            try { await _viewModel.Resolution.RevertAsync(); }
+            catch (Exception error) { _viewModel.StartupWarning = error.Message; return; }
             _tray.Show(this, _viewModel, () => { _exiting = true; Close(); }); Hide(); return;
         }
         if (_shutdownInProgress) return;

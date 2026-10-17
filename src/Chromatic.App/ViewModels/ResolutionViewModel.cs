@@ -10,11 +10,11 @@ public sealed class ResolutionViewModel : PageViewModel
     private readonly IEffectsClient? _client;
     private Guid _inventoryId;
     private string _status = "Refresh to read active monitors and supported modes. No display changes are made.";
-    private string _plan = "Mode/HDR/scaling Apply remains unavailable until the journaled rollback transaction is complete.";
+    private string _plan = "Review an enumerated source size before starting an experimental 15-second preview. Physical refresh changes and HDR toggles remain unavailable.";
     private DisplayOutputInfo? _selected;
     private DisplayModeChoice? _selectedMode;
     private ScalingIntent _scaling;
-    public override string CapabilityStatus => "Read-only inventory · Stage 4 in progress";
+    public override string CapabilityStatus => "Display inventory / experimental SDR preview · Stage 4 in progress";
     public ImmutableArray<DisplayOutputInfo> Outputs { get; private set; } = [];
     public ImmutableArray<DisplayModeChoice> Modes { get; private set; } = [];
     public DisplayOutputInfo? SelectedOutput
@@ -31,13 +31,53 @@ public sealed class ResolutionViewModel : PageViewModel
         $"{o.Display.GdiName} · source {o.SourceId}, target {o.Display.TargetId} · position ({o.X}, {o.Y})\n" +
         $"Current: {o.Current.Width} × {o.Current.Height} · {(double)o.Current.RefreshRate.Numerator / o.Current.RefreshRate.Denominator:0.###} Hz ({o.Current.RefreshRate.Numerator}/{o.Current.RefreshRate.Denominator}) · {o.ColorMode}\n" +
         $"{o.HdrStatus}\n" + (o.Cloned ? "Shared-source clone: mode planning is blocked." : "Independent source mapping.") : "Select a monitor.";
+    public bool IsPreviewActive => _client?.State.PreviewActive == true;
+    public bool CanKeep => _client?.State.Preview?.Status == PreviewStatus.AwaitingConfirmation;
+    public bool CanPreview => _client?.State.Capabilities.Backends.Any(b => b.Backend == BackendKind.DisplayMode && b.Status == Capability.Experimental) == true && !IsPreviewActive;
+    public string PreviewStatusText => _client?.State.Preview is { } p ?
+        $"Display preview: {p.Status} · {Math.Max(0, (p.DeadlineUtc - DateTimeOffset.UtcNow).TotalSeconds):0}s left. Agent owns the deadline. Colours stay off; Keep does not save to Windows' database." :
+        "Opt in to experimental SDR display previews in Settings, Save and restart. Source size/scaling at the current physical timing only.";
+    public ICommand PreviewCommand { get; }
+    public ICommand KeepCommand { get; }
+    public ICommand RevertCommand { get; }
+    public void RefreshStatus()
+    {
+        Changed(nameof(IsPreviewActive)); Changed(nameof(CanKeep)); Changed(nameof(CanPreview)); Changed(nameof(PreviewStatusText));
+    }
+    public async Task PreviewAsync()
+    {
+        if (_client is null || SelectedOutput is null || SelectedMode is null || !CanPreview) throw new InvalidOperationException("Select a mode and opt in to experimental display previews first.");
+        if (SelectedOutput.Cloned) throw new InvalidOperationException("Cloned shared sources are not supported.");
+        var state = _client.State;
+        var ack = await _client.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation,
+            new PreviewMode(Guid.NewGuid(), SelectedOutput.Display, new(SelectedMode.Mode.Width, SelectedMode.Mode.Height, SelectedMode.Mode.RefreshRate, Scaling), DateTimeOffset.UtcNow.AddSeconds(15))));
+        Status = $"{ack.Completion.ErrorCode ?? "Completed"}: {ack.Completion.Explanation}"; RefreshStatus();
+    }
+    public async Task KeepAsync()
+    {
+        if (_client is null || !CanKeep || _client.State.Preview is not { } preview) throw new InvalidOperationException("No completed active preview to keep.");
+        var state = _client.State;
+        var ack = await _client.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, new ConfirmMode(preview.Id)));
+        Status = $"{ack.Completion.ErrorCode ?? "Completed"}: {ack.Completion.Explanation}"; RefreshStatus();
+    }
+    public async Task RevertAsync()
+    {
+        if (_client is null || !IsPreviewActive || _client.State.Preview is not { } preview) return;
+        var state = _client.State;
+        var ack = await _client.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, new CancelPreview(preview.Id)));
+        Status = $"{ack.Completion.ErrorCode ?? "Completed"}: {ack.Completion.Explanation}"; RefreshStatus();
+        if (!ack.Completion.Success) throw new InvalidOperationException(Status);
+    }
     public ICommand RefreshCommand { get; }
     public ICommand LoadModesCommand { get; }
     public ICommand ReviewPlanCommand { get; }
     public ResolutionViewModel(IEffectsClient? client = null) : base("Resolution", "Inspect supported modes before changing a display.",
-        "Read-only mode inventory and local draft plans are implemented. Native mode/HDR/scaling mutation, confirmation deadline and recovery integration remain pending Stage 4.")
+        "Read-only mode inventory and local draft plans are implemented. Experimental SDR source-size/scaling previews have independent Agent deadline and Recovery. Physical refresh changes, HDR toggles, legacy CDS and custom timing remain unavailable.")
     {
         _client = client;
+        PreviewCommand = new AsyncCommand(PreviewAsync, e => Status = "Preview failed: " + e.Message);
+        KeepCommand = new AsyncCommand(KeepAsync, e => Status = "Keep failed: " + e.Message);
+        RevertCommand = new AsyncCommand(RevertAsync, e => Status = "Revert failed: " + e.Message);
         RefreshCommand = new AsyncCommand(RefreshAsync, e => Status = "Inventory failed: " + e.Message);
         LoadModesCommand = new AsyncCommand(LoadModesAsync, e => Status = "Modes failed: " + e.Message);
         ReviewPlanCommand = new RelayCommand(_ =>
@@ -66,7 +106,7 @@ public sealed class ResolutionViewModel : PageViewModel
     {
         var path = SelectedOutput?.Display.MonitorDevicePath;
         Outputs = []; SelectedOutput = null; _inventoryId = Guid.Empty; Changed(nameof(Outputs));
-        Plan = "No display changes. Load modes and review a local draft; Apply is unavailable.";
+        Plan = "No display changes. Load modes, review the draft, then explicitly Preview if enabled.";
         var page = await QueryAsync(new()); var id = page.InventoryId; var outputs = ImmutableArray.CreateBuilder<DisplayOutputInfo>();
         for (var count = 0; ; count++)
         {
@@ -96,6 +136,6 @@ public sealed class ResolutionViewModel : PageViewModel
         }
         if (_inventoryId != id || SelectedOutput != output) { Status = "Selection changed; modes discarded."; return; }
         Modes = modes.ToImmutable(); Changed(nameof(Modes)); SelectedMode = Modes.FirstOrDefault(m => m.IsCurrent) ?? Modes.FirstOrDefault();
-        Status = $"{Modes.Length} progressive 32-bit mode choice(s). Current CCD rational refresh remains separate from integer driver enumeration. Preview/Apply is unavailable.";
+        Status = $"{Modes.Length} progressive 32-bit mode choice(s). Current CCD rational refresh remains separate from integer driver enumeration. For preview, choose a source-size option at current target timing. Physical refresh changes remain unavailable.";
     }
 }

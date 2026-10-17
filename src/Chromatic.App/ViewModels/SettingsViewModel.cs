@@ -27,6 +27,11 @@ public sealed class SettingsViewModel : PageViewModel
         get => _session.Current.Services.NvidiaExperimental;
         set { _session.Current = _session.Current with { Services = _session.Current.Services with { NvidiaExperimental = value } }; Changed(); }
     }
+    public bool DisplayPreviewExperimental
+    {
+        get => _session.Current.Services.DisplayPreviewExperimental;
+        set { _session.Current = _session.Current with { Services = _session.Current.Services with { DisplayPreviewExperimental = value } }; Changed(); }
+    }
     public ICommand SaveCommand { get; }
     public SettingsViewModel(AppSessionSettings session, SettingsRepository repository, PresetProtocolRegistration? protocol = null)
         : base("Settings", "Local by default. Explicit by choice.", "Compatibility changes take effect after Save and restart. Phone, startup, Discord, cloud and updates remain inactive.")

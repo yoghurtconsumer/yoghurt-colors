@@ -1,5 +1,6 @@
-<Window x:Class="Chromatic.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:Chromatic.App.ViewModels" xmlns:views="clr-namespace:Chromatic.App.Views" Title="Chromatic Desktop" Width="1120" Height="780" MinWidth="840" MinHeight="620" Closing="Window_Closing" WindowStartupLocation="CenterScreen" AutomationProperties.Name="Chromatic Desktop">
+<Window x:Class="Chromatic.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="clr-namespace:Chromatic.App.ViewModels" xmlns:views="clr-namespace:Chromatic.App.Views" Title="Chromatic Desktop" Width="1120" Height="780" MinWidth="840" MinHeight="620" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" WindowStartupLocation="CenterScreen" AutomationProperties.Name="Chromatic Desktop">
   <Window.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     <DataTemplate DataType="{x:Type vm:DisplayViewModel}"><views:DisplayView /></DataTemplate>
     <DataTemplate DataType="{x:Type vm:PresetsViewModel}"><views:PresetsView /></DataTemplate>
     <DataTemplate DataType="{x:Type vm:GamesViewModel}"><views:GamesView /></DataTemplate>
@@ -25,6 +26,11 @@
       <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,14,0,0" Margin="0,20,0,0"><TextBlock Text="{Binding Status}" FontSize="12" AutomationProperties.Name="Effects completion status" Foreground="{DynamicResource MutedBrush}" /></Border>
       <StackPanel DockPanel.Dock="Top">
         <DockPanel Margin="0,0,0,12"><TextBlock Text="WORKSPACE / LOCAL" FontWeight="SemiBold" Foreground="{DynamicResource MutedBrush}" /><WrapPanel HorizontalAlignment="Right"><Button Content="Pause" Command="{Binding PauseCommand}" /><Button Content="Restore" Command="{Binding RestoreCommand}" /></WrapPanel></DockPanel>
+        <Border Visibility="{Binding Resolution.IsPreviewActive, Converter={StaticResource BoolToVisibility}}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2" Padding="12" Margin="0,8">
+          <StackPanel><TextBlock Text="{Binding Resolution.PreviewStatusText}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Assertive" />
+            <WrapPanel><Button Content="Keep display mode" Command="{Binding Resolution.KeepCommand}" IsEnabled="{Binding Resolution.CanKeep}" /><Button Content="Revert display mode (Esc)" Command="{Binding Resolution.RevertCommand}" /></WrapPanel>
+          </StackPanel>
+        </Border>
         <TextBlock Text="{Binding StartupWarning}" Foreground="{DynamicResource AccentBrush}" />
       </StackPanel>
       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

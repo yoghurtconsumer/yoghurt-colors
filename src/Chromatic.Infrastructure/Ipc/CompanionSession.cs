@@ -22,6 +22,14 @@ public sealed class CompanionSession : IEffectsClient, IDisposable
             var own = PipeInterop.Current;
             var uiImage = Environment.ProcessPath ?? throw new IOException("UI image path unavailable.");
             var previous = await new RecoveryJournalStore(Path.Combine(CompanionLaunch.SessionDirectory, "recovery.json")).LoadAsync(_lifetime.Token);
+            var previousMode = await new RecoveryJournalStore(Path.Combine(CompanionLaunch.SessionDirectory, "display-preview.json")).LoadAsync(_lifetime.Token);
+            if (previousMode is not null && previousMode.Status != JournalStatus.Restored)
+            {
+                if (previous is not null && previous.Status != JournalStatus.Restored &&
+                    (previous.AgentPid != previousMode.AgentPid || previous.AgentStartTicks != previousMode.AgentStartTicks))
+                    throw new InvalidOperationException("Color and mode journals belong to different Agent owners; local review is required.");
+                previous = previousMode;
+            }
             if (previous is not null && previous.Status != JournalStatus.Restored)
             {
                 if (previous.UserSid != own.UserSid || previous.SessionId != own.SessionId || !offerRecovery(previous))

@@ -17,7 +17,7 @@ public sealed class NativeBoundaryTests
         {
             ["Magnification.dll"] = ["MagInitialize", "MagUninitialize", "MagGetFullscreenColorEffect", "MagSetFullscreenColorEffect"],
             ["gdi32.dll"] = ["CreateDCW", "DeleteDC", "GetDeviceGammaRamp", "SetDeviceGammaRamp"],
-            ["user32.dll"] = ["GetDisplayConfigBufferSizes", "QueryDisplayConfig", "DisplayConfigGetDeviceInfo", "EnumDisplaySettingsExW",
+            ["user32.dll"] = ["GetDisplayConfigBufferSizes", "QueryDisplayConfig", "DisplayConfigGetDeviceInfo", "EnumDisplaySettingsExW", "SetDisplayConfig",
                 "SetWindowsHookExW", "CallNextHookEx", "UnhookWindowsHookEx", "RegisterHotKey", "UnregisterHotKey",
                 "SetWinEventHook", "UnhookWinEvent", "GetForegroundWindow", "GetWindowThreadProcessId",
                 "GetAsyncKeyState", "MonitorFromWindow", "GetMonitorInfoW"],

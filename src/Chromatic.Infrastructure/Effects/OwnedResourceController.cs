@@ -43,7 +43,7 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
                 if (!adapter.CanOwn(actual)) return Failure("ExistingFilter", "A non-neutral filter is already present; ownership was declined.", fence.Revision);
                 owned = new(Guid.NewGuid(), descriptor.Kind, descriptor.Scope, descriptor.Display, actual, actual, fence.Generation);
             }
-            else if (!IsOurValue(owned, actual))
+            else if (!IsOurValue(adapter, owned, actual))
             {
                 _snapshot = _snapshot with { Status = JournalStatus.Conflict, TimestampUtc = DateTimeOffset.UtcNow };
                 await journal.SaveAsync(_snapshot, cancellationToken);
@@ -61,7 +61,7 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
             await adapter.WriteAsync(desired, cancellationToken,
                 () => !cancellationToken.IsCancellationRequested && writerLeaseHeld() && safety.RecoveryReady && safety.CanWrite(fence));
             var readback = await adapter.ReadAsync(CancellationToken.None);
-            if (!Equivalent(readback, desired)) return Failure("ReadbackMismatch", "Native result did not match; pending journal retained for recovery.", fence.Revision);
+            if (!adapter.Equivalent(readback, desired)) return Failure("ReadbackMismatch", "Native result did not match; pending journal retained for recovery.", fence.Revision);
             Put(owned with { LastApplied = desired, PendingValue = null }, JournalStatus.Applied, fence.Generation);
             await journal.SaveAsync(_snapshot, CancellationToken.None);
             return new(true, descriptor.Kind.ToString(), null, "Write completed and read back; visual hardware qualification is separate.", fence.Revision);
@@ -78,7 +78,11 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
         try
         {
             if (!writerLeaseHeld()) return Failure("OwnershipLost", "Writer lease is not held.", revision);
-            if (_snapshot.Resources.IsEmpty) return new(true, "OwnedResources", null, "No resources were acquired.", revision);
+            if (_snapshot.Resources.IsEmpty)
+            {
+                if (_snapshot.Preview is not null) { _snapshot = _snapshot with { Status = JournalStatus.Restored }; await journal.SaveAsync(_snapshot, cancellationToken); }
+                return new(true, "OwnedResources", null, "No resources were acquired.", revision);
+            }
             _snapshot = _snapshot with { Status = JournalStatus.Restoring, TimestampUtc = DateTimeOffset.UtcNow };
             await journal.SaveAsync(_snapshot, cancellationToken);
             foreach (var resource in _snapshot.Resources.Where(r => !r.PersistentUndo))
@@ -87,11 +91,11 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
                 if (matching.Length != 1) return await Conflict("Display/resource identity is missing or ambiguous.", revision);
                 var adapter = matching[0];
                 var actual = await adapter.ReadAsync(cancellationToken);
-                if (Equivalent(actual, resource.Baseline)) continue;
-                if (!IsOurValue(resource, actual)) return await Conflict("Foreign resource value found; restoration declined.", revision);
+                if (adapter.Equivalent(actual, resource.Baseline)) continue;
+                if (!IsOurValue(adapter, resource, actual)) return await Conflict("Foreign resource value found; restoration declined.", revision);
                 if (!writerLeaseHeld()) return Failure("OwnershipLost", "Writer lease was lost before restore.", revision);
                 await adapter.WriteAsync(resource.Baseline, cancellationToken, () => writerLeaseHeld() && !cancellationToken.IsCancellationRequested);
-                if (!Equivalent(await adapter.ReadAsync(cancellationToken), resource.Baseline))
+                if (!adapter.Equivalent(await adapter.ReadAsync(cancellationToken), resource.Baseline))
                     return await Conflict("Baseline restore readback mismatch.", revision);
             }
             _snapshot = _snapshot with { Status = JournalStatus.Restored, TimestampUtc = DateTimeOffset.UtcNow,
@@ -101,6 +105,36 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
         }
         catch (Exception error) when (error is not OperationCanceledException)
         { return Failure("RestoreFailure", error.Message, revision); }
+        finally { _serial.Release(); }
+    }
+    // A mode preview uses its own journal, under the same exclusive writer lease.
+    public async Task SetPreviewAsync(PreviewTransaction preview, CancellationToken token)
+    {
+        await _serial.WaitAsync(token);
+        try
+        {
+            if (!writerLeaseHeld()) throw new InvalidOperationException("Writer lease is unavailable.");
+            if (!_initialized)
+            {
+                var old = await journal.LoadAsync(token);
+                if (old is not null && old.Status != JournalStatus.Restored) throw new InvalidOperationException("Unfinished mode journal requires recovery.");
+                _initialized = true;
+            }
+            _snapshot = _snapshot with { Preview = preview, TimestampUtc = DateTimeOffset.UtcNow };
+            await journal.SaveAsync(_snapshot, token);
+        }
+        finally { _serial.Release(); }
+    }
+    public async Task KeepPreviewAsync(PreviewTransaction preview, CancellationToken token, bool keep = true)
+    {
+        await _serial.WaitAsync(token);
+        try
+        {
+            if (!writerLeaseHeld() || _snapshot.Status != (keep ? JournalStatus.Applied : JournalStatus.Restored) || _snapshot.Preview?.Id != preview.Id)
+                throw new InvalidOperationException("No applied owned mode preview can be kept.");
+            var next = _snapshot with { Resources = [], Preview = preview, Status = JournalStatus.Restored, TimestampUtc = DateTimeOffset.UtcNow };
+            await journal.SaveAsync(next, token); _snapshot = next;
+        }
         finally { _serial.Release(); }
     }
     // Only Recovery may adopt a persisted journal, after process death and lease acquisition.
@@ -130,8 +164,8 @@ public sealed class OwnedResourceController(IRecoveryJournalStore journal, Recov
     }
     public static bool Equivalent(ResourceValue first, ResourceValue second) => first.Values.SequenceEqual(second.Values)
         && first.TopologyBase64 == second.TopologyBase64 && first.TopologyFormat == second.TopologyFormat;
-    private static bool IsOurValue(OwnedResourceBaseline resource, ResourceValue actual) => Equivalent(actual, resource.LastApplied)
-        || resource.PendingValue is not null && Equivalent(actual, resource.PendingValue);
+    private static bool IsOurValue(IResourceAdapter adapter, OwnedResourceBaseline resource, ResourceValue actual) => adapter.Equivalent(actual, resource.LastApplied)
+        || resource.PendingValue is not null && adapter.Equivalent(actual, resource.PendingValue);
     private static bool Matches(OwnedResourceBaseline resource, ResourceDescriptor descriptor) => resource.Kind == descriptor.Kind
         && resource.Scope == descriptor.Scope && (resource.Display is null ? descriptor.Display is null
             : descriptor.Display is not null && string.Equals(resource.Display.MonitorDevicePath, descriptor.Display.MonitorDevicePath, StringComparison.OrdinalIgnoreCase)

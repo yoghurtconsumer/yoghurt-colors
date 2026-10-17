@@ -13,6 +13,8 @@
       <TextBlock Text="Output scaling request" Margin="0,12,0,4" />
       <ComboBox ItemsSource="{Binding ScalingOptions}" SelectedItem="{Binding Scaling}" AutomationProperties.Name="Draft output scaling" />
       <Button Content="Review mode plan (no display change)" Command="{Binding ReviewPlanCommand}" HorizontalAlignment="Left" />
+      <Button Content="Preview selected source mode for 15 seconds" Command="{Binding PreviewCommand}" IsEnabled="{Binding CanPreview}" HorizontalAlignment="Left" />
+      <TextBlock Text="{Binding PreviewStatusText}" TextWrapping="Wrap" />
       <TextBlock Text="{Binding Plan}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
       <TextBlock Text="Custom sizes must already be enumerated by your driver. No arbitrary timing creation, saved driver modes, game FOV changes or HDR writes are performed." Style="{StaticResource Muted}" Margin="0,12,0,8" />
       <TextBlock Text="{Binding Deferred}" TextWrapping="Wrap" Margin="0,10,0,0" />

@@ -1,8 +1,8 @@
-# Requirements traceability — Stage 4 read-only checkpoint
+# Requirements traceability — Stage 4 experimental SDR preview checkpoint
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 324 VSTest tests pass (107 Core, 181 integration,
-36 UI/launcher). Native color routes retain authenticated ownership, verified
+x64 projects build Release with SDK 10.0.402; 357 VSTest tests pass (107 Core, 213 integration,
+37 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
 User feedback on 17 October confirms Saturation up to 300% worked during Siege
@@ -30,13 +30,13 @@ implemented; live input/GPU qualification is a separate manual review gate.
 | F08 | Preset hotkeys | Opt-in preset/pause/restore hotkeys implemented | RegisterHotKey MOD_NOREPEAT, actual per-ID conflict status, pure strict chord configuration and fake dispatch tests | Manual key/conflict/layout qualification |
 | F09 | Red-/green-/blue-weak color modes | Adjustable global approximation implemented | Attributed severity-1 coefficients; row orientation/correction tests; UI mode/strength; COLOR-PROVENANCE.md | Visual qualification; approximation remains explicit |
 | F10 | Hold Dark Boost, selectable tint; release restores normal look; Mouse 5 demo | Opt-in keyboard/side-mouse input and basic whole-image affine lift implemented; LUT/native hold unavailable | Chord/repeat/injected/fresh-press/missed-up/focus/safety tests; 100 ms release-only reconciliation; composed fake matrix and newest-base release; no shadow-only claim | Live input/GPU tests; LUT/native latency qualification |
-| F11 | Resolution and refresh switching | Read-only inventory / mode-plan review implemented; mutation deferred | Agent CCD mapping + bounded driver enumeration; exact rational current refresh; strict paged IPC; other outputs preserved in draft; fake API tests; no setters | 4 journaled native preview / Recovery / hardware qualification |
+| F11 | Resolution and refresh switching | Experimental SDR source-size preview implemented; physical refresh switching deferred | Explicit opt-in, complete CCD baseline, validate/apply/readback, 15-second Agent deadline, independent Recovery, Keep/Revert/Escape; fake crash/hang/UI-death tests; current target timing preserved | 4 SDK ABI / physical qualification, refresh timing, CDS and degraded hotplug fallback |
 | F12 | HDR on/off | Runtime-gated read-only SDR/WCG/HDR inventory; setting deferred | Modern type 15 and labeled legacy ambiguity; no new HDR setter; HdrBackend remains NotImplemented | 4 qualified set/rollback |
-| F13 | Stretched 4:3 | Enumerated source / scaling draft only | Unsupported dimensions and clones refused; explicit no-FOV / driver limits; no scaling write | 4 preview/readback / geometric qualification |
+| F13 | Stretched 4:3 | Explicit experimental enumerated source-size/scaling preview implemented | Captured physical timing and all other outputs preserved; unsupported sizes/clones refused; no FOV edit; durable baseline and exact semantic readback | 4 native SDK / driver / geometric qualification |
 | F14 | Custom modes including square sizes; kept NVIDIA mode saved in driver list | Existing driver sizes can be inspected / drafted; timing creation and saving deferred | Bounded enumerated choices only; no timing fabrication, vendor save, EDID or driver changes | 4 optional qualified public NvAPI |
 | F15 | Crosshair shape, size, gap, color and outline | Foundation only | CrosshairSettings/ranges; Crosshair shell; OverlayHost NotImplemented | 5 |
 | F16 | Picture crosshairs and X/Y offsets (2.1.12) | Foundation only | Asset hash/offset model; image decoder and placement deferred | 5 |
-| F17 | Library of shared looks/crosshairs; public page also lists resolutions/full setups | Local offline library/import/export/link handoff implemented; hosted catalog deferred | Four strict document kinds; .chromaticpreset JSON/CD1 codes; confirmation before import; non-Color Apply refused pending Stages 4/5 | 4–5 application / optional 7 catalog |
+| F17 | Library of shared looks/crosshairs; public page also lists resolutions/full setups | Local offline library/import/export/link handoff implemented; hosted catalog deferred | Four strict document kinds; .chromaticpreset JSON/CD1 codes; confirmation before import; non-Color library Apply refused pending integration in Stages 4/5 | 4–5 application / optional 7 catalog |
 | F18 | Short preset codes; website-to-app link; confirmation before application | Offline codes, per-user protocol buttons and authenticated single-instance handoff implemented | Own CD1 canonical JSON/SHA-256/64 KiB bound; strict argv/link/challenge/schema; OS peer/exact image/user/session pinning; diff + confirm creates new ID; separate Apply; receipt-confirmed disconnect, blocked-UI shutdown/restart and delayed-reader regressions; fake registry only in tests | Manual browser/OS URL-limit/registration checks |
 | F19 | Catalog filter by type/game, newest/most-copied, author/date; publish/report; image moderation | Local name/author/type/game-tag filtering implemented; online catalog deferred | Local metadata/filtering only; no publish/report endpoint or remote image loader | optional 7 |
 | F20 | Wi-Fi phone color sliders/scene presets via QR; server lives only while Phone window is open | Foundation only | Remote schema/color whitelist/sequence validation; PhoneServer always off | 6 |
@@ -79,3 +79,5 @@ darkening and explicitly requested element-only changes. That isolation is NOT
 supported by this global backend; neutral white also remains white. No game
 capture/recognition or native access expansion was added. Accepted game presets
 are unchanged. See [scope/reset instructions](RUST-COLOUR-DARKENING.md).
+
+Stage 4 preview is a partial checkpoint: default-off SDR source/scaling only. No automatic game-mode switch, saved Windows database write, physical refresh change, HDR toggle, legacy CDS or DDC path is claimed. Foreign/unavailable topologies preserve recovery state; degraded Windows-configuration fallback is pending. Native SDK compile-only probe and physical qualification remain open. See STAGE4-REVIEW.md.

@@ -1,4 +1,5 @@
 using Chromatic.Core.Models;
+using Chromatic.Core.Abstractions;
 using Chromatic.Native;
 
 namespace Chromatic.Infrastructure.Ipc;
@@ -8,6 +9,8 @@ namespace Chromatic.Infrastructure.Ipc;
 public sealed record CompanionRuntime(string SessionDirectory, Func<DisplaySafetyReport> Inventory,
     Func<DisplaySafetyReport, bool, bool, IColorResourceCatalog> CreateResources)
 {
+    public Func<IDisplayModeResource>? CreateDisplayMode { get; init; }
     public static CompanionRuntime Production => new(CompanionLaunch.SessionDirectory, DisplaySafetyProbe.Read,
-        (inventory, gamma, nvidia) => new ColorResourceCatalog(inventory, gamma, nvidia));
+        (inventory, gamma, nvidia) => new ColorResourceCatalog(inventory, gamma, nvidia))
+        { CreateDisplayMode = () => new CcdDisplayModeResource(new WindowsCcdModeApi()) };
 }

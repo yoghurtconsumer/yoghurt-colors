@@ -44,5 +44,12 @@ Stage 4 step 1 now has read-only, paged Agent display inventory and local draft
 plans. Inject IDisplayInventoryApi / readDisplays for tests; never probe hardware
 in ordinary tests or the process harness. Queries must not advance revisions or
 change observed colours/hold. Preserve snapshot IDs and invalidate on broadcasts.
-Mode/HDR/scaling/DDC mutation remains unavailable until the full journaled
-15-second Agent/Recovery preview is wired; do not present a draft as native Apply.
+Stage 4 step 2 adds explicit opt-in SDR source-size/scaling previews at captured
+physical timing. Inject ICcdModeApi / IDisplayModeResource: never run native mode
+setters in ordinary tests. display-preview.json is separate from recovery.json;
+Recovery verifies death and writer lease before topology then colour restoration.
+Agent owns the monotonic 15-second deadline. Keep releases temporary topology
+ownership only after durable confirmation. No Windows database save, auto game
+mode switches, HDR toggle, physical refresh changes, CDS or DDC implementation
+is claimed. Native SDK ABI and physical GPU qualification remain open. Stop
+before Stage 5; complete remaining Stage 4 work only when requested.

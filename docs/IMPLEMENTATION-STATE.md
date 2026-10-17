@@ -1,8 +1,8 @@
 # Chromatic Desktop implementation state
 
 Updated: 17 October 2026. Requested work: continue step by step while user tests; address Rust appearance feedback.
-Current checkpoint: Stage 3 implemented; Stage 4 step 1 read-only inventory / plan review implemented. Stage 4 transactions are NOT complete.
-Previous GitHub checkpoint: d0da0ee (remove misleading Rust holo/loot shortcuts).
+Current checkpoint: Stage 3 implemented; Stage 4 step 2 experimental SDR source-size/scaling preview and independent rollback implemented. Full Stage 4 is NOT complete.
+Previous GitHub checkpoint: 17e47d9 (read-only inventory and portable Rust Vivid clarity preset).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The current implementation builds Release/x64 with zero
-warnings/errors; 324 VSTest tests pass: 107 Core, 181 integration and 36 UI/launcher.
+warnings/errors; 357 VSTest tests pass: 107 Core, 213 integration and 37 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -63,9 +63,69 @@ retain the base values; held modifiers remain temporary. Tests cover neutral
 preservation, hue/alpha/clipping, invalid ranges/non-finite values, persistence,
 IPC, remote rejection, explicit Apply, honest lack of element isolation and exact owned fake-baseline restoration.
 Launcher smoke renders/closes without companions/providers. See
-[Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 read-only work is recorded below; mode/HDR/DDC writes remain unavailable.
+[Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 step 1 is recorded historically below; step 2 adds only the explicit experimental SDR preview described next.
 
-## Stage 4, step 1 — read-only display inventory and draft plans
+## Stage 4, step 2 — experimental SDR source-size/scaling preview
+
+- User authorized the next resolution preview/rollback step. All nine source
+  projects and test/harness projects remain on .NET 10 / x64. Full Stage 4,
+  physical refresh changes, legacy CDS, HDR setters, DDC and watchdog are pending.
+- Settings has a default-off DisplayPreviewExperimental opt-in, applied only after
+  Save/restart. Resolution still separates read-only inventory/review from explicit
+  Preview. The supported native path changes an enumerated source width/height
+  and requested scaling at the existing exact physical target refresh. Fractional
+  current timing stays exact. It does not fabricate pixel clocks/blanking, save
+  Windows' display database, create modes or change game FOV/settings.
+- SDK-generated non-virtual-aware CCD paths/modes are captured for every active
+  output, with exact monitor mappings, complete target timing and desktop positions.
+  A bounded versioned internal packet is checked before every setter. Public IPC
+  carries typed intent only, never native arrays. SDC_VALIDATE 0x60 precedes
+  SDC_APPLY 0xA0; no ALLOW_CHANGES, SAVE_TO_DATABASE or awareness flag is added.
+  Native return codes are used directly. A fresh full topology comparison and
+  revision/generation/recovery/lease/deadline fence immediately precede Apply.
+  Semantic readback allows mode-array bookkeeping reorder while comparing actual
+  referenced source geometry, target timing, path policy and every other output.
+- SDR colour ownership is restored before any topology change. Base drafts are
+  retained, but colours stay off after Preview/Keep/Revert until explicit Apply.
+  Unsupported refresh/HDR/clones/unmapped/private-extra/unqualified source sizes
+  fail honestly. Physical refresh switching is NOT implemented by relabeling an
+  integer driver timing. Additional source-size choices retain current CCD timing.
+- display-preview.json is an independent atomic journal under the same exclusive
+  writer lease. Baseline, prospective write and transaction are durable before
+  mutation. Failed setters, readback, journal writes and cancellation compensate.
+  Keep verifies readback and durably stores confirmed intent before releasing
+  temporary topology ownership. It does not persist Windows settings or bind an
+  automatic game rule. Failed Keep attempts rollback. Reverted previews release
+  ownership so the next transaction captures a fresh external baseline.
+- Agent starts a monotonic 15-second deadline on acceptance; caller deadlines
+  cannot extend it. State/generation fences reject delayed work after timeout.
+  Keep/Revert is visible above every navigation page, with local Escape and
+  Revert before close-to-tray. Closing/crashing UI and safety suspension trigger
+  restore. Colour/profile/hold mutations are frozen during preview; hold release
+  is an acknowledged no-op. Superseded transactions cannot cancel a newer one.
+- Independent Recovery also checks the durable unfinished-preview deadline.
+  On timeout/hung Agent it requests Shutdown, verifies pinned Agent termination,
+  takes writer.lock, then restores topology before colour resources. Startup
+  recovery checks both journals and refuses incompatible owners. Process tests
+  cover UI death, graceful exit, crash immediately after setter, hung setter and
+  timeout without UI cancellation, using injected file adapters only.
+- Foreign topology/readback, HDR/WCG transitions, ambiguous mapping and disconnected
+  outputs fail closed and preserve the journal for local recovery. Degraded
+  hotplug fallback to Windows' saved configuration is NOT implemented; no blind
+  overwrite, unsafe fallback or unconditional successful rollback is promised.
+- Managed ABI/offset assertions and synthetic packet tests pass. A compile-only
+  Windows SDK harness is supplied as eng/native/DisplayAbi.cpp and
+  eng/Test-DisplayAbi.ps1. MSVC/Windows SDK headers are absent in this environment,
+  so independent native compilation remains unverified. This opt-in backend is
+  experimental, not hardware/driver qualified. No physical display APIs or
+  HardwareHarness were executed during development/testing.
+- Validation: full Release/x64 solution build, all 357 tests, and no-provider
+  launcher smoke. Added tests cover strict captured packets, untouched second
+  monitor/timing/negative position, semantic readback, preflight foreign changes,
+  fencing after validation, stale cancellation, failed atomic journals/Keep,
+  queued timeout, colour-restore cancellation and typed UI acknowledgments.
+
+## Stage 4, step 1 — read-only display inventory and draft plans (historical)
 
 - Agent alone reads CCD active paths and source/target names. Non-virtual-aware
   SDK-generated CCD structs retain distinct source and target IDs, exact rational
@@ -578,7 +638,7 @@ and has no native bypass. It was NOT executed. See MANUAL-TESTS.md.
   LUT hold remains blocked pending latency and on-screen grayscale checks.
 - Hotplug/mode reset/hybrid mapping and private NvAPI support require an explicit
   driver matrix. Unknown/HDR/ACM states suspend global SDR effects.
-- Mode/HDR transactions, DDC, overlay/capture, phone and media remain pending in
+- Remaining mode/refresh/HDR transactions, DDC, overlay/capture, phone and media remain pending in
   Stages 4–6. Stage 3 input/foreground and local authenticated app-link listeners
   are explicit opt-ins/default off except the local single-instance UI pipe.
   No network listener, automated gameplay or physical qualification is added.

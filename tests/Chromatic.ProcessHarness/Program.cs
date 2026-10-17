@@ -27,15 +27,16 @@ internal static class Program
             var mode = args[0]; var directory = Path.GetFullPath(args[1]);
             Directory.CreateDirectory(directory);
             var runtime = new CompanionRuntime(directory, () => new([new("fake-monitor", null, @"\\.\DISPLAY1", 1, 1)], true, false, "Injected test SDR inventory."),
-                (_, _, _) => new FileCatalog(directory));
+                (_, _, _) => new FileCatalog(directory)) { CreateDisplayMode = () => new FileMode(directory) };
             if (mode == "agent") return await AgentHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime, () => new FixtureBroadcasts());
             if (mode == "recovery") return await RecoveryHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime);
             FileResource.Save(Path.Combine(directory, "state.json"), Value(117));
+            FileResource.Save(Path.Combine(directory, "mode.json"), FileMode.Baseline);
             var ui = PipeInterop.Current;
             using var agent = StartChild(CompanionLaunch.Image("Agent"), "agent", directory);
             using var recovery = StartChild(CompanionLaunch.Image("Recovery"), "recovery", directory);
             var bootstrap = new CompanionBootstrap(1, ui, Environment.ProcessPath!, PipeInterop.ReadProcess(agent.Id), PipeInterop.ReadProcess(recovery.Id),
-                PipeAuthorization.CreatePipeName(ui.SessionId), PipeAuthorization.CreatePipeName(ui.SessionId), PipeAuthorization.CreateNonce(), new());
+                PipeAuthorization.CreatePipeName(ui.SessionId), PipeAuthorization.CreatePipeName(ui.SessionId), PipeAuthorization.CreateNonce(), new OptionalServices { DisplayPreviewExperimental = mode.StartsWith("mode-", StringComparison.Ordinal) });
             File.WriteAllText(Path.Combine(directory, "children.json"), JsonSerializer.Serialize(new[] { bootstrap.Agent, bootstrap.Recovery }));
             await CompanionLaunch.SendAsync(recovery, bootstrap); await CompanionLaunch.SendAsync(agent, bootstrap);
             using var pipe = await AuthenticatedPipe.ConnectAsync(new(bootstrap.AgentPipe, bootstrap.Nonce, CompanionLaunch.Peer(bootstrap.Agent)), default);
@@ -46,7 +47,22 @@ internal static class Program
                 var ack = await client.SendAsync(new(Guid.NewGuid(), client.State.Revision, client.State.Generation, command));
                 if (!ack.Completion.Success) throw new IOException($"{ack.Completion.ErrorCode}: {ack.Completion.Explanation}");
             }
-            if (mode == "ui-apply")
+            if (mode.StartsWith("mode-", StringComparison.Ordinal))
+            {
+                if (mode is "mode-crash" or "mode-hang") File.WriteAllText(Path.Combine(directory, mode), "1");
+                try { await Send(new PreviewMode(Guid.NewGuid(), new("fake-monitor", null, @"\\.\DISPLAY1", 1, 1), new(1280, 960, new(144, 1)), DateTimeOffset.MaxValue)); }
+                catch (Exception) when (mode is "mode-crash" or "mode-hang") { }
+                if (mode == "mode-ui-death") { File.WriteAllText(Path.Combine(directory, "ready"), "1"); await Task.Delay(Timeout.Infinite); }
+                if (mode == "mode-timeout")
+                {
+                    // Only read-only transport heartbeats, never a UI cancel/deadline command.
+                    for (var beat = 0; beat < 16; beat++) { await Task.Delay(1000); await client.QueryAsync(); }
+                    if (client.State.Preview?.Status != PreviewStatus.Reverted) throw new IOException("Agent did not expire the preview independently.");
+                    await Send(new Shutdown());
+                }
+                if (mode == "mode-graceful") await Send(new Shutdown());
+            }
+            else if (mode == "ui-apply")
             {
                 var viewModel = new DisplayViewModel(client, new AppSessionSettings(new())) { Saturation = 180 };
                 if (!viewModel.CanApply) throw new IOException("Display did not receive authenticated SDR capability.");
@@ -100,6 +116,26 @@ internal static class Program
     {
         public event Action<AgentBroadcast>? Broadcast { add { } remove { } }
         public void Dispose() { }
+    }
+    private sealed class FileMode(string directory) : IDisplayModeResource
+    {
+        public static ResourceValue Baseline => new([], Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("original complete fake topology")), "ccd-v1-x64");
+        private static ResourceValue Preview => new([], Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("preview fake topology / other monitor unchanged")), "ccd-v1-x64");
+        public ResourceDescriptor Descriptor { get; } = new(OwnedResourceKind.DisplayTopology, EffectScope.GlobalDesktop);
+        public ResourceValue Canonicalize(ResourceValue value) => value;
+        public bool CanOwn(ResourceValue baseline) => true;
+        public ResourceValue Plan(ResourceValue baseline, DisplayIdentity display, DisplayIntent intent) => Preview;
+        public Task<ResourceValue> ReadAsync(CancellationToken token) => Task.FromResult(JsonSerializer.Deserialize<ResourceValue>(File.ReadAllText(Path.Combine(directory, "mode.json")), JsonContract.Options)!);
+        public Task WriteAsync(ResourceValue value, CancellationToken token)
+        {
+            FileResource.Save(Path.Combine(directory, "mode.json"), value);
+            if (Path.GetFileName(Environment.ProcessPath) == "Chromatic.Agent.exe" && value.TopologyBase64 == Preview.TopologyBase64)
+            {
+                if (File.Exists(Path.Combine(directory, "mode-crash"))) Environment.Exit(72);
+                if (File.Exists(Path.Combine(directory, "mode-hang"))) Thread.Sleep(Timeout.Infinite);
+            }
+            return Task.CompletedTask;
+        }
     }
     private sealed class FileCatalog : IColorResourceCatalog
     {

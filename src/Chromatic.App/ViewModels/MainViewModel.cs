@@ -15,6 +15,7 @@ public sealed class MainViewModel : ObservableViewModel
     private readonly AutomationViewModel _automation;
     public ImmutableArray<NavigationItem> Navigation { get; }
     public MusicViewModel Music { get; }
+    public ResolutionViewModel Resolution { get; }
     public ImmutableArray<BackendCapability> Capabilities => _client.State.Capabilities.Backends;
     private string? _startupWarning;
     public string? StartupWarning { get => _startupWarning; set { _startupWarning = value; Changed(); } }
@@ -27,7 +28,7 @@ public sealed class MainViewModel : ObservableViewModel
         GamesViewModel games, ResolutionViewModel resolution, CrosshairViewModel crosshair,
         MonitorViewModel monitor, CustomizeViewModel customize, SettingsViewModel settings, MusicViewModel music)
     {
-        _client = client; Music = music; _display = display; _automation = games.Automation;
+        _client = client; Music = music; Resolution = resolution; _display = display; _automation = games.Automation;
         Navigation = [new("Display", "◐", display), new("Presets / Library", "▦", presets), new("Games", "◇", games),
             new("Resolution", "▱", resolution), new("Crosshair", "+", crosshair), new("Monitor", "▣", monitor),
             new("Customize", "◈", customize), new("Settings", "⚙", settings)];
@@ -44,7 +45,7 @@ public sealed class MainViewModel : ObservableViewModel
     public Task ShutdownAsync() => SendAsync(new Shutdown());
     public void Refresh()
     {
-        Changed(nameof(Capabilities)); _display.Refresh(); _automation.Refresh();
+        Changed(nameof(Capabilities)); _display.Refresh(); _automation.Refresh(); Resolution.RefreshStatus();
         if (_client is Chromatic.Infrastructure.Ipc.CompanionSession session && session.Failure is not null) Status = session.Failure;
         else if (_client.State.Observed.LastResult is { } observed) Status = $"{observed.ErrorCode ?? "Completed"}: {observed.Explanation}";
     }

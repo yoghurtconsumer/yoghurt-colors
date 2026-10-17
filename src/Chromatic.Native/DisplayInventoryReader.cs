@@ -62,7 +62,12 @@ public sealed class DisplayInventoryReader(IDisplayInventoryApi api)
                 if (mode.Interlaced || !mode.HasRequiredFields || mode.DriverExtra != 0 || !Valid(mode.Mode)) continue;
                 if (modes.Any(m => m.Mode == mode.Mode)) continue;
                 modes.Add(new($"driver-{mode.Index}", mode.Mode, false, "Driver enumeration (integer Hz)"));
+                if (modes.Count >= 2048) continue;
+                var sourceOnly = mode.Mode with { RefreshRate = output.Current.RefreshRate };
+                if (!modes.Any(m => m.Mode == sourceOnly))
+                    modes.Add(new($"source-{mode.Index}", sourceOnly, false, "Source size at current target timing; requires validation"));
             }
+            if (modes.Count > 2048) throw new InvalidOperationException("Mode choice count exceeds its paging bound.");
             choices.Add(output.Display.MonitorDevicePath, modes.ToImmutable());
         }
         // Reject a topology change that occurred during the slower mode enumeration.
