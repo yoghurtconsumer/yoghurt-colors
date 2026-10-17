@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 3 library checkpoint
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 238 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 240 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -34,11 +34,19 @@ Global input, automatic focus switching and Windows protocol handoff are still
 pending. Do not interpret saved game bookmarks or a pasted link parser as those
 features being implemented.
 
-Game pack checks: click Add game presets, verify four Siege options and the
+Game pack checks: click Add game presets, verify six Siege options (including
+Champ and Im Diamond 1) and the
 CS2/VALORANT/Apex game tags. Edit/rename one, add the pack again and verify the
 edits remain and no duplicate IDs are created. Reset selected starting point
 must restore only that preset and leave the Display draft/desktop unchanged.
 Adding the pack must not apply colors or change game files/settings.
+
+Compare Champ, Im Diamond 1 and the unchanged Strong color using explicit Apply
+in Siege. Check shadow transitions, texture/clothing detail, saturated outlines
+and bright windows. Champ adds stronger color with near-neutral contrast and a
+small black-level lift; neither its rank label nor a passing neutral-gray test
+establishes better enemy visibility. Record preference/settings/backend. Values
+and limits are in SIEGE-PRESETS.md. No game session or display writes are automated.
 
 Rust pack: click Add / update Rust presets and verify the five Rust choices. Add it
 again after editing one; the edited name/color must remain and no duplicate should

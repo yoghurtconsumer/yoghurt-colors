@@ -2,7 +2,7 @@
 
 Updated: 17 October 2026. Requested work: continue step by step.
 Current checkpoint: Stage 3, step 1 — local library, game bookmarks and game starting-point pack.
-Previous GitHub checkpoint: 5c8f7d5 (Rust biome presets and dedicated Library action).
+Previous GitHub checkpoint: 7069e11 (richer Rust palette and safe refresh of untouched defaults).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
-warnings/errors; 238 VSTest tests pass: 67 Core, 143 integration and 28 UI/launcher.
+warnings/errors; 240 VSTest tests pass: 68 Core, 143 integration and 29 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -35,6 +35,16 @@ installed or exposed as working. Stop before Stage 4.
 
 ## Stage 3, step 1 — local library and game bookmarks
 
+- Added the user's requested Siege styles Champ (220%, brightness +0.002,
+  contrast 0.996) and Im Diamond 1 (190%, brightness +0.005, contrast 0.99).
+  Champ builds on the accepted Strong color direction with bolder color and a
+  smaller black-level lift. The existing Strong color values are unchanged.
+  All six Siege choices are available through Add game presets and name search.
+  [Siege notes](SIEGE-PRESETS.md) document exact values and comparison limits.
+  These are original styles, not ranked/professional settings or measured game
+  visibility improvements. Tests cover neutral detail/alpha/ranges, low lift,
+  portable sharing and an upgrade of the prior 19-preset library without replacing
+  edited entries or issuing backend commands. No game/hardware test was run.
 - The user confirmed the library works, then requested ready-made game looks to
   help compare visibility, and confirmed that pack works before requesting Rust
   biome options. The original seven-preset game pack includes Siege
@@ -45,7 +55,7 @@ installed or exposed as working. Stop before Stage 4.
 - Added five Rust options: Forest / Temperate, Desert / Arid, Snow / Arctic,
   Tundra and Jungle. Biome naming follows the Facepunch-hosted Terrain wiki;
   [Rust preset notes](GAME-PRESETS.md) record source, original values and limits.
-  The full game pack now contains 12 presets. Add / update Rust presets adds
+  The full game pack now contains 14 presets (21 with the seven scene presets). Add / update Rust presets adds
   missing Rust IDs, refreshes untouched first defaults and selects the Rust
   filter; Add game presets includes missing ones too. Existing customized entries
   and game bookmark IDs are preserved. Neither
@@ -77,7 +87,7 @@ installed or exposed as working. Stop before Stage 4.
   the Game tag filter. Adding the pack, reset, preview and editing do not apply
   anything. Reset selected starting point restores only that bundled preset;
   duplicate a customized preset first to retain it. The scene reset stays separate.
-- The game pack uses saturation 135–200%, gamma=1, neutral shadows/highlights/
+- The game pack uses saturation 135–220%, gamma=1, neutral shadows/highlights/
   vibrance/CVD and no mode, crosshair, hardware ID or asset. It uses the existing
   global affine SDR route rather than requiring optional LUT or NVIDIA services.
   Neutral gray steps remain monotonic and within output range in mathematical
@@ -371,7 +381,7 @@ holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 test
 passed instead; optimized self-contained publishing and three independent runtime
 startup checks passed separately. No product target was downgraded. The earlier
 Release/x64 186-test checkpoint is historical; the current Stage 3 library
-checkpoint above passed a full Release/x64 build and all 238 tests.
+checkpoint above passed a full Release/x64 build and all 240 tests.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

@@ -45,8 +45,8 @@ public sealed class GamePresetTests
     [Fact] public void GamePackIsPortableAffineOnlyAndRetainsNeutralGraySteps()
     {
         var presets = GamePresetCatalog.Presets;
-        Assert.Equal(12, presets.Length); Assert.Equal(12, presets.Select(p => p.Id).Distinct().Count());
-        Assert.Equal(4, presets.Count(p => p.GameTag == GamePresetCatalog.Siege));
+        Assert.Equal(14, presets.Length); Assert.Equal(14, presets.Select(p => p.Id).Distinct().Count());
+        Assert.Equal(6, presets.Count(p => p.GameTag == GamePresetCatalog.Siege));
         foreach (var preset in presets)
         {
             PresetValidator.Validate(preset); Assert.Equal(PresetKind.Color, preset.Kind);
@@ -64,6 +64,22 @@ public sealed class GamePresetTests
                 Assert.Equal(.42, result.A); previous = result.R;
             }
         }
+    }
+    [Fact] public void RequestedSiegeStylesHaveDistinctRichColorsWithoutAHeavyBlackLift()
+    {
+        var champ = GamePresetCatalog.FindOriginal("builtin-game-siege-champ")!;
+        var diamond = GamePresetCatalog.FindOriginal("builtin-game-siege-diamond1")!;
+        var strong = GamePresetCatalog.FindOriginal("builtin-game-siege-color")!;
+        Assert.Equal("Siege — Champ", champ.Name); Assert.Equal("Siege — Im Diamond 1", diamond.Name);
+        Assert.Equal(GamePresetCatalog.Siege, champ.GameTag); Assert.Equal(GamePresetCatalog.Siege, diamond.GameTag);
+        Assert.True(champ.Color!.SaturationPercent > strong.Color!.SaturationPercent);
+        Assert.True(diamond.Color!.SaturationPercent < champ.Color.SaturationPercent);
+        var matrix = ColorMatrixBuilder.Build(champ.Color); var black = matrix.Transform(new(0, 0, 0));
+        Assert.InRange(black.R, 0, .006); Assert.InRange(champ.Color.Contrast, .99, 1);
+        Assert.InRange(matrix.Transform(new(1, 1, 1)).R, .99, 1 + 1e-12);
+        var dark = new Rgba(.05, .05, .05); Assert.True(matrix.Transform(dark).R >= dark.R);
+        Assert.True(ColorMatrixBuilder.Build(diamond.Color).Transform(new(0, 0, 0)).R > black.R);
+        Assert.Equal(new ColorSettings(200, Brightness: .005, Contrast: .98), strong.Color);
     }
     [Fact] public void RustCoversFiveEnvironmentsWithDistinctTransformsAndUsefulToneDifferences()
     {

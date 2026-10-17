@@ -31,13 +31,18 @@ points are available. Color presets save base colors; monitor intentions and
 temporary held boost are separate.
 
 For ready-made game looks, click **Add game presets** in Library. This adds
-missing presets and keeps your existing edits. Siege has **Balanced**, **Indoor
-lift**, **Outdoor balance** and **Strong color**; the Game tag filter also lists
+missing presets and keeps your existing edits. Siege has **Champ**, **Im Diamond 1**,
+**Balanced**, **Indoor lift**, **Outdoor balance** and **Strong color**; the Game tag filter also lists
 CS2, VALORANT and Apex starting points. Select a preset, preview, then explicitly
 Apply. **Reset selected starting point** restores that one original; duplicate
 first to keep a customized version. Indoor lift changes the whole image. These
 are original uncalibrated appearance choices; map/display comparison is still
 needed. They do not detect enemies or switch automatically with games.
+
+**Champ** uses saturation 220% with near-neutral contrast and a tiny black-level
+lift; **Im Diamond 1** uses 190% with a little more lift. Add the game pack, search
+for the name, preview and explicitly Apply. Their values and comparison notes are
+in [Siege preset notes](docs/SIEGE-PRESETS.md). Strong color remains unchanged.
 
 For Rust, click **Add / update Rust presets** to add its five options and show
 the Rust filter: **Forest / Temperate**, **Desert / Arid**, **Snow / Arctic**,
@@ -154,8 +159,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 238 passing VSTest tests**
-(67 Core, 143 integration, 28 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 240 passing VSTest tests**
+(68 Core, 143 integration, 29 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.
