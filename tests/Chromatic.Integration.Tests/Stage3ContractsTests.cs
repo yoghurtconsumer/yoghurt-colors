@@ -60,7 +60,8 @@ public sealed class Stage3ContractsTests
         var link = "chromaticdesk://preset/" + PresetExchange.Share(new());
         Assert.Null(await AppInstance.StartOrForwardAsync(image, link, _ => throw new Exception("Must not start second server"), scope));
         Assert.Null(await AppInstance.StartOrForwardAsync(image, null, _ => { }, scope));
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => AppInstance.StartOrForwardAsync(Path.Combine(Path.GetDirectoryName(image)!, "wrong.exe"), null, _ => { }, scope));
+        var foreign = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => AppInstance.StartOrForwardAsync(Path.Combine(Path.GetDirectoryName(image)!, "wrong.exe"), null, _ => { }, scope));
+        Assert.Contains("Exit the older copy", foreign.Message);
         lock (gate) { Assert.Equal(new string?[] { link, null }, received); }
         // A rejected client may leave the server finishing its bounded 3 s
         // handshake timeout; allow cleanup before the next adversarial request.
@@ -73,6 +74,85 @@ public sealed class Stage3ContractsTests
         await Protocol.WriteFrameAsync(pipe, Encoding.UTF8.GetBytes("{\"schemaVersion\":1,\"kind\":\"request\",\"challenge\":\"00000000000000000000000000000000\",\"link\":null}"), timeout.Token);
         await Assert.ThrowsAnyAsync<IOException>(async () => await Protocol.ReadFrameAsync(pipe, timeout.Token));
         lock (gate) Assert.Equal(2, received.Count);
+    }
+    [Fact] public async Task SynchronousUiShutdownDuringHandoffReleasesPipeAndAllowsRestart()
+    {
+        var image = Environment.ProcessPath!; var scope = Guid.NewGuid().ToString("N");
+        using var received = new ManualResetEventSlim(); using var release = new ManualResetEventSlim();
+        using var stopping = new ManualResetEventSlim();
+        var context = new QueuedUiContext(); var completed = false; Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
+            {
+                var primary = AppInstance.StartOrForwardAsync(image, null, _ =>
+                { received.Set(); if (!release.Wait(TimeSpan.FromSeconds(10))) throw new InvalidOperationException("Test handoff not released."); }, scope).GetAwaiter().GetResult()!;
+                stopping.Set();
+                Assert.True(received.Wait(TimeSpan.FromSeconds(10)));
+                var close = primary.DisposeAsync().AsTask();
+                release.Set();
+                // Application.OnExit blocks its UI thread here; continuations
+                // posted to this context cannot run until after shutdown.
+                completed = close.Wait(TimeSpan.FromSeconds(3));
+                context.Drain(); close.GetAwaiter().GetResult();
+            }
+            catch (Exception error) { failure = error; release.Set(); }
+        }) { IsBackground = true };
+        thread.SetApartmentState(ApartmentState.STA); thread.Start();
+        Assert.True(stopping.Wait(TimeSpan.FromSeconds(10)));
+        var forwarding = Task.Run(async () =>
+        {
+            try { await AppInstance.StartOrForwardAsync(image, null, _ => { }, scope); }
+            catch (Exception error) when (error is IOException or OperationCanceledException or TimeoutException) { }
+        });
+        Assert.True(await Task.Run(() => thread.Join(TimeSpan.FromSeconds(15))), "UI shutdown hung.");
+        await forwarding;
+        Assert.Null(failure); Assert.True(completed, "Shutdown captured the blocked UI context and retained the pipe.");
+        await using var restarted = await AppInstance.StartOrForwardAsync(image, null, _ => { }, scope);
+        Assert.NotNull(restarted);
+    }
+    [Fact] public async Task UnresponsiveExistingInstanceReportsActionableErrorWithoutStartingSecondServer()
+    {
+        var scope = Guid.NewGuid().ToString("N"); var name = AppInstance.PipeName(PipeInterop.Current, scope);
+        using var server = PipeInterop.CreateCurrentUserLocalServer(name);
+        var accept = server.WaitForConnectionAsync();
+        var error = await Assert.ThrowsAsync<TimeoutException>(() => AppInstance.StartOrForwardAsync(Environment.ProcessPath!, null, _ => { }, scope));
+        await accept;
+        Assert.Contains("Exit the older copy", error.Message); Assert.Contains("Task Manager", error.Message);
+        Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
+        Assert.Throws<System.ComponentModel.Win32Exception>(() => PipeInterop.CreateCurrentUserLocalServer(name));
+    }
+    [Fact] public async Task DelayedAcknowledgmentAndRapidSequentialLaunchesKeepPipeUsable()
+    {
+        var scope = Guid.NewGuid().ToString("N"); var received = 0;
+        await using var primary = await AppInstance.StartOrForwardAsync(Environment.ProcessPath!, null, _ => Interlocked.Increment(ref received), scope);
+        Assert.NotNull(primary);
+        using (var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(6)))
+        using (var client = new NamedPipeClientStream(".", AppInstance.PipeName(PipeInterop.Current, scope), PipeDirection.InOut, PipeOptions.Asynchronous))
+        {
+            await client.ConnectAsync(timeout.Token);
+            using var peer = AppInstance.Authenticate(client, false, Environment.ProcessPath!);
+            var challenge = JsonSerializer.Deserialize<AppHandoff>(await Protocol.ReadFrameAsync(client, timeout.Token), JsonContract.Options)!;
+            await Protocol.WriteFrameAsync(client, JsonSerializer.SerializeToUtf8Bytes(new AppHandoff(1, "request", challenge.Challenge), JsonContract.Options), timeout.Token);
+            while (Volatile.Read(ref received) == 0) await Task.Delay(1, timeout.Token);
+            // A completed pipe write does not mean the client consumed it.
+            // Disconnect must not discard an unread acknowledgment.
+            await Task.Delay(100, timeout.Token);
+            var ack = JsonSerializer.Deserialize<AppHandoff>(await Protocol.ReadFrameAsync(client, timeout.Token), JsonContract.Options)!;
+            Assert.Equal("accepted", ack.Kind); Assert.Equal(challenge.Challenge, ack.Challenge);
+            await Protocol.WriteFrameAsync(client, JsonSerializer.SerializeToUtf8Bytes(ack, JsonContract.Options), timeout.Token);
+            Assert.Equal(0, await client.ReadAsync(new byte[1], timeout.Token));
+        }
+        for (var i = 0; i < 32; i++)
+            Assert.Null(await AppInstance.StartOrForwardAsync(Environment.ProcessPath!, null, _ => throw new InvalidOperationException("Second server"), scope));
+        Assert.Equal(33, Volatile.Read(ref received));
+    }
+    private sealed class QueuedUiContext : SynchronizationContext
+    {
+        private readonly System.Collections.Concurrent.ConcurrentQueue<Action> _work = new();
+        public override void Post(SendOrPostCallback callback, object? state) => _work.Enqueue(() => callback(state));
+        public void Drain() { while (_work.TryDequeue(out var action)) action(); }
     }
     private sealed class RegistryFake : IProtocolRegistry
     {

@@ -185,8 +185,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 304 passing VSTest tests**
-(104 Core, 166 integration, 34 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 307 passing VSTest tests**
+(104 Core, 169 integration, 34 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

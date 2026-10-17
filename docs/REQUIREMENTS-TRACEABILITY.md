@@ -1,7 +1,7 @@
 # Requirements traceability — Stage 3 implementation
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 304 VSTest tests pass (104 Core, 166 integration,
+x64 projects build Release with SDK 10.0.402; 307 VSTest tests pass (104 Core, 169 integration,
 34 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
@@ -37,7 +37,7 @@ implemented; live input/GPU qualification is a separate manual review gate.
 | F15 | Crosshair shape, size, gap, color and outline | Foundation only | CrosshairSettings/ranges; Crosshair shell; OverlayHost NotImplemented | 5 |
 | F16 | Picture crosshairs and X/Y offsets (2.1.12) | Foundation only | Asset hash/offset model; image decoder and placement deferred | 5 |
 | F17 | Library of shared looks/crosshairs; public page also lists resolutions/full setups | Local offline library/import/export/link handoff implemented; hosted catalog deferred | Four strict document kinds; .chromaticpreset JSON/CD1 codes; confirmation before import; non-Color Apply refused pending Stages 4/5 | 4–5 application / optional 7 catalog |
-| F18 | Short preset codes; website-to-app link; confirmation before application | Offline codes, per-user protocol buttons and authenticated single-instance handoff implemented | Own CD1 canonical JSON/SHA-256/64 KiB bound; strict argv/link/challenge/schema; OS peer/exact image/user/session pinning; diff + confirm creates new ID; separate Apply; fake registry only in tests | Manual browser/OS URL-limit/registration checks |
+| F18 | Short preset codes; website-to-app link; confirmation before application | Offline codes, per-user protocol buttons and authenticated single-instance handoff implemented | Own CD1 canonical JSON/SHA-256/64 KiB bound; strict argv/link/challenge/schema; OS peer/exact image/user/session pinning; diff + confirm creates new ID; separate Apply; receipt-confirmed disconnect, blocked-UI shutdown/restart and delayed-reader regressions; fake registry only in tests | Manual browser/OS URL-limit/registration checks |
 | F19 | Catalog filter by type/game, newest/most-copied, author/date; publish/report; image moderation | Local name/author/type/game-tag filtering implemented; online catalog deferred | Local metadata/filtering only; no publish/report endpoint or remote image loader | optional 7 |
 | F20 | Wi-Fi phone color sliders/scene presets via QR; server lives only while Phone window is open | Foundation only | Remote schema/color whitelist/sequence validation; PhoneServer always off | 6 |
 | F21 | Music controls, improved app support (2.1.10) | Foundation only | Music panel and typed IMediaController; GSMTC NotImplemented | 6 |

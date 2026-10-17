@@ -27,18 +27,18 @@ public partial class App : Application
             if (e.Args is ["--diagnostics"])
             { Console.WriteLine(ReadOnlyDiagnostics.Save()); Shutdown(0); return; }
             var smoke = e.Args is ["--startup-smoke-test"];
-            if (!smoke)
+            var link = smoke ? null : AppInstance.ParseArguments(e.Args);
+            // Smoke must exercise the real WPF OnExit / handoff-server disposal,
+            // while never contacting or reserving the user's actual app endpoint.
+            var scope = smoke ? $"Chromatic.App.Smoke.{Guid.NewGuid():N}" : "Chromatic.App";
+            _instance = await AppInstance.StartOrForwardAsync(Environment.ProcessPath!, link, value =>
             {
-                var link = AppInstance.ParseArguments(e.Args);
-                _instance = await AppInstance.StartOrForwardAsync(Environment.ProcessPath!, link, value =>
-                {
-                    if (_exiting || Dispatcher.HasShutdownStarted) return;
-                    if (_handoffs.Count >= 16) throw new InvalidOperationException("Too many pending preset links.");
-                    _handoffs.Enqueue(value); _ = Dispatcher.BeginInvoke(ProcessHandoffs);
-                });
-                if (_instance is null) { Shutdown(0); return; }
-                if (link is not null) _handoffs.Enqueue(link);
-            }
+                if (_exiting || Dispatcher.HasShutdownStarted) return;
+                if (_handoffs.Count >= 16) throw new InvalidOperationException("Too many pending preset links.");
+                _handoffs.Enqueue(value); _ = Dispatcher.BeginInvoke(ProcessHandoffs);
+            }, scope);
+            if (_instance is null) { Shutdown(0); return; }
+            if (link is not null) _handoffs.Enqueue(link);
             await StartAsync(smoke);
             _readyForHandoffs = true;
             ProcessHandoffs();

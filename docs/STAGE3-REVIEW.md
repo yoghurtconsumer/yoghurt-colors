@@ -72,7 +72,9 @@ pair. Local handoff pins the real OS peer, exact executable image, user/session
 and creation time, and uses a fresh challenge plus bounded strict JSON. It has no
 native/effects command surface. The endpoint is fixed per product/user/session, including across app folders.
 A different app location fails exact-image authentication and must not start a
-second UI/Agent; exit the old build before switching locations. Automated pipe
+second UI/Agent; exit the old build before switching locations. If an older build has closed its
+window but remains in Task Manager as Chromatic.App, end that UI before retrying.
+This build fixes the shutdown deadlock that retained its pipe. Automated pipe
 tests inject a unique scope and never connect to the real app endpoint.
 
 ## Rust colour-darkening review

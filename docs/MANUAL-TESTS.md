@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 3
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 304 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 307 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -72,7 +72,8 @@ Indoor lift changes the whole image. Record the chosen settings, monitor and
 backend result; mathematical gray-range tests do not prove visibility benefits.
 No game or physical display is used for automated preset tests.
 
-Run-Chromatic.cmd -SmokeTest verifies first render and closes with in-memory
+Run-Chromatic.cmd -SmokeTest now also opens a unique isolated handoff pipe and
+exercises real WPF OnExit disposal. It verifies first render and closes with in-memory
 defaults, without launching companions or native resource providers. Logs are at
 %LOCALAPPDATA%/ChromaticDesktop/logs/latest-launch.log and startup reports.
 Automated launcher tests cover spaces/foreign working directory and visible errors.

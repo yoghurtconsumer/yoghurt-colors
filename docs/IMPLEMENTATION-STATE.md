@@ -2,7 +2,7 @@
 
 Updated: 17 October 2026. Requested work: finish all Stage 3 steps while user is away.
 Current checkpoint: Stage 3 implementation complete; manual input/GPU qualification pending.
-Previous GitHub checkpoint: d72eddf (Stage 3 and Rust reference investigation).
+Previous GitHub checkpoint: 7e69527 (experimental global Rust accent drafts).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 implementation builds Release/x64 with zero
-warnings/errors; 304 VSTest tests pass: 104 Core, 166 integration and 34 UI/launcher.
+warnings/errors; 307 VSTest tests pass: 104 Core, 169 integration and 34 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -61,6 +61,36 @@ preservation, hue/alpha/clipping, invalid ranges/non-finite values, persistence,
 IPC, remote rejection, explicit Apply and exact owned fake-baseline restoration.
 Launcher smoke renders/closes without companions/providers. See
 [Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 has not been started.
+
+## Startup regression after switching portable builds
+
+The user's startup report showed AppInstance.ConnectAsync cancellation. Read-only
+inspection found the older 111728 portable UI still alive without a window and
+without Agent/Recovery companions. App.OnExit synchronously waits for handoff
+server disposal; its await captured the blocked WPF context, retaining the pipe.
+A deterministic STA/queued-context regression failed before the fix and passes
+with ConfigureAwait(false) and finally-protected disposal. The pipe can then be
+recreated without starting a second UI or weakening exact-image authentication.
+
+Full-suite testing also exposed unread acknowledgment loss: Windows Disconnect
+can discard a completed write before the client consumes it. A delayed-reader
+regression reproduced EOF before the fix. The client now confirms receipt using
+the existing accepted/challenge frame and waits for server disconnect; the server
+waits for the bounded, identity/challenge-checked receipt before disconnecting.
+Tests include 32 consecutive handoffs, blocked UI shutdown during a handoff,
+foreign-image rejection and actionable timeout errors for an unresponsive copy.
+No request is automatically replayed. Show/import remain the only handoff actions.
+
+The WPF and packaged startup smoke paths now create a unique test-scoped pipe and
+exercise actual OnExit disposal, while still using in-memory settings and no
+companions/native display providers. They never contact the real app endpoint.
+The old generic cancellation/image-mismatch popup is replaced with instructions
+to exit the older copy; a stuck windowless UI can be ended in Task Manager.
+After the full suite, the verified older windowless UI (PID 21632, exact older
+portable image path) was removed once after confirming no Agent/Recovery was
+running. No game or companion was stopped. No automatic process termination was
+added to the product. No game access,
+new native imports or Stage 4 work was introduced.
 
 ## Stage 3 completion — input, foreground and authenticated link handoff
 

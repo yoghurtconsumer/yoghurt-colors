@@ -38,17 +38,33 @@ public sealed class AppInstance : IAsyncDisposable
         try { return new(PipeInterop.CreateCurrentUserLocalServer(name), image, received); }
         catch (Win32Exception e) when (e.NativeErrorCode is 5 or 231)
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(4));
-            using var client = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous);
-            await client.ConnectAsync(timeout.Token);
-            using var peer = Authenticate(client, false, image);
-            var challenge = await ReadAsync(client, timeout.Token);
-            if (challenge.Kind != "challenge" || challenge.Link is not null) throw new UnauthorizedAccessException("Invalid handoff challenge.");
-            await WriteAsync(client, new(1, "request", challenge.Challenge, link), timeout.Token);
-            var ack = await ReadAsync(client, timeout.Token);
-            if (ack.Kind != "accepted" || ack.Challenge != challenge.Challenge || ack.Link is not null || peer.HasExited)
-                throw new UnauthorizedAccessException("Handoff acknowledgment mismatch.");
-            return null;
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+                using var client = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous);
+                await client.ConnectAsync(timeout.Token);
+                using var peer = Authenticate(client, false, image);
+                var challenge = await ReadAsync(client, timeout.Token);
+                if (challenge.Kind != "challenge" || challenge.Link is not null) throw new UnauthorizedAccessException("Invalid handoff challenge.");
+                await WriteAsync(client, new(1, "request", challenge.Challenge, link), timeout.Token);
+                var ack = await ReadAsync(client, timeout.Token);
+                if (ack.Kind != "accepted" || ack.Challenge != challenge.Challenge || ack.Link is not null || peer.HasExited)
+                    throw new UnauthorizedAccessException("Handoff acknowledgment mismatch.");
+                // Confirm that the acknowledgment was consumed, then wait for
+                // server disconnect before another launch can reuse this pipe.
+                await WriteAsync(client, new(1, "accepted", challenge.Challenge), timeout.Token);
+                if (await client.ReadAsync(new byte[1], timeout.Token) != 0)
+                    throw new ContractException("Unexpected trailing handoff data.");
+                return null;
+            }
+            catch (OperationCanceledException error)
+            {
+                throw new TimeoutException("Could not contact an existing Chromatic Desktop copy. Exit the older copy before opening this build. If its window has already closed, end only the remaining Chromatic.App process in Task Manager, then retry.", error);
+            }
+            catch (UnauthorizedAccessException error)
+            {
+                throw new UnauthorizedAccessException("Another Chromatic Desktop copy is running from a different folder or has an unverified identity. Exit the older copy before opening this build. This build did not start a second UI or Agent.", error);
+            }
         }
     }
     private async Task ServeAsync()
@@ -70,6 +86,11 @@ public sealed class AppInstance : IAsyncDisposable
                 if (request.Link is not null) _ = PresetExchange.ParseLink(request.Link);
                 _received(request.Link);
                 await WriteAsync(_server, new(1, "accepted", challenge), timeout.Token);
+                // Disconnect discards unread pipe data even after WriteAsync
+                // completes. Wait for the client's bounded receipt confirmation.
+                var receipt = await ReadAsync(_server, timeout.Token);
+                if (receipt.Kind != "accepted" || receipt.Challenge != challenge || receipt.Link is not null || peer.HasExited)
+                    throw new UnauthorizedAccessException("Handoff receipt mismatch.");
             }
             catch (Exception e) when (e is IOException or ContractException or UnauthorizedAccessException or Win32Exception or OperationCanceledException or ArgumentException or JsonException or InvalidOperationException)
             { /* Reject this peer; keep the primary application and exclusive pipe alive. */ }
@@ -94,7 +115,10 @@ public sealed class AppInstance : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _stop.Cancel();
-        try { await _serve; } catch (OperationCanceledException) { }
-        _server.Dispose(); _stop.Dispose();
+        // WPF OnExit synchronously waits for this disposal. Never post its
+        // continuation back to that blocked UI thread or retain the pipe forever.
+        try { await _serve.ConfigureAwait(false); }
+        catch (OperationCanceledException) { }
+        finally { _server.Dispose(); _stop.Dispose(); }
     }
 }

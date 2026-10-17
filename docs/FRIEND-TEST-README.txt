@@ -4,6 +4,10 @@ CHROMATIC DESKTOP - PRIVATE WINDOWS X64 TEST BUILD
 2. Open that folder and double-click Chromatic.App.exe.
 3. Keep the companions folder and every DLL beside the app. Do not send only EXE.
 
+Exit any older Chromatic copy before opening a build from a different folder.
+If its window closed but Chromatic.App remains in Task Manager, end that old UI
+and retry. This build fixes the shutdown hang that could block later launches.
+
 No SDK, Visual Studio, separate .NET installation or administrator rights needed.
 Windows 10 build 19041+ or Windows 11, Intel/AMD x64 processor required.
 This is a private development test build, not a signed public release.
