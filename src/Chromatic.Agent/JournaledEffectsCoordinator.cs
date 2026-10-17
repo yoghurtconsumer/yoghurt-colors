@@ -87,6 +87,8 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
     {
         lock (_stateLock) _state = _state with { Capabilities = report };
     }
+    public void UpdateAutomationStatus(string status)
+    { lock (_stateLock) _state = _state with { AutomationStatus = status.Length <= 4096 ? status : status[..4096] }; }
     private void RequireRecovery()
     {
         RecoveryReady = false;

@@ -1,6 +1,6 @@
-# Manual qualification backlog — Stage 3 library checkpoint
+# Manual qualification backlog — Stage 3
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 240 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 275 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -24,15 +24,16 @@ Library checks for this checkpoint (no Apply needed):
 4. Import a resolution or crosshair document: store/export is available; Apply
    must explain the pending later stage and leave the desktop unchanged.
 5. In Games, add/edit/remove an executable/preset bookmark. Nothing launches or
-   switches automatically. Remove its chosen preset and check the missing-preset
+   switches automatically while automation is off. Remove its chosen preset and check the missing-preset
    message. Optionally click Steam discovery and manually pick an executable.
 6. Check readability/keyboard navigation in Default and Slate, especially list
    selection, filters, long paths and share-code text. Actual DPI/accessibility
    qualification is still manual; XAML layout is covered automatically.
 
-Global input, automatic focus switching and Windows protocol handoff are still
-pending. Do not interpret saved game bookmarks or a pasted link parser as those
-features being implemented.
+Stage 3 input, automatic profiles and OS-link implementation are now present.
+Use [the Stage 3 review guide](STAGE3-REVIEW.md) for explicit opt-in,
+repeat/chord/focus/lock/suspend/conflict/missed-release and link checks. None of
+those live/manual qualifications was run by the development agent.
 
 Game pack checks: click Add game presets, verify six Siege options (including
 Champ and Im Diamond 1) and the

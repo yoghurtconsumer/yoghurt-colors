@@ -14,19 +14,19 @@ public sealed record IpcRequest(int SchemaVersion, string Kind, int SessionId, C
 public sealed record IpcState(long Revision, long Generation, bool DesiredEnabled, bool EffectiveEnabled,
     bool Held, string ActiveProfileId, ColorSettings GlobalColor, ImmutableArray<MonitorColorSettings> Monitors,
     PreviewTransaction? Preview, bool RecoveryPending, ImmutableArray<SuspensionReason> Suspensions,
-    CapabilityReport Capabilities, ApplyResult? LastObservedResult)
+    CapabilityReport Capabilities, ApplyResult? LastObservedResult, string AutomationStatus = "Input and automatic profiles are off.")
 {
     public EffectsState ToEffectsState() => new()
     {
         Revision = Revision, Generation = Generation, Enabled = DesiredEnabled, Held = Held,
         DesktopProfile = new() { Id = ActiveProfileId, GlobalColor = GlobalColor, Monitors = Monitors },
         Preview = Preview, RecoveryPending = RecoveryPending, Suspensions = Suspensions.ToImmutableHashSet(),
-        Capabilities = Capabilities, Observed = new(Revision, Generation, LastObservedResult)
+        Capabilities = Capabilities, Observed = new(Revision, Generation, LastObservedResult), AutomationStatus = AutomationStatus
     };
     public static IpcState From(EffectsState state) => new(state.Revision, state.Generation, state.Enabled,
         state.Effective.Enabled, state.Held, state.BaseProfile.Id, state.Effective.GlobalColor,
         state.Effective.Monitors, state.Preview, state.RecoveryPending,
-        state.Suspensions.OrderBy(s => s).ToImmutableArray(), state.Capabilities, state.Observed.LastResult);
+        state.Suspensions.OrderBy(s => s).ToImmutableArray(), state.Capabilities, state.Observed.LastResult, state.AutomationStatus);
 }
 public sealed record IpcResponse(int SchemaVersion, string Kind, Guid CommandId,
     CommandResult Decision, ApplyResult Completion, IpcState State);

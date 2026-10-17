@@ -14,6 +14,35 @@ namespace Chromatic.Integration.Tests;
 
 public sealed class NativeResourceTests
 {
+    [Fact] public async Task BasicHoldWritesComposedAffineMatrixAndReleaseUsesNewestBase()
+    {
+        using var directory = new TestDirectory(); using var worker = new AgentStaWorker();
+        var coordinator = new JournaledEffectsCoordinator(worker, new()
+        { Capabilities = new([new(BackendKind.Magnification, Capability.Available, "Injected", EffectScope.GlobalDesktop)]) }) { RecoveryReady = true };
+        var api = new MagFake(); var matrix = new MagnificationResource(api, () => true);
+        using var owned = new OwnedResourceController(new RecoveryJournalStore(directory.File()),
+            new() { UserSid = "S-1-5-21-1", SessionId = 1, AgentPid = 42, AgentStartTicks = 100 }, coordinator, () => true);
+        coordinator.AttachBackend(new PlannedColorBackend(owned, [matrix], matrix, () => coordinator.State, new()));
+        async Task<EffectsAcknowledgment> Send(EffectsCommand command)
+        { var state = coordinator.State; return await coordinator.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, command)); }
+        try
+        {
+            await Send(new ConfigureAutomation(new() { Boost = new(true, .6, .02, 0, .01) }));
+            Assert.True((await Send(new ApplyProfile(new() { GlobalColor = new(180) }))).Completion.Success);
+            var held = await Send(new SetHold(true)); Assert.True(held.Completion.Success); Assert.Contains("not shadow-only", held.Completion.Explanation);
+            var boosted = await worker.InvokeAsync(() => matrix.ReadAsync(default));
+            Assert.NotEqual(ColorMatrixBuilder.Build(new(180)).Values.ToArray(), boosted.Values.ToArray());
+            await Send(new ActivatePreset(new() { Id = "latest", GlobalColor = new(220) }));
+            Assert.True(coordinator.State.Held);
+            Assert.True((await Send(new SetHold(false))).Completion.Success);
+            var actual = await worker.InvokeAsync(() => matrix.ReadAsync(default));
+            var expected = matrix.Canonicalize(new(ColorMatrixBuilder.Build(new(220)).Values));
+            Assert.Equal(expected.Values.ToArray(), actual.Values.ToArray());
+            Assert.True((await Send(new Restore())).Completion.Success);
+            Assert.Equal(Matrix5x5.Identity.Values.ToArray(), (await worker.InvokeAsync(() => matrix.ReadAsync(default))).Values.ToArray());
+        }
+        finally { await worker.InvokeAsync(() => { matrix.Dispose(); return true; }); }
+    }
     [Theory] [InlineData(false)] [InlineData(true)]
     public async Task FullscreenCandidateUsesNativeVibranceOrExplicitlyReportsSoftwareFallback(bool rejectPrivateApi)
     {

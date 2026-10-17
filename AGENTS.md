@@ -32,3 +32,10 @@ save only base profiles. Magnification is global, gamma/DDC are per monitor.
 No automatic hardware tests. No Stage 2 native APIs in Stage 1. Do not add empty
 future files or claim the final Section 2 tree is already implemented. Missing
 later-stage paths and release gates belong in the durable progress notes.
+
+Stage 3 listeners are explicit opt-ins owned by Agent. Automated tests inject
+IAutomationInput and never install hooks. Keep low-level hooks out-of-process
+from games, always chain, never synthesize/suppress/log text. Foreground uses
+limited query metadata only. Protocol registration is a user-clicked HKCU action;
+tests must inject IProtocolRegistry. Link handoff authenticates OS peers and must
+never bypass import confirmation or Apply. Stop before Stage 4 unless requested.

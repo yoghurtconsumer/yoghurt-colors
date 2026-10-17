@@ -18,6 +18,7 @@ public static class EffectsReducer
         if (envelope.BaseRevision < 0 || envelope.Generation < 0 || envelope.CommandId == Guid.Empty)
             return Reject(CompletionStatus.Invalid, "Invalid command envelope.");
         if (command is GetState) return new(state, new(CompletionStatus.Accepted, state.Revision, state.Generation, "Authoritative state query."));
+        if (command is TakeScreenshot) return Reject(CompletionStatus.NotImplemented, "Screenshot capture is pending Stage 5; no image captured.");
         if (!priority && (envelope.BaseRevision != state.Revision || envelope.Generation != state.Generation))
             return Reject(CompletionStatus.StaleRevision, "Rebase on the authoritative revision and generation.");
         if (state.ShuttingDown && command is not Shutdown and not Restore)
@@ -37,6 +38,7 @@ public static class EffectsReducer
                 SetColor c => SetBaseColor(state, c.Color),
                 ActivatePreset c => Activate(state, c.Profile),
                 ApplyProfile c => ApplyExplicitProfile(state, c.Profile),
+                ConfigureAutomation c => Configure(state, c.Settings),
                 ForegroundChanged c => ChangeForeground(state, c),
                 SetHold c when !c.Held => state with { Held = false },
                 SetHold when !state.Effective.Enabled || !state.HoldBoost.Enabled =>
@@ -76,6 +78,12 @@ public static class EffectsReducer
     {
         SettingsValidator.ValidateColor(color);
         return state with { ManualProfile = state.BaseProfile with { GlobalColor = color } };
+    }
+    private static EffectsState Configure(EffectsState state, AutomationSettings settings)
+    {
+        AutomationValidator.Validate(settings);
+        return state with { Automation = settings, DesktopProfile = settings.Desktop, HoldBoost = settings.Boost, Held = false,
+            GameProfile = null, Foreground = null, AutomationStatus = "Configuration accepted; listeners pending reconciliation." };
     }
     private static EffectsState Activate(EffectsState state, DisplayProfile profile)
     {

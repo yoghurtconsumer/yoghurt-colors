@@ -36,7 +36,8 @@ public sealed class ShellSmokeTests
             vm.Selected = navigation;
             Assert.Same(navigation.Page, vm.CurrentPage);
             if (vm.CurrentPage is DisplayViewModel) Assert.Contains("unavailable", vm.CurrentPage.CapabilityStatus);
-            else if (vm.CurrentPage is PresetsViewModel or GamesViewModel) Assert.Contains("Local", vm.CurrentPage.CapabilityStatus);
+            else if (vm.CurrentPage is PresetsViewModel) Assert.Contains("Local", vm.CurrentPage.CapabilityStatus);
+            else if (vm.CurrentPage is GamesViewModel) Assert.Contains("Exact-path", vm.CurrentPage.CapabilityStatus);
             else Assert.Equal("NotImplemented", vm.CurrentPage.CapabilityStatus);
         }
         Assert.False(services.GetRequiredService<DisplayViewModel>().CanApply);

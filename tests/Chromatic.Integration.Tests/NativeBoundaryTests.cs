@@ -17,10 +17,13 @@ public sealed class NativeBoundaryTests
         {
             ["Magnification.dll"] = ["MagInitialize", "MagUninitialize", "MagGetFullscreenColorEffect", "MagSetFullscreenColorEffect"],
             ["gdi32.dll"] = ["CreateDCW", "DeleteDC", "GetDeviceGammaRamp", "SetDeviceGammaRamp"],
-            ["user32.dll"] = ["GetDisplayConfigBufferSizes", "QueryDisplayConfig", "DisplayConfigGetDeviceInfo"],
+            ["user32.dll"] = ["GetDisplayConfigBufferSizes", "QueryDisplayConfig", "DisplayConfigGetDeviceInfo",
+                "SetWindowsHookExW", "CallNextHookEx", "UnhookWindowsHookEx", "RegisterHotKey", "UnregisterHotKey",
+                "SetWinEventHook", "UnhookWinEvent", "GetForegroundWindow", "GetWindowThreadProcessId",
+                "GetAsyncKeyState", "MonitorFromWindow", "GetMonitorInfoW"],
             ["kernel32.dll"] = ["LoadLibraryExW", "GetProcAddress", "FreeLibrary", "CreateNamedPipeW", "LocalFree",
                 "GetNamedPipeClientProcessId", "GetNamedPipeServerProcessId", "OpenProcess", "GetProcessTimes",
-                "QueryFullProcessImageNameW", "WaitForSingleObject", "TerminateProcess"],
+                "QueryFullProcessImageNameW", "WaitForSingleObject", "TerminateProcess", "GetModuleHandleW"],
             ["advapi32.dll"] = ["ConvertStringSecurityDescriptorToSecurityDescriptorW", "OpenProcessToken", "GetTokenInformation"],
             ["wtsapi32.dll"] = ["WTSRegisterSessionNotification", "WTSUnRegisterSessionNotification"]
         };

@@ -21,6 +21,8 @@ public sealed record EffectsState
     public DisplayProfile? ManualProfile { get; init; }
     public ExecutableIdentity? Foreground { get; init; }
     public HoldBoostSettings HoldBoost { get; init; } = new();
+    public AutomationSettings Automation { get; init; } = new();
+    public string AutomationStatus { get; init; } = "Input and automatic profiles are off.";
     public ImmutableHashSet<SuspensionReason> Suspensions { get; init; } = [];
     public PreviewTransaction? Preview { get; init; }
     public CapabilityReport Capabilities { get; init; } = CapabilityReport.Stage1;

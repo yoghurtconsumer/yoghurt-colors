@@ -1,16 +1,16 @@
 # Chromatic Desktop implementation state
 
-Updated: 17 October 2026. Requested work: continue step by step.
-Current checkpoint: Stage 3, step 1 — local library, game bookmarks and game starting-point pack.
-Previous GitHub checkpoint: 7069e11 (richer Rust palette and safe refresh of untouched defaults).
+Updated: 17 October 2026. Requested work: finish all Stage 3 steps while user is away.
+Current checkpoint: Stage 3 implementation complete; manual input/GPU qualification pending.
+Previous GitHub checkpoint: 10bd6f4 (Siege Champ and Im Diamond 1).
 
 ## Current outcome
 
 Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
-(14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
-warnings/errors; 240 VSTest tests pass: 68 Core, 143 integration and 29 UI/launcher.
+(14 projects total). The Stage 3 implementation builds Release/x64 with zero
+warnings/errors; 275 VSTest tests pass: 85 Core, 159 integration and 31 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -28,12 +28,70 @@ all-system, capture or anti-cheat qualification. Native DVC remains separately
 unverified on hardware. No code change or additional hardware test was made for
 this documentation update.
 
-The user's follow-up authorizes continued work step by step. Stage 3 is IN
-PROGRESS, not complete. This checkpoint implements the offline library/discovery
-step first. Input/foreground listeners and protocol registration/handoff are not
-installed or exposed as working. Stop before Stage 4.
+The current request authorizes finishing Stage 3. Its implementation is complete;
+manual live-input and GPU qualification remains open. Stop before Stage 4. The
+requested Rust “black holo”/“looting” behavior is not defined in the public pages
+reviewed; a clarification question is pending. No selective reticle recolor,
+external crosshair, automated looting or gameplay analysis is claimed or added.
+The five accepted Rust and six Siege presets are preserved.
 
-## Stage 3, step 1 — local library and game bookmarks
+## Stage 3 completion — input, foreground and authenticated link handoff
+
+- Agent owns explicitly opted-in input on a dedicated pumping STA. Low-level
+  keyboard and optional Mouse4/5 callbacks are rooted, extract/enqueue bounded
+  configured transitions, catch exceptions and always chain. No typed text is
+  logged, input suppressed/synthesized or in-game code loaded. RegisterHotKey
+  uses MOD_NOREPEAT and reports actual per-ID conflicts. Screenshot is typed
+  dispatch with an honest NotImplemented result pending Stage 5.
+- Pure HoldTracker rejects repeats/injected events by default, requires all chord
+  components, ends on any release and blocks resumed keys until a fresh press.
+  Focus/safety/configuration/overflow/disconnect clear hold. A 100 ms poll of only
+  configured held/blocked keys can release missed key-up, never activate.
+- Basic affine lift composes the base matrix with bounded whole-image lift and
+  tint; release uses the newest base. It does not claim shadow-only correction.
+  LUT/native-DVC holds remain unavailable until independent latency qualification.
+  Journal/readback and revision-plus-generation fencing apply to every write.
+  The consumer never waits behind a native completion: bounded pending commands
+  let release immediately reduce/fence queued boost work; a gated-write test
+  proves release is accepted before the held setter completes.
+- Foreground events are OUTOFCONTEXT EVENT_SYSTEM_FOREGROUND only, enqueue HWND
+  and event time, debounce 150 ms, verify the current window and query only
+  PROCESS_QUERY_LIMITED_INFORMATION path/PID/creation metadata through SafeHandle.
+  PID reuse, own UI/Agent, denied/vanished/unknown windows and 500 ms liveness
+  fallback are handled. Exact normalized paths use OrdinalIgnoreCase; per-output
+  intentions require explicit monitor mapping and global matrix remains global.
+  The polling/debounce deadline race found by tests is fixed.
+- Games exposes separately saved enabled rules, desktop fallback, hold/chord/tint,
+  accessibility/mouse opt-ins and preset/pause/restore/screenshot hotkeys. All
+  services default off and saving config never enables effects. automation.json
+  v1 is strict, bounded, atomic/last-good; profiles are saved color snapshots and
+  base colors stay separate from hold. UI validates IPC size before committing,
+  reloads authoritative disk state after failed writes and refuses missing presets.
+- chromaticdesk links accept only one validated argv data item. App-to-App handoff
+  has a bounded strict schema, fresh challenge, current-user/session local-only
+  pipe ACL and real OS peer/exact image/PID/creation pinning on both ends. It
+  queues only show or validated preset import, opens Library with a diff and never
+  applies. Same-location double launch forwards; existing per-session Agent writer
+  lease also prevents competing installs from owning hardware simultaneously.
+- Settings exposes explicit per-user URL registration/removal. No registration
+  runs on startup. Quoted fixed app command, foreign/partial handler protection
+  and own-command-only removal are tested with memory registry adapters; no real
+  registry was changed during development. Long OS URLs remain subject to Windows
+  limits; offline pasted codes/files remain available.
+- Full suite covers fresh press/repeat/chord/injected/missed-up, rapid focus,
+  access denial/own windows/PID reuse, overflow, pause, newest base while held,
+  actual composed fake matrix/baseline restoration, strict config/future versions,
+  interrupted commits/corrupt last-good, argv/foreign app/challenge rejection,
+  handoff and UI draft/save/disable workflows. The actual launcher smoke test
+  rendered its visible WPF window and exited cleanly with no providers/companions. Existing decompression/malicious
+  import and child-process crash/recovery tests remain passing. Input factories
+  and display/registry adapters are injected; no real hooks/hardware were used.
+- [STAGE3-REVIEW.md](STAGE3-REVIEW.md) records review steps and remaining manual
+  input/conflict/focus/session/DPI/hardware checks. Anti-cheat boundary now explicitly
+  discloses optional low-level input listeners and limited foreground metadata.
+
+## Historical Stage 3, step 1 — local library and game bookmarks
+
 
 - Added the user's requested Siege styles Champ (220%, brightness +0.002,
   contrast 0.996) and Im Diamond 1 (190%, brightness +0.005, contrast 0.99).
@@ -141,12 +199,9 @@ installed or exposed as working. Stop before Stage 4.
   Run-App -NoBuild -SmokeTest launcher also rendered and exited cleanly with
   in-memory defaults, no companions and no native resource providers.
 
-Next Stage 3 steps: (1) Agent-owned opt-in pumping-thread hold/hotkey support with
-repeat/chord/injected-input/release reconciliation and conflict reporting; (2)
-debounced foreground identity/profile selection and desktop fallback, including
-PID reuse/denied access/focus loss; (3) explicit per-user protocol registration
-and authenticated single-instance handoff; (4) corresponding integration tests
-and manual input/GPU qualification. None of those are claimed complete here.
+Those historical next steps are now implemented above. Manual qualification is
+still pending; the next development stage, after user review, is Stage 4 display
+transactions/HDR/DDC. It was not started in this task.
 
 ## Target and dependencies
 
@@ -205,7 +260,7 @@ Smoke mode uses in-memory defaults, launches no companions and closes after rend
   checks, readback and measured setter latency. Ignored/failed ramps and writes
   exceeding 250 ms fail the plan, restore captured baselines and disable the
   session's LUT route. Hold support remains unavailable until latency is
-  explicitly qualified; Stage 3 has no input implementation yet.
+  explicitly qualified; Stage 3 now adds an optional basic affine hold; LUT latency qualification remains open.
 - Optional private NVIDIA DVC loads only installed System32 nvapi64.dll, known
   QueryInterface IDs/Cdecl delegates, checked statuses/version/ranges and the
   GDI display-driving handle. Its 0–100 intention has 50 neutral and uses
@@ -395,14 +450,14 @@ and has no native bypass. It was NOT executed. See MANUAL-TESTS.md.
 - Multi-output LUT writes are conservatively blocked as SharedRampUnqualified:
   drivers may share ramps. Safe independent-output/alias qualification remains
   open. Single-output gamma is optional and can still be refused by the driver.
-- No live hold input or automatic latency qualification is exposed. Fast/ignored
-  driver behavior and on-screen grayscale checks remain manual qualification.
+- Optional live input is implemented; no real hook/game/GPU qualification was run.
+  LUT hold remains blocked pending latency and on-screen grayscale checks.
 - Hotplug/mode reset/hybrid mapping and private NvAPI support require an explicit
   driver matrix. Unknown/HDR/ACM states suspend global SDR effects.
-- Mode/HDR transactions, DDC, live input/automatic game profiles, OS deep-link
-  handoff, overlay/capture, phone and media remain pending in Stages 3–6. The local
-  library/import/discovery step above is implemented. No listeners outside local
-  authenticated named pipes exist.
+- Mode/HDR transactions, DDC, overlay/capture, phone and media remain pending in
+  Stages 4–6. Stage 3 input/foreground and local authenticated app-link listeners
+  are explicit opt-ins/default off except the local single-instance UI pipe.
+  No network listener, automated gameplay or physical qualification is added.
 - Signing, packaging/publish companion layout, installer/updater, licence
   selection, full dependency notices/SBOM and final security audit remain Stage 7.
   Do not describe the final Section 2 file tree or release gates as complete.

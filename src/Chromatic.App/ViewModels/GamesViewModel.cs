@@ -19,7 +19,9 @@ public sealed class GamesViewModel : PageViewModel
     private string _name = "My game", _path = "", _status = "Add an executable and choose a Color preset. Bookmarks do not switch colors automatically.";
     private IReadOnlyList<InstalledGame> _installed = [];
     private InstalledGame? _installedSelection;
-    public override string CapabilityStatus => "Local game bookmarks · automatic switching and hotkeys unavailable";
+    public override string CapabilityStatus => "Exact-path profiles · optional hotkeys and temporary hold";
+    public AutomationViewModel Automation { get; }
+    public ICommand StageRuleCommand { get; }
     public ImmutableArray<SavedGame> Games => _library.Games;
     public IEnumerable<PresetDocument> ColorPresets => _presets.All.Where(p => p.Kind == PresetKind.Color);
     public IReadOnlyList<InstalledGame> Installed => _installed;
@@ -49,10 +51,11 @@ public sealed class GamesViewModel : PageViewModel
     public ICommand DiscoverCommand { get; }
     public ICommand ChooseDiscoveredCommand { get; }
     public ICommand PreviewPresetCommand { get; }
-    public GamesViewModel(GameLibraryRepository repository, PresetsViewModel presets) : base("Games", "Keep your game looks together.",
-        "This checkpoint saves local executable/preset bookmarks. Automatic switching and input listeners are still under development. Discovery reads Steam library and manifest metadata only when requested; it never scans game files or launches games.")
+    public GamesViewModel(GameLibraryRepository repository, PresetsViewModel presets, AutomationViewModel automation) : base("Games", "Keep your game looks together.",
+        "Save a bookmark, draft its rule below, enable it and Save automation to opt in. Foreground detection reads only executable metadata. Discovery reads Steam metadata only when requested.")
     {
-        _repository = repository; _presets = presets;
+        _repository = repository; _presets = presets; Automation = automation;
+        StageRuleCommand = new RelayCommand(_ => { if (Selected is { } game) Automation.StageRule(game); else Status = "Save and select a game bookmark first."; });
         _presets.LibraryChanged += () =>
         {
             var id = SelectedPreset?.Id; Changed(nameof(ColorPresets));
@@ -93,7 +96,7 @@ public sealed class GamesViewModel : PageViewModel
     }
     public async Task LoadAsync()
     {
-        try { var loaded = await _repository.LoadAsync(); _library = loaded.Value; _loaded = true; Changed(nameof(Games)); Status = loaded.Warning ?? "Game bookmarks loaded. Automatic switching remains unavailable."; }
+        try { var loaded = await _repository.LoadAsync(); _library = loaded.Value; _loaded = true; Changed(nameof(Games)); Status = loaded.Warning ?? "Bookmarks loaded. Draft and enable a rule below for optional switching."; }
         catch (Exception e) { _loaded = false; Status = $"Games could not load: {e.Message} Files preserved; saving is disabled."; }
     }
     private async Task ChangeAsync(Func<GameLibrary, GameLibrary> change, string message, string? selectId = null)

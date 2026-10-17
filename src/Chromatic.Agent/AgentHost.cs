@@ -13,7 +13,7 @@ namespace Chromatic.Agent;
 public static class AgentHost
 {
     public static async Task<int> RunAsync(CompanionBootstrap launch, CompanionRuntime? injectedRuntime = null,
-        Func<IAgentBroadcastSource>? injectedBroadcasts = null)
+        Func<IAgentBroadcastSource>? injectedBroadcasts = null, Func<AutomationSettings, IAutomationInput>? injectedInput = null)
     {
         AbiAssertions.Verify(); DisplaySafetyProbe.VerifyAbi();
         if (launch.RecoveryOnly) throw new UnauthorizedAccessException("Recovery-only launch cannot start an Agent.");
@@ -38,6 +38,8 @@ public static class AgentHost
         var catalog = runtime.CreateResources(inventory, launch.Services.GammaCompatibility, launch.Services.NvidiaExperimental);
         coordinator.AttachBackend(new PlannedColorBackend(owned, catalog.Resources, catalog.Matrix, () => coordinator.State, launch.Services));
         using var lifetime = new CancellationTokenSource();
+        await using var automation = new AutomationRuntime(coordinator, launch.Ui.ProcessId, coordinator.UpdateAutomationStatus, injectedInput);
+        var automationTask = automation.RunAsync(lifetime.Token);
         // Tests inject their event source alongside file-backed resources. The
         // production entry point always installs the real Windows notifications;
         // there is no bootstrap/IPC option to turn those safety events off.
@@ -65,7 +67,7 @@ public static class AgentHost
                 own.SessionId, coordinator, lifetime.Token);
             var uiExit = ui.WaitForExitAsync(lifetime.Token);
             var recoveryExit = recovery.WaitForExitAsync(lifetime.Token);
-            await Task.WhenAny(uiCommands, recoveryCommands, uiExit, recoveryExit);
+            await Task.WhenAny(uiCommands, recoveryCommands, uiExit, recoveryExit, automationTask);
             // Disconnect, UI death, companion death or shutdown all invalidate queued writes first.
             coordinator.RecoveryReady = false;
             var result = await SendSafetyAsync(new Shutdown());
@@ -75,6 +77,8 @@ public static class AgentHost
         finally
         {
             coordinator.RecoveryReady = false; lifetime.Cancel();
+            try { await automationTask; } catch (Exception error) { CompanionLaunch.Log("Agent", "Input loop stopped: " + error.Message); }
+            await automation.DisposeAsync();
             uiPipe.Dispose();
             await worker.InvokeAsync(() => { broadcast.Dispose(); catalog.Dispose(); return true; }, true);
         }

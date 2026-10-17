@@ -34,9 +34,13 @@ the person who sent this private build; nothing is uploaded automatically.
 Logs: %LOCALAPPDATA%\ChromaticDesktop\logs and \sessions.
 Library: save/preview named Color presets and share offline CD1 codes or
 .chromaticpreset JSON. Review and confirm imports; nothing applies automatically.
-Games saves local executable/preset bookmarks, with optional manual Steam metadata
-discovery. Automatic switching, input hotkeys and OS link handoff remain pending.
-Other later navigation features remain unavailable at this Stage 3 library checkpoint.
+Games saves bookmarks with manual Steam metadata discovery. Draft an exact-path
+rule from a saved bookmark, enable it, opt into automatic profiles and Save
+automation. Explicit Apply is still required to enable effects. The same panel
+has optional hotkeys and basic whole-image hold lift, off by default. These use
+OS foreground metadata and input callbacks in Chromatic; no game memory/input
+modification. Settings has explicit per-user preset-link registration. Links
+show an import diff and cannot apply automatically. Later pages remain unavailable.
 
 GAME POLICY
 No game-memory access, injection, DirectX hooks, game-file edits or driver installs.

@@ -1,8 +1,8 @@
 # Chromatic Desktop
 
-Independent Windows 10/11 display utility. Stage 3's first checkpoint adds a local
-preset library and game bookmarks to guarded color engines, authenticated Agent
-IPC and independent recovery. Production is C# WPF,
+Independent Windows 10/11 display utility. Stage 3 adds a local preset library, exact-path game profiles,
+optional hotkeys/temporary hold and authenticated preset-link handoff to guarded
+color engines, authenticated Agent IPC and independent recovery. Production is C# WPF,
 .NET 10, native x64, Windows build 19041+. This is a development build: physical
 GPU/monitor behavior remains unqualified and later-stage features are unavailable.
 
@@ -37,7 +37,7 @@ CS2, VALORANT and Apex starting points. Select a preset, preview, then explicitl
 Apply. **Reset selected starting point** restores that one original; duplicate
 first to keep a customized version. Indoor lift changes the whole image. These
 are original uncalibrated appearance choices; map/display comparison is still
-needed. They do not detect enemies or switch automatically with games.
+needed. They do not detect enemies. Automatic game selection requires a saved, enabled rule below.
 
 **Champ** uses saturation 220% with near-neutral contrast and a tiny black-level
 lift; **Im Diamond 1** uses 190% with a little more lift. Add the game pack, search
@@ -58,14 +58,33 @@ Export `.chromaticpreset` JSON or generate an offline **CD1** share code. Paste 
 code or `chromaticdesk://preset/<code>` into the import box, review the diff, then
 **Confirm import** to save a new local copy. Importing never applies it. Resolution,
 crosshair and full-setup documents can be stored/shared but application awaits
-their later stages. Windows link registration/handoff is still pending.
+their later stages. In Settings, **Register preset links** explicitly registers
+this app location for your user. OS links open the running app and show the same
+confirmation diff. Nothing registers during startup; foreign handlers are preserved.
 
-**Games** saves local executable/Color-preset bookmarks and previews a chosen
-look. **Read installed Steam games** explicitly reads registered local Steam
-library/manifests; choose the executable manually. Automatic game switching and
-global hotkeys/hold input are still pending in Stage 3. Bookmarks never launch or
-inspect a game. Data lives in `%APPDATA%/ChromaticDesktop/library.json` and
-`games.json`, with atomic replacement and validated `.last-good` backups.
+**Games** saves local executable/Color-preset bookmarks. **Read installed Steam
+games** explicitly reads registered local Steam library/manifests; choose the
+executable manually. Select a saved bookmark, **Draft automatic rule for selected**,
+check that rule, opt in to automatic profiles and **Save automation configuration**.
+Effects still start off; explicitly Apply once before expecting colors to follow
+foreground games. Unknown/denied processes and Chromatic's own window use your
+desktop fallback. The global matrix affects every display. Rules use saved preset
+snapshots: save automation again after editing a library preset.
+
+The same panel offers conflict-aware Ctrl/Alt/Shift hotkeys and an optional
+keyboard/Mouse4/Mouse5 temporary hold. Hold works only for enabled game rules,
+requires fresh presses after focus/safety changes, and releases to the newest
+base look. It uses a basic whole-image affine lift; LUT/native-DVC hold remains
+unavailable until latency qualification. Screenshot dispatch honestly reports
+NotImplemented until Stage 5. Input listeners run in Chromatic's own process,
+never suppress/synthesize input, and are off by default. Foreground matching
+queries only process path/PID/start metadata with limited rights; it does not
+read game memory. See [Stage 3 review steps](docs/STAGE3-REVIEW.md).
+
+Data lives in `%APPDATA%/ChromaticDesktop/library.json`, `games.json` and
+`automation.json`, with atomic replacement and validated `.last-good` backups.
+Bookmarks never launch games. There is no game input automation, reticle
+recognition, automatic biome detection or anti-cheat certification.
 
 Gamma compatibility and private NVIDIA DVC require separate Settings opt-ins,
 Save and restart. Gamma/shadows/highlights need an explicit output. Multiple active
@@ -189,7 +208,7 @@ silently overwritten. No game VM access, injection, DirectX hooks, game-file edi
 drivers or anti-cheat guarantees. See the reviewed
 [anti-cheat boundary](docs/ANTI-CHEAT-BOUNDARY.md); game policies still apply.
 
-Input/game profiles and library/imports are Stage 3; full display/HDR/DDC
+Input/game profiles and library/imports are implemented in Stage 3; full display/HDR/DDC
 transactions Stage 4; overlay/capture Stage 5; phone/media Stage 6. Those
 providers remain honest NotImplemented. No phone/LAN listener, registry startup,
 cloud, Discord or updater service is enabled. Packaging/signing/licensing are

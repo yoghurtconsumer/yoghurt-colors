@@ -10,8 +10,9 @@ public sealed class MainViewModel : ObservableViewModel
 {
     private readonly IEffectsClient _client;
     private NavigationItem _selected;
-    private string _status = "Effects off · Stage 3 library checkpoint";
+    private string _status = "Effects off · Stage 3";
     private readonly DisplayViewModel _display;
+    private readonly AutomationViewModel _automation;
     public ImmutableArray<NavigationItem> Navigation { get; }
     public MusicViewModel Music { get; }
     public ImmutableArray<BackendCapability> Capabilities => _client.State.Capabilities.Backends;
@@ -26,7 +27,7 @@ public sealed class MainViewModel : ObservableViewModel
         GamesViewModel games, ResolutionViewModel resolution, CrosshairViewModel crosshair,
         MonitorViewModel monitor, CustomizeViewModel customize, SettingsViewModel settings, MusicViewModel music)
     {
-        _client = client; Music = music; _display = display;
+        _client = client; Music = music; _display = display; _automation = games.Automation;
         Navigation = [new("Display", "◐", display), new("Presets / Library", "▦", presets), new("Games", "◇", games),
             new("Resolution", "▱", resolution), new("Crosshair", "+", crosshair), new("Monitor", "▣", monitor),
             new("Customize", "◈", customize), new("Settings", "⚙", settings)];
@@ -43,7 +44,7 @@ public sealed class MainViewModel : ObservableViewModel
     public Task ShutdownAsync() => SendAsync(new Shutdown());
     public void Refresh()
     {
-        Changed(nameof(Capabilities)); _display.Refresh();
+        Changed(nameof(Capabilities)); _display.Refresh(); _automation.Refresh();
         if (_client is Chromatic.Infrastructure.Ipc.CompanionSession session && session.Failure is not null) Status = session.Failure;
         else if (_client.State.Observed.LastResult is { } observed) Status = $"{observed.ErrorCode ?? "Completed"}: {observed.Explanation}";
     }

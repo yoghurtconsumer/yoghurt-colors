@@ -1,0 +1,11 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","kind","challenge","link"],
+  "properties":{
+    "schemaVersion":{"const":1},
+    "kind":{"enum":["challenge","request","accepted"]},
+    "challenge":{"type":"string","pattern":"^[a-f0-9]{32}$"},
+    "link":{"type":["string","null"],"maxLength":48040}
+  }
+}

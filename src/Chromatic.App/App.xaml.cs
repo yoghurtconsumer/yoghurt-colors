@@ -12,6 +12,9 @@ public partial class App : Application
     private ServiceProvider? _services;
     private CompanionSession? _companions;
     private bool _exiting;
+    private bool _readyForHandoffs;
+    private AppInstance? _instance;
+    private readonly System.Collections.Concurrent.ConcurrentQueue<string?> _handoffs = new();
     private readonly StartupDiagnostics _startup = new();
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -21,9 +24,24 @@ public partial class App : Application
             _startup.Failed(args.ExceptionObject as Exception ?? new InvalidOperationException("Unhandled application failure."));
         try
         {
-            if (e.Args.Contains("--diagnostics", StringComparer.Ordinal))
+            if (e.Args is ["--diagnostics"])
             { Console.WriteLine(ReadOnlyDiagnostics.Save()); Shutdown(0); return; }
-            await StartAsync(e.Args.Contains("--startup-smoke-test", StringComparer.Ordinal));
+            var smoke = e.Args is ["--startup-smoke-test"];
+            if (!smoke)
+            {
+                var link = AppInstance.ParseArguments(e.Args);
+                _instance = await AppInstance.StartOrForwardAsync(Environment.ProcessPath!, link, value =>
+                {
+                    if (_exiting || Dispatcher.HasShutdownStarted) return;
+                    if (_handoffs.Count >= 16) throw new InvalidOperationException("Too many pending preset links.");
+                    _handoffs.Enqueue(value); _ = Dispatcher.BeginInvoke(ProcessHandoffs);
+                });
+                if (_instance is null) { Shutdown(0); return; }
+                if (link is not null) _handoffs.Enqueue(link);
+            }
+            await StartAsync(smoke);
+            _readyForHandoffs = true;
+            ProcessHandoffs();
         }
         catch (Exception error)
         {
@@ -31,6 +49,22 @@ public partial class App : Application
             MessageBox.Show($"Chromatic Desktop could not start.\n\n{error.Message}\n\nDetails: {_startup.ReportPath}",
                 "Chromatic Desktop - startup error", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
+        }
+    }
+    private void ProcessHandoffs()
+    {
+        if (!_readyForHandoffs || _services is null || MainWindow is null || _exiting) return;
+        while (_handoffs.TryDequeue(out var link))
+        {
+            MainWindow.Show(); MainWindow.WindowState = WindowState.Normal; MainWindow.Activate();
+            if (link is null) continue;
+            var vm = _services.GetRequiredService<ViewModels.MainViewModel>();
+            try
+            {
+                var presets = _services.GetRequiredService<ViewModels.PresetsViewModel>();
+                presets.StageImportText(link); vm.Selected = vm.Navigation.First(n => ReferenceEquals(n.Page, presets));
+            }
+            catch (Exception error) { vm.StartupWarning = "Preset link rejected: " + error.Message; }
         }
     }
     private async Task StartAsync(bool smokeTest)
@@ -75,6 +109,7 @@ public partial class App : Application
         {
             await _services.GetRequiredService<ViewModels.PresetsViewModel>().LoadAsync();
             await _services.GetRequiredService<ViewModels.GamesViewModel>().LoadAsync();
+            await _services.GetRequiredService<ViewModels.AutomationViewModel>().LoadAsync();
         }
         if (_companions is not null) _ = ConnectCompanionsAsync(settings.Services);
     }
@@ -87,6 +122,7 @@ public partial class App : Application
         if (_exiting) return;
         var viewModel = _services.GetRequiredService<ViewModels.MainViewModel>();
         if (_companions.Failure is not null) viewModel.StartupWarning = _companions.Failure;
+        else await _services.GetRequiredService<ViewModels.AutomationViewModel>().ApplySavedAsync();
         viewModel.Refresh();
     }
     public static void ApplyTheme(ThemeKind theme)
@@ -97,6 +133,8 @@ public partial class App : Application
     }
     protected override void OnExit(ExitEventArgs e)
     {
-        _exiting = true; _companions?.Dispose(); _services?.Dispose(); base.OnExit(e);
+        _exiting = true; _companions?.Dispose();
+        _instance?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _services?.Dispose(); base.OnExit(e);
     }
 }

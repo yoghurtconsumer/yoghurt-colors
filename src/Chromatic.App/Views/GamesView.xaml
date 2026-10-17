@@ -20,9 +20,44 @@
         <Button Content="New bookmark" Command="{Binding NewCommand}" />
         <Button Content="Save bookmark" Command="{Binding SaveCommand}" />
         <Button Content="Delete selected" Command="{Binding DeleteCommand}" />
+        <Button Content="Draft automatic rule for selected" Command="{Binding StageRuleCommand}" />
         <Button Content="Preview chosen preset" Command="{Binding PreviewPresetCommand}" />
       </WrapPanel>
       <TextBlock Text="{Binding Status}" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel DataContext="{Binding Automation}">
+      <TextBlock Text="Automatic profiles and input (opt in)" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock Text="Save a bookmark above, draft its rule, then enable the rule here. Only foreground executable path, PID and creation time are queried. Input listeners run in Chromatic and never suppress or synthesize input. This does not establish anti-cheat approval." Margin="0,8,0,12" />
+      <CheckBox Content="Enable automatic foreground profiles" IsChecked="{Binding AutomaticProfiles}" />
+      <ListBox ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule}" Height="140"><ListBox.ItemTemplate><DataTemplate>
+        <CheckBox Content="{Binding Label}" IsChecked="{Binding Enabled}" />
+      </DataTemplate></ListBox.ItemTemplate></ListBox>
+      <Button Content="Remove selected rule" Command="{Binding RemoveRuleCommand}" HorizontalAlignment="Left" />
+      <TextBlock Text="Desktop fallback" FontWeight="SemiBold" /><TextBlock Text="{Binding DesktopName}" />
+      <Button Content="Use Display base draft as desktop fallback" Command="{Binding CaptureDesktopCommand}" HorizontalAlignment="Left" />
+      <TextBlock Text="Temporary hold boost" FontSize="18" Margin="0,12,0,6" />
+      <CheckBox Content="Enable hold listener (only enabled game rules are eligible)" IsChecked="{Binding HoldEnabled}" />
+      <TextBlock Text="Basic affine lift brightens the whole image. No shadow-only claim. Gamma/tonal LUT and native DVC holds remain unavailable until latency qualification. Release returns to the newest base look." />
+      <TextBlock Text="Hold chord: Ctrl/Alt/Shift, A–Z, 0–9, F1–F24, Tab, Space, Mouse4/Mouse5" />
+      <TextBox Text="{Binding HoldChord, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" Margin="0,4,0,8" />
+      <CheckBox Content="Allow Mouse4/Mouse5 listener" IsChecked="{Binding MouseHolds}" />
+      <CheckBox Content="Accept injected accessibility input (off by default)" IsChecked="{Binding AcceptInjectedInput}" />
+      <TextBlock Text="Strength (0–0.8)" /><Slider Minimum="0" Maximum="0.8" Value="{Binding Strength}" />
+      <TextBlock Text="Optional red / green / blue attenuation (0–0.1 each)" />
+      <Slider Minimum="0" Maximum="0.1" Value="{Binding RedAttenuation}" AutomationProperties.Name="Hold red attenuation" />
+      <Slider Minimum="0" Maximum="0.1" Value="{Binding GreenAttenuation}" AutomationProperties.Name="Hold green attenuation" />
+      <Slider Minimum="0" Maximum="0.1" Value="{Binding BlueAttenuation}" AutomationProperties.Name="Hold blue attenuation" />
+      <TextBlock Text="Discrete hotkeys" FontSize="18" Margin="0,12,0,6" />
+      <CheckBox Content="Register hotkeys (Ctrl/Alt/Shift plus one key)" IsChecked="{Binding HotkeysEnabled}" />
+      <TextBox Text="{Binding HotkeyChord, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" />
+      <ComboBox ItemsSource="{Binding Actions}" SelectedItem="{Binding Action}" Margin="0,6" />
+      <ComboBox ItemsSource="{Binding ColorPresets}" DisplayMemberPath="Name" SelectedItem="{Binding HotkeyPreset}" />
+      <WrapPanel><Button Content="Draft hotkey" Command="{Binding AddHotkeyCommand}" /><Button Content="Remove selected hotkey" Command="{Binding RemoveHotkeyCommand}" /></WrapPanel>
+      <ListBox ItemsSource="{Binding Hotkeys}" DisplayMemberPath="Description" SelectedItem="{Binding SelectedHotkey}" Height="110" />
+      <TextBlock Text="Preset hotkeys change the base look without turning effects on. Restore disables effects. Screenshot dispatch reports NotImplemented until Stage 5." />
+      <Button Content="Save automation configuration" Command="{Binding SaveCommand}" HorizontalAlignment="Left" Margin="0,14,0,8" />
+      <TextBlock Text="{Binding Status}" AutomationProperties.LiveSetting="Polite" />
+      <TextBlock Text="{Binding RuntimeStatus}" Foreground="{DynamicResource AccentBrush}" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" />
     </StackPanel></Border>
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="Steam discovery (manual)" FontSize="20" FontWeight="SemiBold" />

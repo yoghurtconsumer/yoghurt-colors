@@ -648,8 +648,18 @@
             },
             {
               "type": "object",
-              "properties": { "type": { "const": "applyProfile" }, "profile": { "$ref": "#/$defs/profile" } },
-              "required": [ "type", "profile" ],
+              "properties": {
+                "type": {
+                  "const": "applyProfile"
+                },
+                "profile": {
+                  "$ref": "#/$defs/profile"
+                }
+              },
+              "required": [
+                "type",
+                "profile"
+              ],
               "additionalProperties": false
             },
             {
@@ -865,8 +875,42 @@
             },
             {
               "type": "object",
-              "properties": { "type": { "const": "getState" } },
-              "required": [ "type" ],
+              "properties": {
+                "type": {
+                  "const": "getState"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "configureAutomation"
+                },
+                "settings": {
+                  "$ref": "#/$defs/automation"
+                }
+              },
+              "required": [
+                "type",
+                "settings"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "takeScreenshot"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "additionalProperties": false
             }
           ]
@@ -1129,6 +1173,10 @@
               "type": "null"
             }
           ]
+        },
+        "automationStatus": {
+          "type": "string",
+          "maxLength": 4096
         }
       },
       "required": [
@@ -1145,6 +1193,187 @@
         "suspensions",
         "capabilities",
         "lastObservedResult"
+      ],
+      "additionalProperties": false
+    },
+    "automation": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "automaticProfiles": {
+          "type": "boolean"
+        },
+        "hotkeysEnabled": {
+          "type": "boolean"
+        },
+        "mouseHolds": {
+          "type": "boolean"
+        },
+        "acceptInjectedInput": {
+          "type": "boolean"
+        },
+        "holdKeys": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 254
+          },
+          "maxItems": 4,
+          "minItems": 1
+        },
+        "boost": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "strength": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.8
+            },
+            "redAttenuation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.1
+            },
+            "greenAttenuation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.1
+            },
+            "blueAttenuation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.1
+            }
+          },
+          "required": [
+            "enabled",
+            "strength",
+            "redAttenuation",
+            "greenAttenuation",
+            "blueAttenuation"
+          ],
+          "additionalProperties": false
+        },
+        "desktop": {
+          "$ref": "#/$defs/profile"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+              },
+              "executablePath": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32768,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "executablePath",
+              "profileId",
+              "enabled"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 128
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/profile"
+          },
+          "maxItems": 32
+        },
+        "hotkeys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 24
+              },
+              "modifiers": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              },
+              "key": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 254
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "Preset",
+                  "Pause",
+                  "Restore",
+                  "Screenshot"
+                ]
+              },
+              "profileId": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "modifiers",
+              "key",
+              "action",
+              "profileId"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 24
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "automaticProfiles",
+        "hotkeysEnabled",
+        "mouseHolds",
+        "acceptInjectedInput",
+        "holdKeys",
+        "boost",
+        "desktop",
+        "rules",
+        "profiles",
+        "hotkeys"
       ],
       "additionalProperties": false
     }

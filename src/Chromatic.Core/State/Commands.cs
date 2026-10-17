@@ -18,6 +18,8 @@ namespace Chromatic.Core.State;
 [JsonDerivedType(typeof(Shutdown), "shutdown")]
 [JsonDerivedType(typeof(GetState), "getState")]
 [JsonDerivedType(typeof(ApplyProfile), "applyProfile")]
+[JsonDerivedType(typeof(ConfigureAutomation), "configureAutomation")]
+[JsonDerivedType(typeof(TakeScreenshot), "takeScreenshot")]
 public abstract record EffectsCommand;
 public sealed record Enable(bool Enabled) : EffectsCommand;
 public sealed record SetColor(ColorSettings Color) : EffectsCommand;
@@ -34,4 +36,6 @@ public sealed record Restore : EffectsCommand;
 public sealed record Shutdown : EffectsCommand;
 public sealed record GetState : EffectsCommand;
 public sealed record ApplyProfile(DisplayProfile Profile) : EffectsCommand;
+public sealed record ConfigureAutomation(AutomationSettings Settings) : EffectsCommand;
+public sealed record TakeScreenshot : EffectsCommand;
 public sealed record CommandEnvelope(Guid CommandId, long BaseRevision, long Generation, EffectsCommand Command);

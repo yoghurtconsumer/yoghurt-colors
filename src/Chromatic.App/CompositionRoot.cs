@@ -22,10 +22,13 @@ public static class CompositionRoot
         dataDirectory ??= System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ChromaticDesktop");
         services.AddSingleton(new LibraryRepository(System.IO.Path.Combine(dataDirectory, "library.json")));
         services.AddSingleton(new GameLibraryRepository(System.IO.Path.Combine(dataDirectory, "games.json")));
+        services.AddSingleton(new AutomationRepository(System.IO.Path.Combine(dataDirectory, "automation.json")));
+        services.AddSingleton(new PresetProtocolRegistration(Environment.ProcessPath!, new UserProtocolRegistry()));
         services.AddSingleton<IEffectsClient>(effects ?? new EffectsPipeClient());
         services.AddSingleton<IMediaController, GsmtcController>();
         services.AddSingleton<OverlayHost>(); services.AddSingleton<PhoneServer>();
         services.AddSingleton<DisplayViewModel>(); services.AddSingleton<PresetsViewModel>();
+        services.AddSingleton<AutomationViewModel>();
         services.AddSingleton<GamesViewModel>(); services.AddSingleton<ResolutionViewModel>();
         services.AddSingleton<CrosshairViewModel>(); services.AddSingleton<MonitorViewModel>();
         services.AddSingleton<CustomizeViewModel>(); services.AddSingleton<SettingsViewModel>();

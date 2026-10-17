@@ -174,7 +174,7 @@ public sealed class LibraryWorkflowTests
     [Fact] public async Task BookmarksSaveEditRemoveAndDetectDeletedPresetWithoutOpeningGames()
     {
         using var fixture = new Fixture(); await fixture.Library.LoadAsync();
-        var games = new GamesViewModel(new(Path.Combine(fixture.Root, "games.json")), fixture.Library); await games.LoadAsync();
+        var games = new GamesViewModel(new(Path.Combine(fixture.Root, "games.json")), fixture.Library, new(new(Path.Combine(fixture.Root, "automation.json")), fixture.Library, fixture.Display, fixture.Client)); await games.LoadAsync();
         games.EditName = "Siege"; games.ExecutablePath = @"C:\Games\Siege.exe"; games.SelectedPreset = fixture.Library.All[0];
         await games.SaveAsync(); Assert.Single(games.Games); Assert.NotNull(games.Selected);
         games.EditName = "Siege fullscreen"; await games.SaveAsync(); Assert.Single(games.Games);
