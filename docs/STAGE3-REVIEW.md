@@ -67,22 +67,32 @@ saves a fresh local ID. Applying is a separate action. Resolution/full setup and
 crosshair application remain pending Stages 4/5. Oversized codes may exceed
 Windows/browser URL limits; paste the offline code or use a file instead.
 
-Double-launch from the same location should show one UI and one Agent/Recovery
+Double-launch should show one UI and one Agent/Recovery
 pair. Local handoff pins the real OS peer, exact executable image, user/session
 and creation time, and uses a fresh challenge plus bounded strict JSON. It has no
-native/effects command surface. Different app folders use separate authenticated
-UI endpoints, but the existing per-session writer lease still permits only one
-hardware-owning Agent; exit the old build before switching locations.
+native/effects command surface. The endpoint is fixed per product/user/session, including across app folders.
+A different app location fails exact-image authentication and must not start a
+second UI/Agent; exit the old build before switching locations. Automated pipe
+tests inject a unique scope and never connect to the real app endpoint.
 
-## Rust additions awaiting clarification
+## Rust black accents: clarified request, backend limitation
 
-The request names “black holo” and “looting” like PlexusX. The public product/home
-pages examined did not define those features. A clarification is pending about
-static external reticle vs recoloring the game's actual sight, and temporary
-inventory colors vs automatic looting. No imitation or working implementation is
-claimed here. No game input automation or screen/reticle recognition was added.
-The existing five Rust biome presets and accepted Siege presets are preserved.
-Stage 3 was completed independently; Stage 4 was not started.
+The user clarified on 17 October: recolor the actual holo reticle black and make
+the white loot hover highlight black. They do not want a static replacement
+crosshair or automated looting. The accepted five biome presets remain unchanged.
+
+The existing Magnification backend applies one affine RGB transform everywhere;
+it cannot identify a reticle, inventory item or hovered object. Equal input colors
+receive equal output colors, including unrelated sky/text/highlights. A whole
+image inversion can make white black but also changes all other colors and is
+not the requested selective effect. The calibrated gamma path is monotonic and
+cannot selectively fold white back to black either. No reticle recognition,
+continuous game capture, game hook, file change or input automation was added.
+
+No working black-holo/loot-highlight implementation is claimed in this package.
+A public reference clip/page has been requested to verify the full-image behavior
+before selecting any additional display-only backend. This is separate from the
+completed Stage 3 input/profile/link work; Stage 4 was not started.
 
 Follow game policy. The architecture does not provide anti-cheat approval or a
 guarantee against false flags. See ANTI-CHEAT-BOUNDARY.md.

@@ -55,14 +55,17 @@ public sealed class Stage3ContractsTests
     }
     [Fact] public async Task SingleInstancePinsOsPeerRejectsForeignImageAndForwardsOnlyValidatedLinks()
     {
-        var image = Environment.ProcessPath!; var received = new List<string?>(); var gate = new object();
-        await using var primary = await AppInstance.StartOrForwardAsync(image, null, value => { lock (gate) received.Add(value); }); Assert.NotNull(primary);
+        var image = Environment.ProcessPath!; var received = new List<string?>(); var gate = new object(); var scope = Guid.NewGuid().ToString("N");
+        await using var primary = await AppInstance.StartOrForwardAsync(image, null, value => { lock (gate) received.Add(value); }, scope); Assert.NotNull(primary);
         var link = "chromaticdesk://preset/" + PresetExchange.Share(new());
-        Assert.Null(await AppInstance.StartOrForwardAsync(image, link, _ => throw new Exception("Must not start second server")));
-        Assert.Null(await AppInstance.StartOrForwardAsync(image, null, _ => { }));
+        Assert.Null(await AppInstance.StartOrForwardAsync(image, link, _ => throw new Exception("Must not start second server"), scope));
+        Assert.Null(await AppInstance.StartOrForwardAsync(image, null, _ => { }, scope));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => AppInstance.StartOrForwardAsync(Path.Combine(Path.GetDirectoryName(image)!, "wrong.exe"), null, _ => { }, scope));
         lock (gate) { Assert.Equal(new string?[] { link, null }, received); }
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        using var pipe = new NamedPipeClientStream(".", AppInstance.PipeName(image, PipeInterop.Current), PipeDirection.InOut, PipeOptions.Asynchronous);
+        // A rejected client may leave the server finishing its bounded 3 s
+        // handshake timeout; allow cleanup before the next adversarial request.
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(6));
+        using var pipe = new NamedPipeClientStream(".", AppInstance.PipeName(PipeInterop.Current, scope), PipeDirection.InOut, PipeOptions.Asynchronous);
         await pipe.ConnectAsync(timeout.Token);
         Assert.Throws<UnauthorizedAccessException>(() => AppInstance.Authenticate(pipe, false, Path.Combine(Path.GetDirectoryName(image)!, "wrong.exe")));
         var challenge = await Protocol.ReadFrameAsync(pipe, timeout.Token);

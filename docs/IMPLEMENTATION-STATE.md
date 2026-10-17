@@ -30,10 +30,15 @@ this documentation update.
 
 The current request authorizes finishing Stage 3. Its implementation is complete;
 manual live-input and GPU qualification remains open. Stop before Stage 4. The
-requested Rust “black holo”/“looting” behavior is not defined in the public pages
-reviewed; a clarification question is pending. No selective reticle recolor,
-external crosshair, automated looting or gameplay analysis is claimed or added.
-The five accepted Rust and six Siege presets are preserved.
+requested Rust extension was clarified: recolor the actual holo reticle and the
+white loot hover highlight black (not an overlay crosshair or automatic looting).
+It is NOT implemented: the current global affine color filter cannot identify
+individual game elements; global inversion would change unrelated colors too.
+The monotonic calibrated gamma route cannot supply a selective white-to-black
+fold. A public reference demo is requested to verify full-image behavior before
+choosing an additional display-only approach. No game capture/recognition, game
+hooks/files or input automation was added. See STAGE3-REVIEW.md. Existing accepted
+Rust/Siege presets are preserved.
 
 ## Stage 3 completion — input, foreground and authenticated link handoff
 
@@ -71,8 +76,11 @@ The five accepted Rust and six Siege presets are preserved.
   has a bounded strict schema, fresh challenge, current-user/session local-only
   pipe ACL and real OS peer/exact image/PID/creation pinning on both ends. It
   queues only show or validated preset import, opens Library with a diff and never
-  applies. Same-location double launch forwards; existing per-session Agent writer
-  lease also prevents competing installs from owning hardware simultaneously.
+  applies. Same-location double launch forwards; the product/user/session endpoint also
+  rejects a different executable location before starting a second UI/Agent.
+  Tests inject isolated pipe scopes; the Agent writer lease remains a second guard.
+  Rejected/early-closing clients reset the pipe even when .NET reports Broken
+  (IsConnected=false); the regression verifies later valid handoffs still work.
 - Settings exposes explicit per-user URL registration/removal. No registration
   runs on startup. Quoted fixed app command, foreign/partial handler protection
   and own-command-only removal are tested with memory registry adapters; no real

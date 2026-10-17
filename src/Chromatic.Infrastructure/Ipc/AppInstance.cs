@@ -21,18 +21,20 @@ public sealed class AppInstance : IAsyncDisposable
     private readonly Task _serve;
     private AppInstance(NamedPipeServerStream server, string image, Action<string?> received)
     { _server = server; _image = image; _received = received; _serve = Task.Run(ServeAsync); }
-    public static string PipeName(string image, NativePeerIdentity identity) => "ChromaticDesktop." + identity.SessionId + "." +
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity.UserSid + "|" + Path.GetFullPath(image).ToUpperInvariant())))[..32].ToLowerInvariant();
+    public static string PipeName(NativePeerIdentity identity, string scope = "Chromatic.App") => "ChromaticDesktop." + identity.SessionId + "." +
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity.UserSid + "|" + scope)))[..32].ToLowerInvariant();
     public static string? ParseArguments(string[] args)
     {
         if (args.Length == 0) return null;
         if (args.Length != 1) throw new ContractException("Expected no arguments or one chromaticdesk://preset/… link.");
         _ = PresetExchange.ParseLink(args[0]); return args[0];
     }
-    public static async Task<AppInstance?> StartOrForwardAsync(string image, string? link, Action<string?> received)
+    public static async Task<AppInstance?> StartOrForwardAsync(string image, string? link, Action<string?> received, string scope = "Chromatic.App")
     {
         if (link is not null) _ = PresetExchange.ParseLink(link);
-        var name = PipeName(image, PipeInterop.Current);
+        // Production always uses the default product scope. Tests inject an
+        // isolated scope, never sharing a user's real application endpoint.
+        var name = PipeName(PipeInterop.Current, scope);
         try { return new(PipeInterop.CreateCurrentUserLocalServer(name), image, received); }
         catch (Win32Exception e) when (e.NativeErrorCode is 5 or 231)
         {
@@ -53,9 +55,11 @@ public sealed class AppInstance : IAsyncDisposable
     {
         while (!_stop.IsCancellationRequested)
         {
+            var accepted = false;
             try
             {
                 await _server.WaitForConnectionAsync(_stop.Token);
+                accepted = true;
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(3));
                 using var peer = Authenticate(_server, true, _image);
                 var challenge = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
@@ -69,7 +73,9 @@ public sealed class AppInstance : IAsyncDisposable
             }
             catch (Exception e) when (e is IOException or ContractException or UnauthorizedAccessException or Win32Exception or OperationCanceledException or ArgumentException or JsonException or InvalidOperationException)
             { /* Reject this peer; keep the primary application and exclusive pipe alive. */ }
-            finally { if (_server.IsConnected) _server.Disconnect(); }
+            // A peer that closes early marks the stream Broken, for which
+            // IsConnected is false. Disconnect still must reset that instance.
+            finally { if (accepted) _server.Disconnect(); }
         }
     }
     public static VerifiedProcess Authenticate(PipeStream pipe, bool serverSide, string image) => new(PipeInterop.ReadPeer(pipe, serverSide), image);
