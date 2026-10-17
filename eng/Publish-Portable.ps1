@@ -26,6 +26,7 @@ try {
             throw "SDK-selected runtime differs from $RuntimeVersion; review and update package runtime/notices together."
         }
     }
+    Copy-Item -LiteralPath 'docs/presets' -Destination (Join-Path $package 'presets') -Recurse
     $notices = Join-Path $package 'notices/project'
     New-Item -ItemType Directory -Path $notices -Force | Out-Null
     foreach ($file in @('LICENSE', 'THIRD-PARTY-NOTICES.md', 'docs/THIRD-PARTY-DEPENDENCIES.md', 'docs/COLOR-PROVENANCE.md', 'docs/ANTI-CHEAT-BOUNDARY.md')) {

@@ -39,3 +39,10 @@ from games, always chain, never synthesize/suppress/log text. Foreground uses
 limited query metadata only. Protocol registration is a user-clicked HKCU action;
 tests must inject IProtocolRegistry. Link handoff authenticates OS peers and must
 never bypass import confirmation or Apply. Stop before Stage 4 unless requested.
+
+Stage 4 step 1 now has read-only, paged Agent display inventory and local draft
+plans. Inject IDisplayInventoryApi / readDisplays for tests; never probe hardware
+in ordinary tests or the process harness. Queries must not advance revisions or
+change observed colours/hold. Preserve snapshot IDs and invalidate on broadcasts.
+Mode/HDR/scaling/DDC mutation remains unavailable until the full journaled
+15-second Agent/Recovery preview is wired; do not present a draft as native Apply.

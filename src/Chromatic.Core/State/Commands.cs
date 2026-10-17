@@ -17,6 +17,7 @@ namespace Chromatic.Core.State;
 [JsonDerivedType(typeof(Restore), "restore")]
 [JsonDerivedType(typeof(Shutdown), "shutdown")]
 [JsonDerivedType(typeof(GetState), "getState")]
+[JsonDerivedType(typeof(QueryDisplays), "queryDisplays")]
 [JsonDerivedType(typeof(ApplyProfile), "applyProfile")]
 [JsonDerivedType(typeof(ConfigureAutomation), "configureAutomation")]
 [JsonDerivedType(typeof(TakeScreenshot), "takeScreenshot")]
@@ -39,3 +40,5 @@ public sealed record ApplyProfile(DisplayProfile Profile) : EffectsCommand;
 public sealed record ConfigureAutomation(AutomationSettings Settings) : EffectsCommand;
 public sealed record TakeScreenshot : EffectsCommand;
 public sealed record CommandEnvelope(Guid CommandId, long BaseRevision, long Generation, EffectsCommand Command);
+
+public sealed record QueryDisplays(Guid? InventoryId = null, DisplayIdentity? Display = null, int Offset = 0) : EffectsCommand;

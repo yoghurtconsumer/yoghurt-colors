@@ -1,6 +1,6 @@
-# Manual qualification backlog — Stage 3
+# Manual qualification backlog — Stage 4 read-only checkpoint
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 307 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 324 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -140,3 +140,7 @@ qualification. Visible output and recording parity need separate checks.
 
 Later Stages 3–7 own input/game/import checks, full mode/HDR/DDC transactions,
 overlay/capture, phone/GSMTC and packaged/signing/licensing qualification.
+
+Stage 4 inventory review is documented in STAGE4-REVIEW.md. Mode/HDR/scaling/DDC
+mutation is not enabled by this checkpoint. The portable Vivid clarity preset can
+be imported separately in the current build; see RUST-VIVID-CLARITY.md.

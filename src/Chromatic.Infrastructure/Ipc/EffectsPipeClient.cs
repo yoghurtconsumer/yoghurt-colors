@@ -31,7 +31,7 @@ public sealed class EffectsPipeClient : IEffectsClient, IDisposable
             try { await Protocol.WriteFrameAsync(_pipe ?? throw new IOException("Agent pipe closed."), Protocol.Encode(request), timeout.Token); }
             finally { _writer.Release(); }
             var response = await waiting.Task.WaitAsync(timeout.Token);
-            return new(response.Decision, State, response.Completion);
+            return new(response.Decision, State, response.Completion, response.Inventory);
         }
         catch
         {

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "rust-vivid-clarity-v1",
+  "name": "Rust — Vivid clarity",
+  "kind": "Color",
+  "color": {
+    "saturationPercent": 185,
+    "brightness": 0.0125,
+    "contrast": 0.975,
+    "gamma": 1,
+    "warmth": 0,
+    "vibrance": 0,
+    "shadows": 0,
+    "highlights": 0,
+    "cvdMode": "None",
+    "cvdStrength": 1
+  },
+  "crosshair": null,
+  "displayIntent": null,
+  "gameTag": "Rust",
+  "authorMetadata": null,
+  "assets": []
+}

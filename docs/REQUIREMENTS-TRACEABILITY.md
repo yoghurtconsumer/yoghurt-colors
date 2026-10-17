@@ -1,8 +1,8 @@
-# Requirements traceability — Stage 3 implementation
+# Requirements traceability — Stage 4 read-only checkpoint
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 307 VSTest tests pass (104 Core, 169 integration,
-34 UI/launcher). Native color routes retain authenticated ownership, verified
+x64 projects build Release with SDK 10.0.402; 324 VSTest tests pass (107 Core, 181 integration,
+36 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
 User feedback on 17 October confirms Saturation up to 300% worked during Siege
@@ -24,16 +24,16 @@ implemented; live input/GPU qualification is a separate manual review gate.
 | F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
 | F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented; requested local hue/darkening extension added | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
-| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and fourteen game starting points implemented | Requested Siege Champ/Im Diamond 1; accepted Strong retained; richer Rust palette; affine gray-range/low-lift tests, portable sharing and upgrade with edited entries preserved; no measured game visibility claim | Human game/map/display comparison |
+| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and fourteen game starting points implemented | Requested Siege Champ/Im Diamond 1; accepted Strong retained; richer Rust palette and separate portable Vivid clarity look; affine gray-range/low-lift tests, portable sharing and upgrade with edited entries preserved; no measured game visibility claim | Human game/map/display comparison |
 | F06 | Saved custom looks | Local library CRUD implemented | Save/update base Display draft including optional hue/darkening, rename/tag/duplicate/delete, atomic library + last-good, failure/corruption tests; per-output/held state separate | UI/manual qualification |
 | F07 | Automatic game-specific colors | Opt-in exact-path foreground profiles, enabled rules and desktop fallback implemented | Limited query path/PID/creation identity, OUTOFCONTEXT/debounce/liveness; denied/own/unknown/PID reuse and rapid-focus fake tests; global scope explicit | Manual live focus/process/driver qualification |
 | F08 | Preset hotkeys | Opt-in preset/pause/restore hotkeys implemented | RegisterHotKey MOD_NOREPEAT, actual per-ID conflict status, pure strict chord configuration and fake dispatch tests | Manual key/conflict/layout qualification |
 | F09 | Red-/green-/blue-weak color modes | Adjustable global approximation implemented | Attributed severity-1 coefficients; row orientation/correction tests; UI mode/strength; COLOR-PROVENANCE.md | Visual qualification; approximation remains explicit |
 | F10 | Hold Dark Boost, selectable tint; release restores normal look; Mouse 5 demo | Opt-in keyboard/side-mouse input and basic whole-image affine lift implemented; LUT/native hold unavailable | Chord/repeat/injected/fresh-press/missed-up/focus/safety tests; 100 ms release-only reconciliation; composed fake matrix and newest-base release; no shadow-only claim | Live input/GPU tests; LUT/native latency qualification |
-| F11 | Resolution and refresh switching | Foundation only | Rational DisplayIntent; PreviewTransaction states; Resolution shell | 4 |
-| F12 | HDR on/off | Foundation only | HDR intent/capability; HdrBackend returns NotImplemented | 4 |
-| F13 | Stretched 4:3 | Foundation only | ScalingIntent.Stretched; no mode/scaling write | 4 |
-| F14 | Custom modes including square sizes; kept NVIDIA mode saved in driver list | Deferred | No custom mode provider or enumerated mode inventory | 4 |
+| F11 | Resolution and refresh switching | Read-only inventory / mode-plan review implemented; mutation deferred | Agent CCD mapping + bounded driver enumeration; exact rational current refresh; strict paged IPC; other outputs preserved in draft; fake API tests; no setters | 4 journaled native preview / Recovery / hardware qualification |
+| F12 | HDR on/off | Runtime-gated read-only SDR/WCG/HDR inventory; setting deferred | Modern type 15 and labeled legacy ambiguity; no new HDR setter; HdrBackend remains NotImplemented | 4 qualified set/rollback |
+| F13 | Stretched 4:3 | Enumerated source / scaling draft only | Unsupported dimensions and clones refused; explicit no-FOV / driver limits; no scaling write | 4 preview/readback / geometric qualification |
+| F14 | Custom modes including square sizes; kept NVIDIA mode saved in driver list | Existing driver sizes can be inspected / drafted; timing creation and saving deferred | Bounded enumerated choices only; no timing fabrication, vendor save, EDID or driver changes | 4 optional qualified public NvAPI |
 | F15 | Crosshair shape, size, gap, color and outline | Foundation only | CrosshairSettings/ranges; Crosshair shell; OverlayHost NotImplemented | 5 |
 | F16 | Picture crosshairs and X/Y offsets (2.1.12) | Foundation only | Asset hash/offset model; image decoder and placement deferred | 5 |
 | F17 | Library of shared looks/crosshairs; public page also lists resolutions/full setups | Local offline library/import/export/link handoff implemented; hosted catalog deferred | Four strict document kinds; .chromaticpreset JSON/CD1 codes; confirmation before import; non-Color Apply refused pending Stages 4/5 | 4–5 application / optional 7 catalog |

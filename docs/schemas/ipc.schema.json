@@ -96,6 +96,9 @@
         },
         "state": {
           "$ref": "#/$defs/state"
+        },
+        "inventory": {
+          "$ref": "#/$defs/displayInventoryPage"
         }
       },
       "required": [
@@ -927,6 +930,43 @@
                 "type"
               ],
               "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "queryDisplays"
+                },
+                "inventoryId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid"
+                },
+                "display": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/display"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2048
+                }
+              },
+              "required": [
+                "type",
+                "inventoryId",
+                "display",
+                "offset"
+              ],
+              "additionalProperties": false
             }
           ]
         }
@@ -1389,6 +1429,180 @@
         "rules",
         "profiles",
         "hotkeys"
+      ],
+      "additionalProperties": false
+    },
+    "displayMode": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "refreshRate": {
+          "$ref": "#/$defs/rational"
+        },
+        "bitsPerPixel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "refreshRate",
+        "bitsPerPixel"
+      ],
+      "additionalProperties": false
+    },
+    "displayOutput": {
+      "type": "object",
+      "properties": {
+        "display": {
+          "$ref": "#/$defs/display"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "sourceId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "sourceAdapterLuid": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "x": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "y": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "current": {
+          "$ref": "#/$defs/displayMode"
+        },
+        "rotation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "scaling": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "cloned": {
+          "type": "boolean"
+        },
+        "interlaced": {
+          "type": "boolean"
+        },
+        "colorMode": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "hdrStatus": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "display",
+        "name",
+        "sourceId",
+        "sourceAdapterLuid",
+        "x",
+        "y",
+        "current",
+        "rotation",
+        "scaling",
+        "cloned",
+        "interlaced",
+        "colorMode",
+        "hdrStatus"
+      ],
+      "additionalProperties": false
+    },
+    "displayModeChoice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "mode": {
+          "$ref": "#/$defs/displayMode"
+        },
+        "isCurrent": {
+          "type": "boolean"
+        },
+        "timingSource": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "id",
+        "mode",
+        "isCurrent",
+        "timingSource"
+      ],
+      "additionalProperties": false
+    },
+    "displayInventoryPage": {
+      "type": "object",
+      "properties": {
+        "inventoryId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/displayOutput"
+          },
+          "maxItems": 4
+        },
+        "modes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/displayModeChoice"
+          },
+          "maxItems": 16
+        },
+        "nextOffset": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 2048
+        },
+        "explanation": {
+          "type": "string",
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "inventoryId",
+        "outputs",
+        "modes",
+        "nextOffset",
+        "explanation"
       ],
       "additionalProperties": false
     }

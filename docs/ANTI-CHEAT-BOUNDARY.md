@@ -1,6 +1,6 @@
 # Game and anti-cheat boundary
 
-Reviewed 17 October 2026 against the Stage 3 input/profile/link implementation. No game or anti-cheat
+Reviewed 17 October 2026 against Stage 3 input/profile/link and Stage 4 read-only inventory. No game or anti-cheat
 was launched for this review. This is an architecture review, not certification
 or a promise that a game will permit Chromatic.
 
@@ -11,6 +11,10 @@ separate opt-in Windows display API; private NVIDIA DVC is experimental and off
 by default. These are display operations. The application does not access game
 memory, inject a DLL, attach a debugger, intercept DirectX, edit game files or
 install a driver. Crosshair overlay and phone listeners remain unavailable.
+Resolution inventory adds only EnumDisplaySettingsExW to the reviewed native
+entry-point allowlist. It queries desktop modes and CCD identity metadata in
+Agent on an explicit Refresh/Load request; no mode/HDR/DDC setter or game access
+was added. The Vivid clarity preset uses existing global affine display controls.
 Local game bookmarks are data. Automatic foreground matching is a separate,
 explicit opt-in: Agent uses EVENT_SYSTEM_FOREGROUND with OUTOFCONTEXT, querying
 only path/PID/creation metadata via PROCESS_QUERY_LIMITED_INFORMATION. Denied
@@ -49,7 +53,7 @@ not inspect Windows/framework internals or prove a vendor's compatibility.
 
 Game rules and vendor decisions still govern whether color/visibility utilities
 are allowed. BattlEye's [official FAQ](https://www.battleye.com/support/faq/),
-last checked on 16 October 2026, describes general support for non-cheat visual tools
+last checked on 17 October 2026, describes general support for non-cheat visual tools
 subject to the game developer's decision. This is not approval of Chromatic or
 every effect. No exclusion, anti-cheat bypass, security disabling, process hiding
 or evasion is implemented or recommended. Check the particular game's rules;

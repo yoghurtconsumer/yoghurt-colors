@@ -148,6 +148,15 @@ The old holo/loot test shortcuts were removed after the user reported severe
 whole-screen darkening. Use **Restore**, then reset colour darkening / hue rotation
 before applying another look. [Scope and limits](docs/RUST-COLOUR-DARKENING.md).
 
+**Rust — Vivid clarity** is a new portable starting look with richer colour and a
+modest global lift for shaded areas. [Import it in your current build](docs/RUST-VIVID-CLARITY.md);
+it does not remove game shadows or change existing presets.
+
+Stage 4 step 1 adds **Resolution → Refresh monitors / Load supported modes / Review
+mode plan**. These actions are read-only. Exact current refresh stays distinct
+from integer driver enumeration; Apply/HDR/DDC transactions remain unavailable.
+[Checkpoint and remaining work](docs/STAGE4-REVIEW.md).
+
 ## Build and automated tests
 
 For an invited friend who has no SDK or .NET installed, create a private Windows
@@ -184,8 +193,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 307 passing VSTest tests**
-(104 Core, 169 integration, 34 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 324 passing VSTest tests**
+(107 Core, 181 integration, 36 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

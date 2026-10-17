@@ -17,6 +17,15 @@ public static class EffectsReducer
             new(status, state.Revision, state.Generation, reason));
         if (envelope.BaseRevision < 0 || envelope.Generation < 0 || envelope.CommandId == Guid.Empty)
             return Reject(CompletionStatus.Invalid, "Invalid command envelope.");
+        if (command is QueryDisplays query)
+        {
+            if (query.Offset is < 0 or > 2048 || query.InventoryId == Guid.Empty ||
+                query.InventoryId is null && (query.Display is not null || query.Offset != 0))
+                return Reject(CompletionStatus.Invalid, "Invalid inventory page request; begin with a fresh inventory.");
+            try { if (query.Display is not null) SettingsValidator.ValidateDisplay(query.Display); }
+            catch (ArgumentException error) { return Reject(CompletionStatus.Invalid, error.Message); }
+            return new(state, new(CompletionStatus.Accepted, state.Revision, state.Generation, "Read-only inventory query; effects unchanged."));
+        }
         if (command is GetState) return new(state, new(CompletionStatus.Accepted, state.Revision, state.Generation, "Authoritative state query."));
         if (command is TakeScreenshot) return Reject(CompletionStatus.NotImplemented, "Screenshot capture is pending Stage 5; no image captured.");
         if (!priority && (envelope.BaseRevision != state.Revision || envelope.Generation != state.Generation))

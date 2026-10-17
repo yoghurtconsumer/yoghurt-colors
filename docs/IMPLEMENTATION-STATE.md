@@ -1,16 +1,16 @@
 # Chromatic Desktop implementation state
 
-Updated: 17 October 2026. Requested work: finish all Stage 3 steps while user is away.
-Current checkpoint: Stage 3 implementation complete; manual input/GPU qualification pending.
-Previous GitHub checkpoint: 7e69527 (experimental global Rust accent drafts).
+Updated: 17 October 2026. Requested work: continue step by step while user tests; address Rust appearance feedback.
+Current checkpoint: Stage 3 implemented; Stage 4 step 1 read-only inventory / plan review implemented. Stage 4 transactions are NOT complete.
+Previous GitHub checkpoint: d0da0ee (remove misleading Rust holo/loot shortcuts).
 
 ## Current outcome
 
 Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
-(14 projects total). The Stage 3 implementation builds Release/x64 with zero
-warnings/errors; 307 VSTest tests pass: 104 Core, 169 integration and 34 UI/launcher.
+(14 projects total). The current implementation builds Release/x64 with zero
+warnings/errors; 324 VSTest tests pass: 107 Core, 181 integration and 36 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -28,8 +28,9 @@ all-system, capture or anti-cheat qualification. Native DVC remains separately
 unverified on hardware. No code change or additional hardware test was made for
 this documentation update.
 
-The current request authorizes finishing Stage 3. Its implementation is complete;
-manual live-input and GPU qualification remains open. Stop before Stage 4. The
+Stage 3 implementation is complete; manual live-input/GPU qualification remains
+open. The user subsequently authorized continued step-by-step work while testing;
+Stage 4 has begun with the read-only inventory checkpoint below. The
 requested Rust extension was clarified: blacken the actual holo reticle and the
 white loot hover highlight, not an overlay crosshair or automatic looting.
 The supplied TikTok was inaccessible behind verification/login/age gates; none
@@ -62,7 +63,68 @@ retain the base values; held modifiers remain temporary. Tests cover neutral
 preservation, hue/alpha/clipping, invalid ranges/non-finite values, persistence,
 IPC, remote rejection, explicit Apply, honest lack of element isolation and exact owned fake-baseline restoration.
 Launcher smoke renders/closes without companions/providers. See
-[Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 has not been started.
+[Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 read-only work is recorded below; mode/HDR/DDC writes remain unavailable.
+
+## Stage 4, step 1 — read-only display inventory and draft plans
+
+- Agent alone reads CCD active paths and source/target names. Non-virtual-aware
+  SDK-generated CCD structs retain distinct source and target IDs, exact rational
+  current refresh, rotation/scaling and negative desktop positions. Complete
+  active target metadata is retained for review; this is NOT the native topology
+  baseline/journal needed to restore an actual future mode mutation.
+- Buffer counts are bounded (128 paths / 512 modes), ERROR_INSUFFICIENT_BUFFER
+  retries the whole query at most three times. Re-query after enumeration rejects
+  changed topology. Duplicate stable paths fail closed; shared-source clones are
+  visible and draft planning is refused. Device/session/permission failures show
+  an error; no fallback invents a monitor or timing.
+- EnumDisplaySettingsExW reads current settings separately, then bounded driver
+  records with flags=0 and no private driver allocation. Interlaced, sub-32-bit,
+  missing-required-field, invalid range and private-extra modes are omitted.
+  Some drivers may therefore expose only the observed current mode here. Exact
+  CCD 60000/1001 stays separate from integer driver 60/1; no fabricated timing.
+- Modern color info type 15 is runtime-gated to 26100+, distinguishes SDR/WCG/HDR,
+  user intent and policy. Unsupported/invalid packet falls back to a labeled
+  ambiguous legacy query, never an HDR toggle. Existing SDR effect safety gating
+  is unchanged. No HDR/scaling/mode/DDC setter was added/generated.
+- Typed read-only QueryDisplays uses the authenticated UI/Agent transport. Output
+  pages contain at most 4 targets; selected-target pages at most 16 modes. Local
+  snapshot IDs, exact current mapping and a broadcast invalidation epoch fence
+  stale pages. Queries do not change effects, hold, revision, ownership generation
+  or observed colour status. They expose no opaque/native packet bytes. A stale
+  request does not destroy the newest valid snapshot. Fake process tests cannot
+  accidentally construct the production inventory provider.
+- Resolution has explicit Refresh / Load supported modes / Review mode plan.
+  Review changes no desktop state and preserves other output metadata; arbitrary
+  dimensions and ambiguous clones fail. Changing selection clears the prior plan.
+  Actual preview/apply remains NotImplemented, and production rejects it before
+  committing desired preview state, avoiding a stuck PreviewActive latch that
+  could otherwise block working colours.
+- Managed ABI checks cover DEVMODEW 220 bytes / offsets 72, 172, 184 and existing
+  generated CCD sizes. A Windows-SDK-compiled native sizeof/offsetof harness and
+  physical driver qualification are still pending; managed expectations are not
+  misrepresented as that independent check. All new tests use an injected API;
+  neither new native enumeration nor HardwareHarness was run during development.
+- Next Stage 4 work: real complete native topology/HDR snapshots and journal
+  validation; canonical CCD validate/apply and qualified single-display CDS path;
+  Agent-owned 15-second deadline and Recovery rollback, Keep/Revert/Escape and
+  compensating failure/hotplug handling; HDR set policy; DDC persistent Undo;
+  bounded watchdog. No automatic game-mode switching is enabled. Public NvAPI
+  custom timing remains unsupported pending independent qualification.
+
+## Requested Rust appearance preset — Vivid clarity
+
+The user supplied an unfiltered Rust training-map screenshot and requested richer
+colours and lighter rock shadows. Added a portable original Color preset and CD1
+code at docs/presets/Rust-Vivid-Clarity.*, with an import guide. It works in the
+current portable build without replacing running files; import/preview do not
+apply. Saturation 185%, brightness +0.0125, contrast .975; gamma neutral and all
+hue/darkening/optional controls off. Neutral black becomes .025, 5% becomes
+.07375, white remains 1 and gray steps stay strictly distinct. This lifts the
+whole image and cannot remove cast shadows or recover fully black/occluded detail.
+No game/display was used for tuning. Existing five biome / six Siege choices and
+user library/settings remain unchanged; the new file imports as a new local ID.
+The private ZIP includes the original preset files, not personal data. See
+RUST-VIVID-CLARITY.md. Tests validate the shipped JSON/CD1 agreement and math.
 
 ## Startup regression after switching portable builds
 

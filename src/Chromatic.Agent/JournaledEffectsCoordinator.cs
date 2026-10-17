@@ -13,13 +13,17 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
     private readonly object _stateLock = new();
     private readonly AgentStaWorker _worker;
     private IColorBackend? _backend;
+    private readonly Func<DisplayInventorySnapshot>? _readDisplays;
+    private DisplayInventorySnapshot? _displaySnapshot;
+    private int _displayEpoch, _snapshotEpoch;
+    public void InvalidateDisplayInventory() => Interlocked.Increment(ref _displayEpoch);
     private EffectsState _state;
     private volatile bool _recoveryReady;
     private readonly Func<bool> _dependenciesAlive;
     public bool RecoveryReady { get => _recoveryReady && _dependenciesAlive(); set => _recoveryReady = value; }
     public EffectsState State { get { lock (_stateLock) return _state; } }
-    public JournaledEffectsCoordinator(AgentStaWorker worker, EffectsState? initial = null, Func<bool>? dependenciesAlive = null)
-    { _worker = worker; _state = initial ?? new(); _dependenciesAlive = dependenciesAlive ?? (() => true); }
+    public JournaledEffectsCoordinator(AgentStaWorker worker, EffectsState? initial = null, Func<bool>? dependenciesAlive = null, Func<DisplayInventorySnapshot>? readDisplays = null)
+    { _worker = worker; _state = initial ?? new(); _dependenciesAlive = dependenciesAlive ?? (() => true); _readDisplays = readDisplays; }
     public void AttachBackend(IColorBackend backend)
     {
         lock (_stateLock)
@@ -45,11 +49,38 @@ public sealed class JournaledEffectsCoordinator : IEffectsClient, IWriteSafetyGa
                 return new(new(CompletionStatus.Blocked, _state.Revision, _state.Generation, reason), _state,
                     new(false, "Agent", "SafetyGate", reason, _state.Revision));
             }
-            reduction = EffectsReducer.Reduce(_state, envelope); _state = reduction.State;
+            reduction = EffectsReducer.Reduce(_state, envelope);
+            if (reduction.Result.Status == CompletionStatus.Accepted && (envelope.Command is PreviewMode or ConfirmMode or CancelPreview))
+                return new(new(CompletionStatus.NotImplemented, _state.Revision, _state.Generation,
+                    "Mode preview/rollback is not wired; desired state was left unchanged."), _state, ApplyResult.NotImplemented("DisplayTransaction", _state.Revision));
+            _state = reduction.State;
         }
         if (reduction.Result.Status != CompletionStatus.Accepted)
             return new(reduction.Result, State, new(false, "Coordinator", reduction.Result.Status.ToString(), reduction.Result.Explanation, State.Revision));
         var requested = reduction.State;
+        if (envelope.Command is QueryDisplays query)
+        {
+            return await _worker.InvokeAsync(() =>
+            {
+                if (_readDisplays is null) return new EffectsAcknowledgment(reduction.Result, State, ApplyResult.NotImplemented("DisplayInventory", State.Revision));
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var epoch = Volatile.Read(ref _displayEpoch);
+                    if (query.InventoryId is null) { _displaySnapshot = _readDisplays(); _snapshotEpoch = epoch; }
+                    if (_displaySnapshot is null || _snapshotEpoch != Volatile.Read(ref _displayEpoch) || query.InventoryId is { } id && id != _displaySnapshot.Id)
+                        throw new ArgumentException("Inventory expired; refresh before requesting another page.");
+                    var page = _displaySnapshot.Page(query.Display, query.Offset);
+                    return new EffectsAcknowledgment(reduction.Result, State,
+                        new(true, "DisplayInventory", null, page.Explanation, State.Revision), page);
+                }
+                catch (Exception error) when (error is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                    if (query.InventoryId is null) _displaySnapshot = null;
+                    return new EffectsAcknowledgment(reduction.Result, State, new(false, "DisplayInventory", "InventoryUnavailable", error.Message, State.Revision));
+                }
+            });
+        }
         if (envelope.Command is GetState)
         {
             // A heartbeat must pass through the actual STA, rather than hiding a hung setter.

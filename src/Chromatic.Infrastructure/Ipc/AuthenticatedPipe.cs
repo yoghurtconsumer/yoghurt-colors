@@ -70,7 +70,7 @@ public static class AuthenticatedPipe
                 try
                 {
                     await Protocol.WriteFrameAsync(stream, Protocol.Encode(new IpcResponse(1, "result", request.Envelope.CommandId,
-                        ack.Decision, ack.Completion, IpcState.From(ack.State))), timeout.Token);
+                        ack.Decision, ack.Completion, IpcState.From(ack.State), ack.Inventory)), timeout.Token);
                 }
                 finally { writer.Release(); }
                 if (request.Envelope.Command is Shutdown) lifetime.Cancel();

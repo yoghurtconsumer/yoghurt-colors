@@ -1,4 +1,4 @@
-# Stage 2 capabilities
+# Current capabilities — Stage 4 read-only checkpoint
 
 A capability describes whether an operation can be attempted through the guarded
 route. ApplyResult.Success requires completed readback; it never means GPU,
@@ -10,11 +10,11 @@ start off. Native constructors/default unconfigured backends fail closed.
 | Global Magnification | STA initialization, captured baseline, composed matrix, readback, exact restore | Authenticated Agent + live Recovery + exclusive writer lease + journal + verified SDR; existing global filters are declined |
 | NVIDIA DVC | Known private ABI, System32 load, GDI output mapping, discovered ranges, restore and software fallback | Explicit experimental opt-in and single selected output; private ABI/driver support is unqualified |
 | SDR gamma/warmth | Display DC, baseline-composed tonal ramps, readback and measured setter latency | Explicit opt-in and output; HDR/ACM/unknown mapping refused; slow/ignored route disabled; multiple outputs blocked pending shared-ramp qualification |
-| Dark Boost | Pure curve/tint/baseline composition and injected qualified gamma backend | Live hold unavailable until latency qualification and Stage 3 input work; basic affine lift is labeled as such |
+| Dark Boost | Opt-in Stage 3 keyboard/side-mouse hold with basic affine whole-image lift | Fake-tested input safety; real input/GPU qualification remains open; LUT/native hold stays unavailable pending latency qualification |
 | CVD modes | Adjustable red/green/blue-weak approximation in the global matrix | Experimental encoded-SDR approximation; see COLOR-PROVENANCE.md |
 | Local IPC | OS-authenticated current-user/session local pipes, bounded typed frames, nonce and concurrent correlation | Fixed peer processes, no public raw native operations; Recovery channel is read/restore/shutdown only |
 | Recovery | Journal-before-write, pending/confirmed values, conflict checks, pinned Agent death then exclusive lease | No blind restore from older backup or foreign/conflicting values |
-| Display inventory | Read-only CCD mapping; runtime-gated Windows 11 active SDR/WCG/HDR mode, legacy fallback on older Windows; raw diagnostic flags | Unknown/failed/active advanced color blocked; full enumeration/mode/HDR changes remain Stage 4 |
+| Display inventory | Agent read-only CCD mapping and bounded driver mode enumeration; exact current rational refresh; runtime-gated SDR/WCG/HDR; paged authenticated IPC and Resolution draft review | Read-only; stale/ambiguous mappings refused, clones visible but not plannable, unsafe/incomplete modes omitted; actual mode/HDR writes remain pending Stage 4 |
 | Modes / HDR / DDC | NotImplemented | Stage 4 guarded transactions and hardware qualification |
 | Overlay / capture | NotImplemented | Stage 5 |
 | Phone / GSMTC | NotImplemented, no network listener | Stage 6 |

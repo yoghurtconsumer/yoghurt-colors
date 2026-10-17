@@ -29,7 +29,9 @@ public sealed record IpcState(long Revision, long Generation, bool DesiredEnable
         state.Suspensions.OrderBy(s => s).ToImmutableArray(), state.Capabilities, state.Observed.LastResult, state.AutomationStatus);
 }
 public sealed record IpcResponse(int SchemaVersion, string Kind, Guid CommandId,
-    CommandResult Decision, ApplyResult Completion, IpcState State);
+    CommandResult Decision, ApplyResult Completion, IpcState State,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    DisplayInventoryPage? Inventory = null);
 
 public static class Protocol
 {

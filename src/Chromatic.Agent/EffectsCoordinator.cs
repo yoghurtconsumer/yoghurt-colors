@@ -19,7 +19,9 @@ public sealed class EffectsCoordinator(IColorBackend backend, EffectsState? init
             if (reduction.Result.Status != CompletionStatus.Accepted)
                 return new(reduction.Result, State, new(false, "Coordinator", reduction.Result.Status.ToString(), reduction.Result.Explanation, State.Revision));
             ApplyResult result;
-            if (command.Command is PreviewMode or ConfirmMode or CancelPreview)
+            if (command.Command is QueryDisplays)
+                return new(reduction.Result, State, ApplyResult.NotImplemented("DisplayInventory", State.Revision));
+            else if (command.Command is PreviewMode or ConfirmMode or CancelPreview)
                 result = ApplyResult.NotImplemented("DisplayTransaction", State.Revision);
             else
             {

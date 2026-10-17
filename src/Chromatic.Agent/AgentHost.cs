@@ -15,7 +15,7 @@ public static class AgentHost
     public static async Task<int> RunAsync(CompanionBootstrap launch, CompanionRuntime? injectedRuntime = null,
         Func<IAgentBroadcastSource>? injectedBroadcasts = null, Func<AutomationSettings, IAutomationInput>? injectedInput = null)
     {
-        AbiAssertions.Verify(); DisplaySafetyProbe.VerifyAbi();
+        AbiAssertions.Verify(); WindowsDisplayInventoryApi.VerifyAbi();
         if (launch.RecoveryOnly) throw new UnauthorizedAccessException("Recovery-only launch cannot start an Agent.");
         var own = PipeInterop.Current;
         if (own != launch.Agent) throw new UnauthorizedAccessException("Agent bootstrap identity mismatch.");
@@ -32,7 +32,8 @@ public static class AgentHost
         using var worker = new AgentStaWorker();
         var inventory = runtime.Inventory();
         var coordinator = new JournaledEffectsCoordinator(worker, new EffectsState { Capabilities = Capabilities(inventory, launch.Services) },
-            () => !ui.HasExited && !recovery.HasExited);
+            () => !ui.HasExited && !recovery.HasExited,
+            injectedRuntime is null ? () => new DisplayInventoryReader(new WindowsDisplayInventoryApi()).Read() : null);
         using var owned = new OwnedResourceController(journal, new()
         { UserSid = own.UserSid, SessionId = own.SessionId, AgentPid = own.ProcessId, AgentStartTicks = own.StartTicks }, coordinator, () => lease.IsHeld);
         var catalog = runtime.CreateResources(inventory, launch.Services.GammaCompatibility, launch.Services.NvidiaExperimental);

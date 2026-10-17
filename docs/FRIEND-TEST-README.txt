@@ -38,6 +38,17 @@ removed after whole-screen darkening feedback. If an old draft looks too dark,
 use Restore, reset colour darkening / hue rotation, then explicitly Apply another
 look. Existing accepted game presets are unchanged.
 
+OPTIONAL RUST STARTING LOOK
+Library -> Import JSON file -> presets/Rust-Vivid-Clarity.chromaticpreset.
+Review, Confirm import, Preview, then explicitly Apply if desired. It adds richer
+colour and a modest global lift. It cannot remove game shadows or reveal hidden
+or fully black detail. Existing presets are preserved.
+
+RESOLUTION CHECKPOINT
+Refresh monitors, Load supported modes and Review mode plan are read-only.
+Mode/HDR/scaling Apply, custom timing creation and monitor hardware writes remain
+unavailable until the independent rollback transaction is implemented.
+
 PLEASE REPORT
 Windows version, GPU, whether desktop/borderless/fullscreen works, the exact Apply
 result, and whether Restore/Exit returns your original colors. Report issues to
