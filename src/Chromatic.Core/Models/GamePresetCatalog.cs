@@ -26,26 +26,46 @@ public static class GamePresetCatalog
             "A restrained color boost. Check your chosen in-game outline color and lower saturation if outlines lose detail."),
         Make("apex-balanced", "Apex — Balanced", "Apex Legends", new(145, Brightness: .008, Contrast: .98),
             "A moderate color boost and small overall lift. Compare indoor areas, sky and terrain under the lighting you play."),
-        Make("rust-forest", "Rust — Forest / Temperate", Rust, new(135, Brightness: .015, Contrast: .96),
-            "Moderate saturation with a small whole-image lift for comparison in grass and woodland. Check tree shade, foliage and clothing detail; vegetation changes color too."),
-        Make("rust-desert", "Rust — Desert / Arid", Rust, new(120, Brightness: -.01, Contrast: .96),
-            "Restrained saturation and softer bright tones for comparison against sand and rocks. The whole image changes; compare shaded objects as well as sunlit ground."),
-        Make("rust-snow", "Rust — Snow / Arctic", Rust, new(125, Brightness: -.015, Contrast: .94),
-            "Lowers peak whites and keeps a small neutral black-level lift. Compare snow glare and shaded silhouettes. It cannot recover detail already missing from the rendered image."),
-        Make("rust-tundra", "Rust — Tundra", Rust, new(145, Brightness: .005, Contrast: .98),
-            "A stronger color starting point for muted ground, rocks and mixed vegetation. Check that clothing and terrain retain detail; reduce Saturation if colors clip."),
-        Make("rust-jungle", "Rust — Jungle", Rust, new(125, Brightness: .03, Contrast: .92),
-            "A larger whole-image lift and restrained saturation for comparison in dense greenery. Blacks become lighter and vegetation is affected too. It does not reveal obscured objects.")
+        Make("rust-forest", "Rust — Forest / Temperate", Rust, new(185, Brightness: .002, Contrast: .996),
+            "Rich color with near-neutral contrast and only a tiny black-level lift. Compare tree shade, foliage and clothing detail. Vegetation changes color too."),
+        Make("rust-desert", "Rust — Desert / Arid", Rust, new(170, Brightness: -.003, Contrast: .99),
+            "Richer color with slightly softer peak whites and a tiny black-level lift. Compare sand, rocks and shaded objects without a heavy whole-image lift."),
+        Make("rust-snow", "Rust — Snow / Arctic", Rust, new(160, Brightness: -.01, Contrast: .98),
+            "More color while keeping neutral black at black and lowering peak whites slightly. Compare snow glare and shaded silhouettes; it cannot recover missing rendered detail."),
+        Make("rust-tundra", "Rust — Tundra", Rust, new(195, Brightness: .002, Contrast: .996),
+            "Strong color for muted ground and mixed vegetation, with near-neutral contrast and deep blacks. Compare clothing and terrain detail; reduce Saturation if colors clip."),
+        Make("rust-jungle", "Rust — Jungle", Rust, new(180, Brightness: .003, Contrast: .994),
+            "Richer greens with a subtle whole-image lift and near-neutral contrast. Compare shade and foliage without the earlier raised-black look. It does not reveal obscured objects.")
     ];
     public static ImmutableArray<PresetDocument> Presets => Entries.Select(e => e.Preset).ToImmutableArray();
     public static PresetDocument? FindOriginal(string id) =>
         Entries.Select(e => e.Preset).Concat(BuiltInPresets.Create()).FirstOrDefault(p => p.Id == id);
+    // Upgrade only the exact first Rust defaults. User edits, imported copies,
+    // metadata and bookmark IDs remain intact; nothing is applied by this helper.
+    public static PresetDocument RefreshUneditedRustPreset(PresetDocument preset)
+    {
+        ColorSettings? previousColor = preset.Id switch
+        {
+            "builtin-game-rust-forest" => new(135, Brightness: .015, Contrast: .96),
+            "builtin-game-rust-desert" => new(120, Brightness: -.01, Contrast: .96),
+            "builtin-game-rust-snow" => new(125, Brightness: -.015, Contrast: .94),
+            "builtin-game-rust-tundra" => new(145, Brightness: .005, Contrast: .98),
+            "builtin-game-rust-jungle" => new(125, Brightness: .03, Contrast: .92),
+            _ => null
+        };
+        if (previousColor is null || FindOriginal(preset.Id) is not { } original || preset.Assets.IsDefault ||
+            !preset.Assets.SequenceEqual(original.Assets)) return preset;
+        var previous = original with { Color = previousColor };
+        return (preset with { Assets = previous.Assets }) == previous ? original : preset;
+    }
     public static string Describe(PresetDocument? preset)
     {
         if (preset is null) return "Select a preset to see its purpose.";
         var entry = Entries.FirstOrDefault(e => e.Preset.Id == preset.Id);
         if (entry is null) return preset.Kind == PresetKind.Color ? "Editable global color preset. Preview before applying." :
             "Portable document. Crosshair and display-mode application are not available yet.";
+        if (!ReferenceEquals(RefreshUneditedRustPreset(preset), preset))
+            return "Earlier Rust starting point with a larger black-level lift. Use Add / update Rust presets for richer color and deeper blacks; Preview and Apply remain manual.";
         return preset.Kind == PresetKind.Color && preset.Color == entry.Preset.Color ? entry.Description :
             "Customized game starting point. Reset selected starting point restores its original values; duplicate first to keep your edits.";
     }

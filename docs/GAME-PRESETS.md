@@ -1,17 +1,31 @@
 # Rust biome starting points
 
-Open Presets / Library and click **Add Rust biome presets**. This saves missing
-presets, selects the Rust filter and preserves existing edits. Select a preset,
+Open Presets / Library and click **Add / update Rust presets**. This saves missing
+presets and refreshes exact, unedited earlier Rust defaults while preserving
+customized presets and their IDs. It selects the Rust filter. Select a preset,
 preview it, then explicitly Apply. Duplicate before customizing if you want to
 keep both versions. Reset selected starting point restores just that original.
 
 | Preset | Saturation | Brightness | Contrast | Intended comparison |
 | --- | ---: | ---: | ---: | --- |
-| Forest / Temperate | 135% | +0.015 | 0.96 | Moderate color and a small whole-image lift |
-| Desert / Arid | 120% | −0.010 | 0.96 | Restrained color and softer sunlit neutral tones |
-| Snow / Arctic | 125% | −0.015 | 0.94 | Lower peak whites with a small neutral black-level lift |
-| Tundra | 145% | +0.005 | 0.98 | More color separation to compare on muted terrain |
-| Jungle | 125% | +0.030 | 0.92 | Larger whole-image lift with restrained saturation |
+| Forest / Temperate | 185% | +0.002 | 0.996 | Rich color with a tiny black-level lift |
+| Desert / Arid | 170% | −0.003 | 0.99 | Richer color with slightly softer peak whites |
+| Snow / Arctic | 160% | −0.010 | 0.98 | More color, neutral black retained and peak whites slightly lowered |
+| Tundra | 195% | +0.002 | 0.996 | Strong color with near-neutral contrast |
+| Jungle | 180% | +0.003 | 0.994 | Richer greens with a subtle whole-image lift |
+
+The user preferred Siege Strong and found the earlier Rust presets grey while
+trying them in Siege; they have not compared them in Rust yet. This revision
+raises saturation from 120–145% to 160–195% and lowers the neutral black output
+from 0.010–0.070 to 0–0.006. Contrast remains 0.98–0.996, close to neutral.
+Siege Strong stays unchanged at saturation 200%, brightness +0.005, contrast 0.98.
+These are mathematical differences and a response to appearance feedback, not a
+Rust visibility qualification. Compare them on Rust's actual terrain/lighting.
+
+Refreshing is an explicit library action and never applies colors. A renamed,
+retagged, recolored or otherwise customized earlier preset is kept. Use Reset
+selected starting point to opt into the latest original for one customized entry;
+duplicate it first if you want to keep your version. Imported copies stay intact.
 
 These values are original Chromatic appearance choices, not Facepunch settings
 or measured visibility improvements. They use the existing global affine SDR

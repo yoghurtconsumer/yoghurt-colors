@@ -1,8 +1,8 @@
 # Requirements traceability — Stage 3, step 1
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 231 VSTest tests pass (61 Core, 143 integration,
-27 UI/launcher). Native color routes retain authenticated ownership, verified
+x64 projects build Release with SDK 10.0.402; 238 VSTest tests pass (67 Core, 143 integration,
+28 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
 User feedback on 17 October confirms Saturation up to 300% worked during Siege
@@ -23,7 +23,7 @@ is claimed. Stage 3 input, foreground switching and OS link handoff remain pendi
 | F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
 | F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
-| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and twelve game starting points implemented | Siege/CS2/VALORANT/Apex + five Rust biome options; affine-only, monotone gray range and relative Jungle/Snow/Desert tone tests; add keeps edits; preview/reset manual; no measured visibility claim | Human map/display comparison |
+| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and twelve game starting points implemented | Accepted Siege Strong retained; Rust revised to richer saturation/lower black lift after grey-look feedback; gray-range/palette/legacy-refresh tests; explicit update protects customized entries; no measured Rust visibility claim | Human Rust/map/display comparison |
 | F06 | Saved custom looks | Local library CRUD implemented | Save/update base Display draft, rename/tag/duplicate/delete, atomic library + last-good, failure/corruption tests; per-output/held state separate | UI/manual qualification |
 | F07 | Automatic game-specific colors | Manual game preset pack and local bookmarks implemented; automatic switching pending | Idempotent atomic add keeps edited presets; editable exact local exe/Color-preset bookmarks; manual Apply only; no game processes opened or watched | 3 foreground identity/debounce/fallback |
 | F08 | Preset hotkeys | Deferred | No global hotkey registration | 3 |

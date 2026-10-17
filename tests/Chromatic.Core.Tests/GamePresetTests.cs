@@ -7,6 +7,41 @@ namespace Chromatic.Core.Tests;
 
 public sealed class GamePresetTests
 {
+    [Theory]
+    [InlineData("forest", 135, .015, .96)]
+    [InlineData("desert", 120, -.01, .96)]
+    [InlineData("snow", 125, -.015, .94)]
+    [InlineData("tundra", 145, .005, .98)]
+    [InlineData("jungle", 125, .03, .92)]
+    public void RevisedRustDefaultsHaveDeeperBlacksAndRicherColorAndRefreshOnlyTheKnownOldDefault(string suffix, double saturation, double brightness, double contrast)
+    {
+        var current = GamePresetCatalog.FindOriginal("builtin-game-rust-" + suffix)!;
+        var previous = current with { Color = new(saturation, Brightness: brightness, Contrast: contrast) };
+        var oldMatrix = ColorMatrixBuilder.Build(previous.Color!); var matrix = ColorMatrixBuilder.Build(current.Color!);
+        var black = new Rgba(0, 0, 0); var muted = new Rgba(.42, .27, .18);
+        Assert.InRange(matrix.Transform(black).R, -1e-12, .0061);
+        Assert.True(matrix.Transform(black).R < oldMatrix.Transform(black).R);
+        var oldColor = oldMatrix.Transform(muted); var newColor = matrix.Transform(muted);
+        Assert.True(newColor.R - newColor.B > oldColor.R - oldColor.B);
+        Assert.InRange(current.Color!.SaturationPercent, 160, 195); Assert.InRange(current.Color.Contrast, .98, 1);
+        Assert.Equal(current, GamePresetCatalog.RefreshUneditedRustPreset(previous));
+        Assert.Same(current, GamePresetCatalog.RefreshUneditedRustPreset(current));
+        Assert.Contains("Earlier Rust", GamePresetCatalog.Describe(previous));
+    }
+    [Fact] public void RustRefreshPreservesCustomizationsAndDoesNotAlterTheUsersFavoriteSiegeStrongValues()
+    {
+        var original = GamePresetCatalog.FindOriginal("builtin-game-rust-forest")!;
+        var earlier = original with { Color = new(135, Brightness: .015, Contrast: .96) };
+        foreach (var edited in new[]
+        {
+            earlier with { Name = "My forest" }, earlier with { GameTag = "My game" }, earlier with { Id = "user-copy" },
+            earlier with { Color = new(177) }, earlier with { AuthorMetadata = new("Local author", DateTimeOffset.UnixEpoch) },
+            earlier with { Assets = [new string('a', 64)] }
+        }) Assert.Same(edited, GamePresetCatalog.RefreshUneditedRustPreset(edited));
+        var siege = GamePresetCatalog.FindOriginal("builtin-game-siege-color")!;
+        Assert.Equal(new ColorSettings(200, Brightness: .005, Contrast: .98), siege.Color);
+        Assert.Same(siege, GamePresetCatalog.RefreshUneditedRustPreset(siege));
+    }
     [Fact] public void GamePackIsPortableAffineOnlyAndRetainsNeutralGraySteps()
     {
         var presets = GamePresetCatalog.Presets;

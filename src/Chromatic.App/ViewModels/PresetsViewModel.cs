@@ -167,11 +167,12 @@ public sealed class PresetsViewModel : PageViewModel
         "builtin-game-siege-balanced", "Game preset pack ready; existing presets and edits were kept. Choose Game tag for Siege, CS2, VALORANT, Apex or Rust. Preview first; Apply remains manual.");
     public Task AddRustPresetsAsync() => AddStartingPointsAsync(
         GamePresetCatalog.Presets.Where(p => p.GameTag == GamePresetCatalog.Rust).ToImmutableArray(), GamePresetCatalog.Rust,
-        "builtin-game-rust-forest", "Rust biome presets ready; existing presets and edits were kept. Select the environment yourself, then Preview and Apply. No automatic biome detection.");
-    private async Task AddStartingPointsAsync(ImmutableArray<PresetDocument> presets, string game, string preferredId, string message)
+        "builtin-game-rust-forest", "Rust presets ready: untouched earlier defaults updated for richer color and deeper blacks; customized presets kept. Preview, then Apply manually.", refreshRust: true);
+    private async Task AddStartingPointsAsync(ImmutableArray<PresetDocument> presets, string game, string preferredId, string message, bool refreshRust = false)
     {
         await ChangeAsync(l =>
         {
+            if (refreshRust) l = l with { Presets = l.Presets.Select(GamePresetCatalog.RefreshUneditedRustPreset).ToImmutableArray() };
             var existing = l.Presets.Select(p => p.Id).ToHashSet(StringComparer.Ordinal);
             var missing = presets.Where(p => !existing.Contains(p.Id)).ToArray();
             return missing.Length == 0 ? l : l with { Presets = l.Presets.AddRange(missing) };

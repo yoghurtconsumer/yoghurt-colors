@@ -9,7 +9,7 @@
       <TextBlock Text="Siege, CS2, VALORANT, Apex and Rust. Rust has Forest / Temperate, Desert / Arid, Snow / Arctic, Tundra and Jungle options. Editable SDR starting points for visual comparison; results depend on your map, display and in-game settings. They affect the whole image." Margin="0,8,0,10" />
       <WrapPanel>
         <Button Content="Add game presets" Command="{Binding AddGamePresetsCommand}" />
-        <Button Content="Add Rust biome presets" Command="{Binding AddRustPresetsCommand}" />
+        <Button Content="Add / update Rust presets" Command="{Binding AddRustPresetsCommand}" />
       </WrapPanel>
       <TextBlock Text="Search name, game tag or author" />
       <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10" />

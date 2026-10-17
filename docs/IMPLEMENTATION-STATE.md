@@ -2,7 +2,7 @@
 
 Updated: 17 October 2026. Requested work: continue step by step.
 Current checkpoint: Stage 3, step 1 — local library, game bookmarks and game starting-point pack.
-Previous GitHub checkpoint: 32fd9f4 (editable game color starting points).
+Previous GitHub checkpoint: 5c8f7d5 (Rust biome presets and dedicated Library action).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
-warnings/errors; 231 VSTest tests pass: 61 Core, 143 integration and 27 UI/launcher.
+warnings/errors; 238 VSTest tests pass: 67 Core, 143 integration and 28 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -45,11 +45,25 @@ installed or exposed as working. Stop before Stage 4.
 - Added five Rust options: Forest / Temperate, Desert / Arid, Snow / Arctic,
   Tundra and Jungle. Biome naming follows the Facepunch-hosted Terrain wiki;
   [Rust preset notes](GAME-PRESETS.md) record source, original values and limits.
-  The full game pack now contains 12 presets. Add Rust biome presets adds only
-  those five missing IDs and selects the Rust filter; Add game presets includes
-  them too. Existing library edits and game bookmark IDs are preserved. Neither
+  The full game pack now contains 12 presets. Add / update Rust presets adds
+  missing Rust IDs, refreshes untouched first defaults and selects the Rust
+  filter; Add game presets includes missing ones too. Existing customized entries
+  and game bookmark IDs are preserved. Neither
   action applies colors or detects the game/biome. Snow/desert lower neutral peak
   whites; Jungle lifts dark neutrals more than Forest, using affine math only.
+- User feedback: Siege Strong is the preferred look; the earlier Rust looks
+  appeared grey when tried in Siege, and have NOT been tested by the user in
+  Rust. Revised Rust saturation to 160–195%, contrast to 0.98–0.996 and neutral
+  black output to 0–0.006 (formerly 0.010–0.070). This reduces the large affine
+  lift while increasing color separation. Siege Strong is unchanged. No actual
+  Rust session or physical display was used to tune or qualify this revision.
+- The explicit Rust update action matches the complete known old document
+  (including name/tag/metadata/assets), refreshing only exact untouched defaults.
+  Renamed/retagged/recolored entries and imported copies are preserved; selected
+  reset remains an explicit way to obtain the new original. JSON schema versions
+  and bookmark IDs stay unchanged. Tests cover the old palette comparison, fresh
+  and repeat refresh, persisted legacy libraries, customization protection and
+  preserving the accepted Siege Strong values without issuing backend commands.
 - A full-suite run exposed the process harness receiving real Windows display
   notifications during its scripted fake session, causing a stale revision at
   setup. AgentHost now accepts an injectable IAgentBroadcastSource alongside its
@@ -63,7 +77,7 @@ installed or exposed as working. Stop before Stage 4.
   the Game tag filter. Adding the pack, reset, preview and editing do not apply
   anything. Reset selected starting point restores only that bundled preset;
   duplicate a customized preset first to retain it. The scene reset stays separate.
-- The game pack uses saturation 120–200%, gamma=1, neutral shadows/highlights/
+- The game pack uses saturation 135–200%, gamma=1, neutral shadows/highlights/
   vibrance/CVD and no mode, crosshair, hardware ID or asset. It uses the existing
   global affine SDR route rather than requiring optional LUT or NVIDIA services.
   Neutral gray steps remain monotonic and within output range in mathematical
@@ -357,7 +371,7 @@ holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 test
 passed instead; optimized self-contained publishing and three independent runtime
 startup checks passed separately. No product target was downgraded. The earlier
 Release/x64 186-test checkpoint is historical; the current Stage 3 library
-checkpoint above passed a full Release/x64 build and all 231 tests.
+checkpoint above passed a full Release/x64 build and all 238 tests.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

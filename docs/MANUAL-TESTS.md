@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 3 library checkpoint
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 231 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 238 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -40,13 +40,20 @@ edits remain and no duplicate IDs are created. Reset selected starting point
 must restore only that preset and leave the Display draft/desktop unchanged.
 Adding the pack must not apply colors or change game files/settings.
 
-Rust pack: click Add Rust biome presets and verify the five Rust choices. Add it
+Rust pack: click Add / update Rust presets and verify the five Rust choices. Add it
 again after editing one; the edited name/color must remain and no duplicate should
 appear. Compare Forest, Jungle, Tundra, Desert and Snow manually in their matching
 environments after explicit Apply. Watch near-black detail, white snow/sand,
 foliage/clothing color and washed-out blacks. Biome selection is manual; there is
 no automatic detection, enemy recognition or hidden-detail recovery. Settings and
 limits are in GAME-PRESETS.md. No Rust session or desktop writes are automated.
+
+For the revised richer palette, untouched first defaults should update with the
+Rust button; renamed/retagged/recolored copies must stay intact. Verify reset of a
+selected customized original separately, duplicating first if desired. Compare
+the revised Forest/Jungle colors and black depth with Neutral and Siege Strong
+in Rust itself; the user's grey-look report was from previewing Rust presets in
+Siege. Siege Strong should retain its accepted values and appearance.
 
 Optional user-run visual comparison: on SDR, start with Siege Balanced and use
 explicit Apply. Compare Neutral, Indoor lift and Outdoor balance on the maps and

@@ -10,6 +10,28 @@ namespace Chromatic.Ui.Tests;
 
 public sealed class LibraryWorkflowTests
 {
+    [Fact] public async Task RustRefreshUpdatesStoredOldDefaultsWhileKeepingCustomizedEntriesAndTheSiegeFavorite()
+    {
+        using var fixture = new Fixture(); var library = fixture.Library;
+        PresetDocument Old(string suffix, string name, ColorSettings color) => new()
+        { Id = "builtin-game-rust-" + suffix, Name = name, GameTag = "Rust", Color = color };
+        PresetDocument[] earlier = [
+            Old("forest", "Rust — Forest / Temperate", new(135, Brightness: .015, Contrast: .96)) with { Name = "My forest" },
+            Old("desert", "Rust — Desert / Arid", new(120, Brightness: -.01, Contrast: .96)),
+            Old("snow", "Rust — Snow / Arctic", new(125, Brightness: -.015, Contrast: .94)),
+            Old("tundra", "Rust — Tundra", new(145, Brightness: .005, Contrast: .98)),
+            Old("jungle", "Rust — Jungle", new(125, Brightness: .03, Contrast: .92)) ];
+        var previous = BuiltInPresets.Create().AddRange(GamePresetCatalog.Presets.Where(p => p.GameTag != GamePresetCatalog.Rust)).AddRange(earlier);
+        await new LibraryRepository(fixture.LibraryPath).SaveAsync(new() { Presets = previous }); await library.LoadAsync();
+        library.Selected = library.All.Single(p => p.Id.EndsWith("jungle")); Assert.Contains("Earlier Rust", library.SelectedDescription);
+        fixture.Display.Saturation = 200; await library.AddRustPresetsAsync();
+        Assert.Equal(19, library.All.Length); Assert.Equal(earlier[0], library.Selected); Assert.Equal(200, fixture.Display.Saturation);
+        foreach (var old in earlier.Skip(1)) Assert.Equal(GamePresetCatalog.FindOriginal(old.Id), library.All.Single(p => p.Id == old.Id));
+        Assert.Equal(previous.Single(p => p.Id == "builtin-game-siege-color"), library.All.Single(p => p.Id == "builtin-game-siege-color"));
+        await library.LoadAsync(); await library.AddRustPresetsAsync();
+        Assert.Equal(19, library.All.Length); Assert.Equal(earlier[0], library.All.Single(p => p.Id == earlier[0].Id));
+        Assert.Empty(fixture.Client.Commands);
+    }
     [Fact] public async Task AddingGamePackPersistsOncePerIdAndPreservesExistingEditsWithoutApplying()
     {
         using var fixture = new Fixture(); var library = fixture.Library; await library.LoadAsync();
