@@ -1,8 +1,8 @@
 # Requirements traceability — Stage 3, step 1
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 223 VSTest tests pass (58 Core, 142 integration,
-23 UI/launcher). Native color routes retain authenticated ownership, verified
+x64 projects build Release with SDK 10.0.402; 229 VSTest tests pass (60 Core, 143 integration,
+26 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
 User feedback on 17 October confirms Saturation up to 300% worked during Siege
@@ -23,9 +23,9 @@ is claimed. Stage 3 input, foreground switching and OS link handoff remain pendi
 | F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
 | F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
-| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven original editable starting points implemented | Neutral/treeline/interior/night/snow/smoke/bright-sky values; local preview/reset; no performance claim | Human visual check |
+| F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and seven game starting points implemented | Original Siege Balanced/Indoor lift/Outdoor balance/Strong color + CS2/VALORANT/Apex; global affine-only, monotone gray range tests, editable notes/preview/selected reset; no measured visibility claim | Human map/display comparison |
 | F06 | Saved custom looks | Local library CRUD implemented | Save/update base Display draft, rename/tag/duplicate/delete, atomic library + last-good, failure/corruption tests; per-output/held state separate | UI/manual qualification |
-| F07 | Automatic game-specific colors | Local bookmarks implemented; automatic switching pending | Editable exact local exe/Color-preset bookmarks and preview; pure resolver/reducer retained; no game processes opened or watched | 3 foreground identity/debounce/fallback |
+| F07 | Automatic game-specific colors | Manual game preset pack and local bookmarks implemented; automatic switching pending | Idempotent atomic add keeps edited presets; editable exact local exe/Color-preset bookmarks; manual Apply only; no game processes opened or watched | 3 foreground identity/debounce/fallback |
 | F08 | Preset hotkeys | Deferred | No global hotkey registration | 3 |
 | F09 | Red-/green-/blue-weak color modes | Adjustable global approximation implemented | Attributed severity-1 coefficients; row orientation/correction tests; UI mode/strength; COLOR-PROVENANCE.md | Visual qualification; approximation remains explicit |
 | F10 | Hold Dark Boost, selectable tint; release restores normal look; Mouse 5 demo | Curve/tint/reducer and injectable qualified gamma route implemented; live hold unavailable | Generation fences direct/real pipe; baseline composition; measured write duration; unqualified holds refused; basic affine lift math | 3 input + explicit latency/hardware qualification |

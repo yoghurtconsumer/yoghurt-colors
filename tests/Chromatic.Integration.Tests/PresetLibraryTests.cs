@@ -10,6 +10,19 @@ namespace Chromatic.Integration.Tests;
 
 public sealed class PresetLibraryTests
 {
+    [Fact] public async Task EveryGameStartingPointCanBeStoredExportedAndSharedWithoutHardwareIdentifiers()
+    {
+        using var folder = new TestDirectory(); var repository = new LibraryRepository(folder.File());
+        await repository.SaveAsync(new() { Presets = GamePresetCatalog.Presets });
+        foreach (var preset in (await repository.LoadAsync()).Value.Presets)
+        {
+            var encoded = PresetExchange.Encode(preset);
+            var imported = PresetExchange.ImportCode(PresetExchange.Share(preset));
+            Assert.Equal(encoded, PresetExchange.Encode(imported));
+            Assert.Equal(preset.GameTag, imported.GameTag);
+            Assert.Null(imported.Crosshair); Assert.Null(imported.DisplayIntent); Assert.Empty(imported.Assets);
+        }
+    }
     public static IEnumerable<object[]> Documents()
     {
         var intent = new DisplayIntent(1920, 1080, new(144, 1));

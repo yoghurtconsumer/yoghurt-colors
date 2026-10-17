@@ -30,6 +30,15 @@ duplicate, delete, search/type/game-tag filters and reset of original starting
 points are available. Color presets save base colors; monitor intentions and
 temporary held boost are separate.
 
+For ready-made game looks, click **Add game presets** in Library. This adds
+missing presets and keeps your existing edits. Siege has **Balanced**, **Indoor
+lift**, **Outdoor balance** and **Strong color**; the Game tag filter also lists
+CS2, VALORANT and Apex starting points. Select a preset, preview, then explicitly
+Apply. **Reset selected starting point** restores that one original; duplicate
+first to keep a customized version. Indoor lift changes the whole image. These
+are original uncalibrated appearance choices; map/display comparison is still
+needed. They do not detect enemies or switch automatically with games.
+
 Export `.chromaticpreset` JSON or generate an offline **CD1** share code. Paste a
 code or `chromaticdesk://preset/<code>` into the import box, review the diff, then
 **Confirm import** to save a new local copy. Importing never applies it. Resolution,
@@ -135,8 +144,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 223 passing VSTest tests**
-(58 Core, 142 integration, 23 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 229 passing VSTest tests**
+(60 Core, 143 integration, 26 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

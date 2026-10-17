@@ -32,8 +32,14 @@ public sealed class PresetsViewModel : PageViewModel
     public PresetDocument? Selected
     {
         get => _selected;
-        set { _selected = value; Changed(); if (value is not null) { EditName = value.Name; EditTag = value.GameTag ?? ""; } }
+        set
+        {
+            _selected = value; Changed(); Changed(nameof(SelectedDescription)); Changed(nameof(CanResetSelected));
+            if (value is not null) { EditName = value.Name; EditTag = value.GameTag ?? ""; }
+        }
     }
+    public string SelectedDescription => GamePresetCatalog.Describe(Selected);
+    public bool CanResetSelected => Selected is { } preset && GamePresetCatalog.FindOriginal(preset.Id) is not null;
     public string EditName { get => _name; set { _name = value; Changed(); } }
     public string EditTag { get => _tag; set { _tag = value; Changed(); } }
     public string ShareText { get => _share; set { _share = value; Changed(); } }
@@ -46,6 +52,8 @@ public sealed class PresetsViewModel : PageViewModel
     public ICommand DuplicateCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand ResetBuiltInsCommand { get; }
+    public ICommand AddGamePresetsCommand { get; }
+    public ICommand ResetSelectedCommand { get; }
     public ICommand PreviewCommand { get; }
     public ICommand ApplyCommand { get; }
     public ICommand ImportFileCommand { get; }
@@ -61,6 +69,7 @@ public sealed class PresetsViewModel : PageViewModel
         AsyncCommand Run(Func<Task> action) => new(action, e => Status = $"Operation failed: {e.Message}");
         SaveNewCommand = Run(SaveNewAsync); UpdateColorsCommand = Run(UpdateColorsAsync); RenameCommand = Run(RenameAsync);
         DuplicateCommand = Run(DuplicateAsync); DeleteCommand = Run(DeleteAsync); ResetBuiltInsCommand = Run(ResetBuiltInsAsync);
+        AddGamePresetsCommand = Run(AddGamePresetsAsync); ResetSelectedCommand = Run(ResetSelectedAsync);
         PreviewCommand = new RelayCommand(_ => Preview()); ApplyCommand = Run(ApplyAsync);
         ImportFileCommand = Run(async () =>
         {
@@ -152,6 +161,24 @@ public sealed class PresetsViewModel : PageViewModel
     {
         Presets = l.Presets.Where(p => !BuiltInPresets.Create().Any(b => b.Id == p.Id)).Concat(BuiltInPresets.Create()).ToImmutableArray()
     }, "Original starting points reset; custom presets preserved.");
+    public async Task AddGamePresetsAsync()
+    {
+        await ChangeAsync(l =>
+        {
+            var existing = l.Presets.Select(p => p.Id).ToHashSet(StringComparer.Ordinal);
+            var missing = GamePresetCatalog.Presets.Where(p => !existing.Contains(p.Id)).ToArray();
+            return missing.Length == 0 ? l : l with { Presets = l.Presets.AddRange(missing) };
+        }, "Game preset pack ready; existing presets and edits were kept. Choose Game tag for Siege, CS2, VALORANT or Apex. Preview first; Apply remains manual.");
+        Search = ""; TypeFilter = "Color"; GameFilter = GamePresetCatalog.Siege;
+        if (!Filtered.Any()) GameFilter = "All";
+        Selected = Filtered.FirstOrDefault(p => p.Id == "builtin-game-siege-balanced") ?? Filtered.FirstOrDefault();
+    }
+    public Task ResetSelectedAsync()
+    {
+        var selected = RequireSelection();
+        var original = GamePresetCatalog.FindOriginal(selected.Id) ?? throw new InvalidOperationException("This is a custom preset; there is no bundled starting point to restore.");
+        return ChangeAsync(l => Edit(l, selected.Id, _ => original), "Selected starting point reset in the library. Nothing applied to the desktop.", selected.Id);
+    }
     public bool Preview()
     {
         if (Selected is not { Kind: PresetKind.Color, Color: { } color })

@@ -5,6 +5,9 @@
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="{Binding CapabilityStatus}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
       <TextBlock Text="{Binding Deferred}" Margin="0,10,0,14" />
+      <TextBlock Text="Game starting points" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock Text="Siege (Balanced, Indoor lift, Outdoor balance, Strong color), CS2, VALORANT and Apex. Editable SDR starting points for visual comparison; results depend on your map, display and in-game settings. They affect the whole image." Margin="0,8,0,10" />
+      <Button Content="Add game presets" Command="{Binding AddGamePresetsCommand}" HorizontalAlignment="Left" />
       <TextBlock Text="Search name, game tag or author" />
       <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10" />
       <WrapPanel>
@@ -19,11 +22,13 @@
           <WrapPanel><TextBlock Text="{Binding Kind}" Margin="0,0,12,0" /><TextBlock Text="{Binding GameTag}" /></WrapPanel>
         </StackPanel></DataTemplate></ListBox.ItemTemplate>
       </ListBox>
+      <TextBlock Text="{Binding SelectedDescription}" Margin="0,0,0,12" />
       <WrapPanel>
         <Button Content="Preview in Display" Command="{Binding PreviewCommand}" />
         <Button Content="Apply selected colors to desktop" Command="{Binding ApplyCommand}" />
         <Button Content="Duplicate" Command="{Binding DuplicateCommand}" />
         <Button Content="Delete selected" Command="{Binding DeleteCommand}" />
+        <Button Content="Reset selected starting point" Command="{Binding ResetSelectedCommand}" IsEnabled="{Binding CanResetSelected}" />
       </WrapPanel>
       <TextBlock Text="Preset name" Margin="0,8,0,4" />
       <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" />
@@ -33,7 +38,7 @@
         <Button Content="Save Display draft as new" Command="{Binding SaveNewCommand}" />
         <Button Content="Save name / tag" Command="{Binding RenameCommand}" />
         <Button Content="Update selected from Display" Command="{Binding UpdateColorsCommand}" />
-        <Button Content="Reset original starting points" Command="{Binding ResetBuiltInsCommand}" />
+        <Button Content="Reset scene starting points" Command="{Binding ResetBuiltInsCommand}" />
       </WrapPanel>
       <TextBlock Text="{Binding Status}" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
     </StackPanel></Border>

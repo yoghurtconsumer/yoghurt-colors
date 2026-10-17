@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 3 library checkpoint
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 223 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 229 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -33,6 +33,20 @@ Library checks for this checkpoint (no Apply needed):
 Global input, automatic focus switching and Windows protocol handoff are still
 pending. Do not interpret saved game bookmarks or a pasted link parser as those
 features being implemented.
+
+Game pack checks: click Add game presets, verify four Siege options and the
+CS2/VALORANT/Apex game tags. Edit/rename one, add the pack again and verify the
+edits remain and no duplicate IDs are created. Reset selected starting point
+must restore only that preset and leave the Display draft/desktop unchanged.
+Adding the pack must not apply colors or change game files/settings.
+
+Optional user-run visual comparison: on SDR, start with Siege Balanced and use
+explicit Apply. Compare Neutral, Indoor lift and Outdoor balance on the maps and
+lighting you actually play. Observe shadow detail, black level, bright windows,
+colored outlines and whether strong saturation hides detail through clipping.
+Indoor lift changes the whole image. Record the chosen settings, monitor and
+backend result; mathematical gray-range tests do not prove visibility benefits.
+No game or physical display is used for automated preset tests.
 
 Run-Chromatic.cmd -SmokeTest verifies first render and closes with in-memory
 defaults, without launching companions or native resource providers. Logs are at

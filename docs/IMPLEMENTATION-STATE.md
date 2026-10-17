@@ -1,8 +1,8 @@
 # Chromatic Desktop implementation state
 
 Updated: 17 October 2026. Requested work: continue step by step.
-Current checkpoint: Stage 3, step 1 — local preset library and game bookmarks.
-Previous GitHub checkpoint: ef297e4 (user-confirmed 300% saturation in Siege Fullscreen).
+Current checkpoint: Stage 3, step 1 — local library, game bookmarks and game starting-point pack.
+Previous GitHub checkpoint: b426c3c (offline preset library and local game bookmarks).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
-warnings/errors; 223 VSTest tests pass: 58 Core, 142 integration and 23 UI/launcher.
+warnings/errors; 229 VSTest tests pass: 60 Core, 143 integration and 26 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -35,6 +35,29 @@ installed or exposed as working. Stop before Stage 4.
 
 ## Stage 3, step 1 — local library and game bookmarks
 
+- The user confirmed the library works, then requested ready-made game looks to
+  help compare visibility. Added an original seven-preset game pack: Siege
+  Balanced/Indoor lift/Outdoor balance/Strong color, plus balanced starting points
+  for Counter-Strike 2, VALORANT and Apex Legends. These are uncalibrated appearance
+  choices, not evidence of better enemy detection or game-specific compatibility.
+  No game or physical display was used to tune or test them.
+- Library's Add game presets action atomically adds missing stable IDs and keeps
+  existing presets/edits. It selects the Siege game filter, with other games in
+  the Game tag filter. Adding the pack, reset, preview and editing do not apply
+  anything. Reset selected starting point restores only that bundled preset;
+  duplicate a customized preset first to retain it. The scene reset stays separate.
+- The game pack uses saturation 135–200%, gamma=1, neutral shadows/highlights/
+  vibrance/CVD and no mode, crosshair, hardware ID or asset. It uses the existing
+  global affine SDR route rather than requiring optional LUT or NVIDIA services.
+  Neutral gray steps remain monotonic and within output range in mathematical
+  tests. Indoor lift raises the whole image; strong saturation may still clip
+  colored pixels. Purpose notes are displayed; edited colors are labeled customized.
+- Tests cover the gray range/alpha and indoor lift, portable share/store round
+  trips, idempotent pack addition, preserving custom names/tags/colors, failed
+  atomic pack addition, filter selection and resetting only the selected original.
+  New game presets are not inserted into the user's live library during testing;
+  the user can add them using the new Library button. Automatic switching remains
+  pending and native/game/anti-cheat qualification is not implied.
 - Seven original editable starting presets: Neutral, Treeline, Interior, Night,
   Snow glare, Smoke / dust and Bright sky. These are starting values, not game
   performance or visibility claims. Saturation retains its existing 0–300% range.
@@ -317,7 +340,7 @@ holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 test
 passed instead; optimized self-contained publishing and three independent runtime
 startup checks passed separately. No product target was downgraded. The earlier
 Release/x64 186-test checkpoint is historical; the current Stage 3 library
-checkpoint above passed a full Release/x64 build and all 223 tests.
+checkpoint above passed a full Release/x64 build and all 229 tests.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

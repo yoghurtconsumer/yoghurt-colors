@@ -10,6 +10,45 @@ namespace Chromatic.Ui.Tests;
 
 public sealed class LibraryWorkflowTests
 {
+    [Fact] public async Task AddingGamePackPersistsOncePerIdAndPreservesExistingEditsWithoutApplying()
+    {
+        using var fixture = new Fixture(); var library = fixture.Library; await library.LoadAsync();
+        await library.AddGamePresetsAsync(); Assert.Equal(14, library.All.Length); Assert.Equal(4, library.Filtered.Count());
+        Assert.Equal(GamePresetCatalog.Siege, library.GameFilter); Assert.Equal("builtin-game-siege-balanced", library.Selected!.Id);
+        fixture.Display.Saturation = 177; await library.UpdateColorsAsync();
+        library.EditName = "My tuned Siege look"; library.EditTag = "My game tag"; await library.RenameAsync();
+        var edited = library.Selected!;
+        await library.AddGamePresetsAsync(); Assert.Equal(14, library.All.Length);
+        Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
+        Assert.Contains(library.Selected, library.Filtered);
+        Assert.Empty(fixture.Client.Commands); Assert.Equal(177, fixture.Display.Saturation);
+        await library.LoadAsync(); Assert.Equal(14, library.All.Length); Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
+        library.GameFilter = GamePresetCatalog.Siege; Assert.Equal(3, library.Filtered.Count());
+        library.GameFilter = "Counter-Strike 2"; Assert.Single(library.Filtered);
+    }
+    [Fact] public async Task ResetRestoresOnlyTheChosenStartingPointAndLeavesTheDisplayUntouched()
+    {
+        using var fixture = new Fixture(); var library = fixture.Library; await library.LoadAsync(); await library.AddGamePresetsAsync();
+        var id = library.Selected!.Id; fixture.Display.Saturation = 180; await library.UpdateColorsAsync();
+        library.EditName = "Keep this copy"; await library.SaveNewAsync(); var custom = library.Selected!;
+        Assert.False(library.CanResetSelected);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => library.ResetSelectedAsync());
+        library.Selected = library.All.Single(p => p.Id == id); Assert.True(library.CanResetSelected);
+        await library.ResetSelectedAsync();
+        Assert.Equal(GamePresetCatalog.FindOriginal(id), library.Selected);
+        Assert.Equal(custom, library.All.Single(p => p.Id == custom.Id));
+        Assert.Equal(180, fixture.Display.Saturation); Assert.Empty(fixture.Client.Commands);
+        Assert.DoesNotContain("Customized", library.SelectedDescription);
+    }
+    [Fact] public async Task InterruptedGamePackAdditionKeepsThePreviousLibraryAndNoHardwareCommands()
+    {
+        using var fixture = new Fixture(); await fixture.Library.LoadAsync();
+        await new LibraryRepository(fixture.LibraryPath).SaveAsync(new() { Presets = fixture.Library.All });
+        var library = new PresetsViewModel(new(fixture.LibraryPath, new Fault(WriteCheckpoint.BeforeReplace)), fixture.Display);
+        await library.LoadAsync(); await Assert.ThrowsAsync<IOException>(() => library.AddGamePresetsAsync());
+        Assert.Equal(7, library.All.Length); Assert.Equal(7, (await new LibraryRepository(fixture.LibraryPath).LoadAsync()).Value.Presets.Length);
+        Assert.Empty(fixture.Client.Commands);
+    }
     [Fact] public async Task SavingEditingAndDuplicatingUseTheDraftWithoutSendingHardwareCommands()
     {
         using var fixture = new Fixture(); var library = fixture.Library; await library.LoadAsync();
