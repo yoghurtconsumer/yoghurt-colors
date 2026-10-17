@@ -31,13 +31,12 @@ Magnification+NvidiaDvc. Software fallback does not establish fullscreen coverag
 NVIDIA driver DLLs are not included: only the already-installed System32 driver
 interface is used. Driver/game compatibility has not been qualified.
 
-EXPERIMENTAL RUST ACCENT DRAFTS
-Display -> Experimental colour darkening -> Prepare blue holo test. Choose the
-blue holo colour yourself in Rust Accessibility, then explicitly Apply in Chromatic.
-All matching colours throughout the desktop change; this is not game detection.
-The blue-tinted loot draft is only a test: neutral white remains white, so a black
-loot result is not verified. Restore requests the captured original desktop matrix.
-These controls start off; existing game presets are unchanged.
+GLOBAL COLOUR DARKENING
+Advanced global colour darkening changes matching colours throughout the desktop.
+It cannot isolate Rust's holo or loot highlight. The old test shortcuts were
+removed after whole-screen darkening feedback. If an old draft looks too dark,
+use Restore, reset colour darkening / hue rotation, then explicitly Apply another
+look. Existing accepted game presets are unchanged.
 
 PLEASE REPORT
 Windows version, GPU, whether desktop/borderless/fullscreen works, the exact Apply

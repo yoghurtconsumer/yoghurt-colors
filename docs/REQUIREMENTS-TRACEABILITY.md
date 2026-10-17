@@ -72,10 +72,10 @@ views/dialogs/assets, packaging/CI and optional-cloud service trees remain scope
 to later stages; empty files are not used to imply implementation. The manual
 hardware harness was compiled but never executed.
 
-User-requested Rust extension beyond the original F01–F38 listing: original opt-in
-global hue rotation/colour darkening, draft-only holo/blue-tinted-loot tests,
-preview/reset, strict local schemas and save/share/import diff are implemented.
-This reuses the existing owned matrix with no native import expansion. White
-remains white; black neutral-white loot highlighting is NOT implemented/verified.
-Actual Rust holo/loot appearance remains manual qualification. See
-[Rust review](RUST-COLOUR-DARKENING.md). Stage 4 was not started.
+User-requested Rust extension beyond F01–F38: generic opt-in global hue rotation /
+colour darkening and save/share/import diff remain implemented. The 400% holo/loot
+draft shortcuts were removed after the user reported severe whole-screen
+darkening and explicitly requested element-only changes. That isolation is NOT
+supported by this global backend; neutral white also remains white. No game
+capture/recognition or native access expansion was added. Accepted game presets
+are unchanged. See [scope/reset instructions](RUST-COLOUR-DARKENING.md).

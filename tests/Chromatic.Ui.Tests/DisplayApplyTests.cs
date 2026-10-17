@@ -10,13 +10,13 @@ namespace Chromatic.Ui.Tests;
 
 public sealed class DisplayApplyTests
 {
-    [Fact] public async Task RustAccentDraftPreviewsBlueAsBlackAndWhiteAsWhiteBeforeExplicitTypedApply()
+    [Fact] public async Task GlobalAccentDraftRequiresExplicitTypedApplyAndDisclosesLackOfElementIsolation()
     {
         var client = new FakeClient(false); var vm = new DisplayViewModel(client);
-        vm.PrepareBlueHoloCommand.Execute(null); Assert.Empty(client.Commands);
-        Assert.Equal(400, vm.DarkenPercent); Assert.Contains("unverified", vm.ApplyStatus);
-        var blue = Assert.IsType<System.Windows.Media.SolidColorBrush>(vm.Swatches.Single(s => s.Label == "Blue sight").Adjusted).Color;
-        Assert.Equal(0, blue.R); Assert.Equal(0, blue.G); Assert.Equal(0, blue.B);
+        vm.DarkenHue = 195; vm.DarkenPercent = 25; Assert.Empty(client.Commands);
+        Assert.Contains("cannot isolate", vm.AccentStatus);
+        var blue = Assert.IsType<System.Windows.Media.SolidColorBrush>(vm.Swatches.Single(s => s.Label == "Blue").Adjusted).Color;
+        Assert.True(blue.B > 0);
         var white = Assert.IsType<System.Windows.Media.SolidColorBrush>(vm.Swatches.Single(s => s.Label == "White").Adjusted).Color;
         Assert.Equal(255, white.R); Assert.Equal(255, white.G); Assert.Equal(255, white.B);
         var draft = vm.DraftColor; await vm.ApplyAsync();
@@ -25,9 +25,9 @@ public sealed class DisplayApplyTests
     [Fact] public void AccentResetAndNvidiaPreparationClearTheExtensionWithoutSendingCommands()
     {
         var client = new FakeClient(false); var vm = new DisplayViewModel(client);
-        vm.PrepareBlueLootCommand.Execute(null); Assert.Contains("neutral white highlight stays white", vm.ApplyStatus);
+        vm.Saturation = 120; vm.DarkenHue = 240; vm.DarkenPercent = 25; Assert.Contains("Neutral white stays white", vm.AccentStatus);
         vm.ResetAccentCommand.Execute(null); Assert.Equal(120, vm.Saturation); Assert.Equal(0, vm.DarkenPercent); Assert.Equal(0, vm.HueRotation);
-        vm.PrepareBlueHoloCommand.Execute(null); vm.PrepareNvidiaCommand.Execute(null);
+        vm.DarkenHue = 195; vm.DarkenPercent = 25; vm.PrepareNvidiaCommand.Execute(null);
         Assert.Equal(0, vm.DarkenPercent); Assert.Equal(0, vm.HueRotation); Assert.Equal(100, vm.Saturation); Assert.Empty(client.Commands);
     }
     [Fact] public void NvidiaPreparationSelectsSingleOutputAndOnlyChangesTheDraft()

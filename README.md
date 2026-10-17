@@ -142,12 +142,11 @@ legacy probe falsely blocked a BenQ SDR display (legacy flags 5). The fixed prob
 uses Windows 11's explicit active mode (modern flags 69, SDR), with a runtime gate
 and conservative legacy fallback on older Windows. No Windows setting was changed.
 
-Experimental Rust accents: on **Display**, expand **Experimental colour darkening · Rust accent tests**.
-**Prepare blue holo test** edits the preview; choose Rust's blue holo colour yourself,
-then explicitly **Apply colors to desktop**. This original global transform changes
-matching colours everywhere. **Prepare blue-tinted loot test** is unqualified:
-neutral white stays white, so a black loot highlight is not promised. See the
-[Rust review guide](docs/RUST-COLOUR-DARKENING.md) for steps, reset and limits.
+Display's **Advanced global colour darkening** controls affect matching colours
+throughout the desktop. They cannot isolate a Rust holo reticle or loot highlight.
+The old holo/loot test shortcuts were removed after the user reported severe
+whole-screen darkening. Use **Restore**, then reset colour darkening / hue rotation
+before applying another look. [Scope and limits](docs/RUST-COLOUR-DARKENING.md).
 
 ## Build and automated tests
 

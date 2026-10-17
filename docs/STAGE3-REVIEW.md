@@ -86,16 +86,13 @@ Rust Accessibility colour menu. The original TikTok remained inaccessible. No
 challenge, account or age data was submitted. The exact reference formula and
 its claimed game/anti-cheat compatibility have not been independently verified.
 
-Display now contains **Experimental colour darkening · Rust accent tests**.
-Use **Prepare blue holo test** to preview an original global transform, choose
-Rust's blue holo colour yourself, then use the separate **Apply colors to desktop**.
-The **Prepare blue-tinted loot test** is experimental: neutral white stays white,
-so it is not a verified black loot solution. Other matching colours change too.
-No game-element identification, game capture, overlay, file edits or input
-synthesis is used. Accepted Siege/Rust presets remain unchanged.
-
-Follow [the Rust review steps](RUST-COLOUR-DARKENING.md), including Restore,
-checking unrelated colours and saving/sharing the draft. No live Rust/hardware
-qualification was run by development. Stage 3 implementation is complete;
-Stage 4 was not started. Follow game policy: the architecture does not establish
+The user reported severe whole-screen darkening from the 400% holo draft and
+clarified that only the holo / hovered loot should change. Those two shortcuts
+have been removed. **Advanced global colour darkening** remains a generic
+whole-desktop effect, not a game-element recolouring feature. Use Restore, reset
+the draft and Apply your usual look. See [scope and reset instructions](RUST-COLOUR-DARKENING.md).
+No object-isolated holo/loot result is implemented or claimed. Accepted Siege/
+Rust presets remain unchanged. Stage 3 implementation is complete; manual
+qualification remains open. Stage 4 Resolution work is a separate next step.
+Follow game policy: the architecture does not establish
 anti-cheat approval or a guarantee against false flags. See ANTI-CHEAT-BOUNDARY.md.

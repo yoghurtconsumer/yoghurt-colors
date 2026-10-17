@@ -35,7 +35,7 @@ public sealed class DisplayViewModel : PageViewModel
     public double DarkenHue { get => _draft.DarkenHueDegrees; set => Set(_draft with { DarkenHueDegrees = value }, nameof(DarkenHue)); }
     public double DarkenPercent { get => _draft.DarkenStrength * 100; set => Set(_draft with { DarkenStrength = value / 100 }, nameof(DarkenPercent)); }
     public string AccentStatus => DarkenPercent == 0 && HueRotation == 0 ? "Colour darkening and hue rotation are off." :
-        "Experimental GLOBAL colour transform. Matching colours everywhere may darken; opposite colours may brighten/clip. Neutral white stays white. Black holo/loot behavior in Rust has not been visually qualified.";
+        "Experimental GLOBAL colour transform. Matching colours everywhere may darken; opposite colours may brighten/clip. Neutral white stays white. This cannot isolate a holo reticle or loot highlight; those features are unavailable.";
     public string[] CvdModes { get; } = ["None", "RedWeak", "GreenWeak", "BlueWeak"];
     public ImmutableArray<DisplayIdentity> Outputs => _outputs;
     public DisplayIdentity? SelectedOutput
@@ -65,8 +65,6 @@ public sealed class DisplayViewModel : PageViewModel
     public ICommand ResetTonesCommand { get; }
     public ICommand OpenDisplaySettingsCommand { get; }
     public ICommand PrepareNvidiaCommand { get; }
-    public ICommand PrepareBlueHoloCommand { get; }
-    public ICommand PrepareBlueLootCommand { get; }
     public ICommand ResetAccentCommand { get; }
     public string FullscreenStatus => _client?.State.Capabilities.Backends.Any(b => b.Backend == BackendKind.NvidiaDvc && b.Status == Capability.Experimental) == true
         ? "Experimental NVIDIA vibrance is opted in. Select one output, keep Saturation at 100%, adjust Vibrance and Apply. Check for Magnification+NvidiaDvc in the result; a software fallback does not cover exclusive fullscreen. Driver/game behavior needs your visual check."
@@ -95,16 +93,6 @@ public sealed class DisplayViewModel : PageViewModel
     {
         _client = client; _session = settings; _draft = settings?.Current.GlobalColor ?? new();
         ApplyCommand = new AsyncCommand(ApplyAsync, error => ApplyStatus = $"Apply failed: {error.Message}");
-        PrepareBlueHoloCommand = new RelayCommand(_ =>
-        {
-            LoadColorDraft(new(150) { HueRotationDegrees = 15, DarkenHueDegrees = 255, DarkenStrength = 4 });
-            ApplyStatus = "BLUE holo test draft only. In Rust, select a blue Holo Sight Colour yourself under Accessibility. This global transform is original and unverified in Rust, not an exact PlexusX preset. Preview, then explicitly Apply. Other blue/purple objects change too.";
-        });
-        PrepareBlueLootCommand = new RelayCommand(_ =>
-        {
-            LoadColorDraft(new(120) { DarkenHueDegrees = 240, DarkenStrength = 4 });
-            ApplyStatus = "Blue-tinted inventory-accent TEST draft only. It may darken a coloured highlight; a neutral white highlight stays white. No game/hover detection or confirmed black-loot result. Preview and Apply only if you accept the whole-image changes.";
-        });
         ResetAccentCommand = new RelayCommand(_ =>
         {
             HueRotation = 0; DarkenPercent = 0; DarkenHue = 0;
@@ -189,7 +177,7 @@ public sealed class DisplayViewModel : PageViewModel
         var matrix = ColorMatrixBuilder.Build(_draft);
         (string Label, Rgba Value)[] samples = [("Warm", new(.75, .3, .2)), ("Leaf", new(.25, .6, .2)),
             ("Sky", new(.2, .45, .8)), ("Dark", new(.12, .15, .18)), ("Gray", new(.5, .5, .5)), ("Light", new(.9, .9, .9)),
-            ("Red sight", new(1, 0, 0)), ("Green sight", new(0, 1, 0)), ("Blue sight", new(0, 0, 1)),
+            ("Red", new(1, 0, 0)), ("Green", new(0, 1, 0)), ("Blue", new(0, 0, 1)),
             ("Blue tint", new(.4, .5, .95)), ("White", new(1, 1, 1)), ("Black", new(0, 0, 0))];
         Rgba Tone(Rgba value) => new(
             ToneCurveBuilder.Map(Math.Clamp(value.R, 0, 1), _draft.Gamma, _draft.Shadows, _draft.Highlights) * (1 + .1 * _outputWarmth),

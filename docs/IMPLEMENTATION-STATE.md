@@ -39,16 +39,18 @@ Hue turn and Darken a colour controls, with 400% colour depth; later frames show
 Rust's Accessibility colour menu. This demonstrates the reference controls,
 not their exact formula, independent safety certification or identical results.
 
-An original experimental global hue rotation and colour-opponent darkening
-transform is now implemented through the existing owned Magnification matrix.
-Display has explicit draft-only blue-holo and blue-tinted-loot test buttons,
-preview samples, reset and separate Apply. Matching colours throughout the
-image change, opposite colours can brighten/clip, and neutral white stays white.
-Therefore a working black neutral-white loot highlight is NOT claimed. Holo and
-loot appearance still require the user's Rust visual review; no game or display
-was used by development. The user must choose Rust's blue holo colour themselves.
-No reticle/object recognition, game capture, game hook/file change or input
-synthesis was added. Existing accepted Rust/Siege presets are unchanged.
+The user subsequently reported severe whole-screen dark gray / black-and-white
+appearance after the 400% blue-holo test, then explicitly requested isolation to
+the actual holo and hovered loot only. That cannot be provided by the current
+global pixel transform. Both misleading draft shortcuts have been removed.
+Generic global hue rotation/darkening controls remain under Advanced global
+colour darkening, with explicit scope and high-strength clipping warnings.
+Restore followed by resetting the draft is documented; existing saved/imported
+values are preserved. No game-element-only solution is claimed. Black holo and
+loot isolation remain unsupported requirements. Accepted Siege/Rust presets are
+unchanged. The user was advised to Restore; development did not change their
+running copy or physical display. Stage 4 work was saved separately while this
+feedback was handled.
 
 Three optional local ColorSettings fields default to zero and are omitted at
 zero; existing v1 documents load without migration. Strict local settings,
@@ -58,7 +60,7 @@ fields. Older binaries reject documents carrying nonzero new fields rather than
 silently ignoring them. Save/share/import diff and automatic-rule snapshots
 retain the base values; held modifiers remain temporary. Tests cover neutral
 preservation, hue/alpha/clipping, invalid ranges/non-finite values, persistence,
-IPC, remote rejection, explicit Apply and exact owned fake-baseline restoration.
+IPC, remote rejection, explicit Apply, honest lack of element isolation and exact owned fake-baseline restoration.
 Launcher smoke renders/closes without companions/providers. See
 [Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 has not been started.
 

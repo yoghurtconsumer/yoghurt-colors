@@ -12,7 +12,7 @@ public sealed class LibraryWorkflowTests
 {
     [Fact] public async Task AccentDraftIsSavedSharedAndConfirmedWithItsWholeImageWarningWithoutApplying()
     {
-        using var fixture = new Fixture(); await fixture.Library.LoadAsync(); fixture.Display.PrepareBlueHoloCommand.Execute(null);
+        using var fixture = new Fixture(); await fixture.Library.LoadAsync(); fixture.Display.DarkenHue = 195; fixture.Display.DarkenPercent = 25;
         var colour = fixture.Display.DraftColor; fixture.Library.EditName = "My blue-accent test"; await fixture.Library.SaveNewAsync();
         Assert.Equal(colour, fixture.Library.Selected!.Color);
         fixture.Library.ShareCommand.Execute(null); fixture.Library.StageImportText(fixture.Library.ShareText);

@@ -104,12 +104,12 @@ have not been claimed as complete visual/accessibility qualification.
 
 ## Requested Rust colour-darkening extension
 
-Use [the Rust review guide](RUST-COLOUR-DARKENING.md). Prepare changes only the
-draft: verify Blue sight darkens while White stays white, save/share/import and
-confirm without applying. A human may separately compare the blue holo and
-blue-tinted loot drafts in Rust through explicit Apply, checking collateral
-colours and Restore. Neither actual holo nor black loot was qualified during
-development. Neutral white cannot become black with these controls.
+The former 400% holo/loot drafts were removed after user feedback. Verify those
+shortcuts are absent. Generic Advanced global colour darkening must describe its
+whole-image scope and inability to isolate game elements. Restore requests the
+captured baseline; reset changes only the draft. Save/share/import remain local,
+with a diff and explicit Apply. See [scope/reset instructions](RUST-COLOUR-DARKENING.md).
+No native/game test is automated and no object-isolated effect is claimed.
 
 ## Explicit hardware qualification only
 
