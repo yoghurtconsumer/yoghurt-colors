@@ -90,9 +90,14 @@ cannot selectively fold white back to black either. No reticle recognition,
 continuous game capture, game hook, file change or input automation was added.
 
 No working black-holo/loot-highlight implementation is claimed in this package.
-A public reference clip/page has been requested to verify the full-image behavior
-before selecting any additional display-only backend. This is separate from the
-completed Stage 3 input/profile/link work; Stage 4 was not started.
+The user supplied [this PlexusX TikTok clip](https://www.tiktok.com/@plexus.x/video/7695834627306491158).
+On 17 October, the web reader could not retrieve it; the background browser
+showed a verification popup followed by login/age verification instead of video
+playback. The clip has NOT been visually inspected. No account, birthday or
+verification challenge was submitted. A directly attached clip or playable
+mirror is needed to inspect the full-image behavior before selecting another
+display-only backend. This is separate from the completed Stage 3 work;
+Stage 4 was not started and no product code changed for this investigation.
 
 Follow game policy. The architecture does not provide anti-cheat approval or a
 guarantee against false flags. See ANTI-CHEAT-BOUNDARY.md.

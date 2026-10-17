@@ -35,8 +35,12 @@ white loot hover highlight black (not an overlay crosshair or automatic looting)
 It is NOT implemented: the current global affine color filter cannot identify
 individual game elements; global inversion would change unrelated colors too.
 The monotonic calibrated gamma route cannot supply a selective white-to-black
-fold. A public reference demo is requested to verify full-image behavior before
-choosing an additional display-only approach. No game capture/recognition, game
+fold. The user supplied TikTok video 7695834627306491158 from @plexus.x. The web
+reader could not retrieve it and the background browser stopped at verification/
+login/age gates; the video has NOT been inspected. No challenge or age data was
+submitted. A direct clip/playable mirror is needed before choosing an additional
+display-only approach. The reference URL and blocker are in STAGE3-REVIEW.md.
+No product code changed for this investigation. No game capture/recognition, game
 hooks/files or input automation was added. See STAGE3-REVIEW.md. Existing accepted
 Rust/Siege presets are preserved.
 
