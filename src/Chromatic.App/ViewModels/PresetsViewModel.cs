@@ -53,6 +53,7 @@ public sealed class PresetsViewModel : PageViewModel
     public ICommand DeleteCommand { get; }
     public ICommand ResetBuiltInsCommand { get; }
     public ICommand AddGamePresetsCommand { get; }
+    public ICommand AddRustPresetsCommand { get; }
     public ICommand ResetSelectedCommand { get; }
     public ICommand PreviewCommand { get; }
     public ICommand ApplyCommand { get; }
@@ -70,6 +71,7 @@ public sealed class PresetsViewModel : PageViewModel
         SaveNewCommand = Run(SaveNewAsync); UpdateColorsCommand = Run(UpdateColorsAsync); RenameCommand = Run(RenameAsync);
         DuplicateCommand = Run(DuplicateAsync); DeleteCommand = Run(DeleteAsync); ResetBuiltInsCommand = Run(ResetBuiltInsAsync);
         AddGamePresetsCommand = Run(AddGamePresetsAsync); ResetSelectedCommand = Run(ResetSelectedAsync);
+        AddRustPresetsCommand = Run(AddRustPresetsAsync);
         PreviewCommand = new RelayCommand(_ => Preview()); ApplyCommand = Run(ApplyAsync);
         ImportFileCommand = Run(async () =>
         {
@@ -161,17 +163,22 @@ public sealed class PresetsViewModel : PageViewModel
     {
         Presets = l.Presets.Where(p => !BuiltInPresets.Create().Any(b => b.Id == p.Id)).Concat(BuiltInPresets.Create()).ToImmutableArray()
     }, "Original starting points reset; custom presets preserved.");
-    public async Task AddGamePresetsAsync()
+    public Task AddGamePresetsAsync() => AddStartingPointsAsync(GamePresetCatalog.Presets, GamePresetCatalog.Siege,
+        "builtin-game-siege-balanced", "Game preset pack ready; existing presets and edits were kept. Choose Game tag for Siege, CS2, VALORANT, Apex or Rust. Preview first; Apply remains manual.");
+    public Task AddRustPresetsAsync() => AddStartingPointsAsync(
+        GamePresetCatalog.Presets.Where(p => p.GameTag == GamePresetCatalog.Rust).ToImmutableArray(), GamePresetCatalog.Rust,
+        "builtin-game-rust-forest", "Rust biome presets ready; existing presets and edits were kept. Select the environment yourself, then Preview and Apply. No automatic biome detection.");
+    private async Task AddStartingPointsAsync(ImmutableArray<PresetDocument> presets, string game, string preferredId, string message)
     {
         await ChangeAsync(l =>
         {
             var existing = l.Presets.Select(p => p.Id).ToHashSet(StringComparer.Ordinal);
-            var missing = GamePresetCatalog.Presets.Where(p => !existing.Contains(p.Id)).ToArray();
+            var missing = presets.Where(p => !existing.Contains(p.Id)).ToArray();
             return missing.Length == 0 ? l : l with { Presets = l.Presets.AddRange(missing) };
-        }, "Game preset pack ready; existing presets and edits were kept. Choose Game tag for Siege, CS2, VALORANT or Apex. Preview first; Apply remains manual.");
-        Search = ""; TypeFilter = "Color"; GameFilter = GamePresetCatalog.Siege;
+        }, message);
+        Search = ""; TypeFilter = "Color"; GameFilter = game;
         if (!Filtered.Any()) GameFilter = "All";
-        Selected = Filtered.FirstOrDefault(p => p.Id == "builtin-game-siege-balanced") ?? Filtered.FirstOrDefault();
+        Selected = Filtered.FirstOrDefault(p => p.Id == preferredId) ?? Filtered.FirstOrDefault();
     }
     public Task ResetSelectedAsync()
     {

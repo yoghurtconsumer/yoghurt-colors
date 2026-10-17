@@ -10,7 +10,7 @@ public sealed class GamePresetTests
     [Fact] public void GamePackIsPortableAffineOnlyAndRetainsNeutralGraySteps()
     {
         var presets = GamePresetCatalog.Presets;
-        Assert.Equal(7, presets.Length); Assert.Equal(7, presets.Select(p => p.Id).Distinct().Count());
+        Assert.Equal(12, presets.Length); Assert.Equal(12, presets.Select(p => p.Id).Distinct().Count());
         Assert.Equal(4, presets.Count(p => p.GameTag == GamePresetCatalog.Siege));
         foreach (var preset in presets)
         {
@@ -29,6 +29,23 @@ public sealed class GamePresetTests
                 Assert.Equal(.42, result.A); previous = result.R;
             }
         }
+    }
+    [Fact] public void RustCoversFiveEnvironmentsWithDistinctTransformsAndUsefulToneDifferences()
+    {
+        var presets = GamePresetCatalog.Presets.Where(p => p.GameTag == GamePresetCatalog.Rust).ToArray();
+        Assert.Equal(new[] { "arctic", "arid", "forest", "jungle", "tundra" }, presets.Select(p => p.Id switch
+        {
+            "builtin-game-rust-snow" => "arctic", "builtin-game-rust-desert" => "arid", "builtin-game-rust-forest" => "forest",
+            "builtin-game-rust-jungle" => "jungle", "builtin-game-rust-tundra" => "tundra", _ => "unexpected"
+        }).Order());
+        Assert.Equal(5, presets.Select(p => p.Color).Distinct().Count());
+        Matrix5x5 Matrix(string id) => ColorMatrixBuilder.Build(presets.Single(p => p.Id == "builtin-game-rust-" + id).Color!);
+        var forest = Matrix("forest"); var jungle = Matrix("jungle"); var snow = Matrix("snow"); var desert = Matrix("desert");
+        var dark = new Rgba(.05, .05, .05); var white = new Rgba(1, 1, 1);
+        Assert.True(jungle.Transform(dark).R > forest.Transform(dark).R);
+        Assert.True(snow.Transform(white).R < desert.Transform(white).R);
+        Assert.True(desert.Transform(white).R < forest.Transform(white).R);
+        Assert.Contains("whole-image", GamePresetCatalog.Describe(presets.Single(p => p.Id.EndsWith("jungle"))));
     }
     [Fact] public void IndoorStartingPointLiftsDarkNeutralsWhileKeepingWhiteWithinRange()
     {

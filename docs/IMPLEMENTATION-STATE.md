@@ -2,7 +2,7 @@
 
 Updated: 17 October 2026. Requested work: continue step by step.
 Current checkpoint: Stage 3, step 1 — local library, game bookmarks and game starting-point pack.
-Previous GitHub checkpoint: b426c3c (offline preset library and local game bookmarks).
+Previous GitHub checkpoint: 32fd9f4 (editable game color starting points).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
-warnings/errors; 229 VSTest tests pass: 60 Core, 143 integration and 26 UI/launcher.
+warnings/errors; 231 VSTest tests pass: 61 Core, 143 integration and 27 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -36,17 +36,34 @@ installed or exposed as working. Stop before Stage 4.
 ## Stage 3, step 1 — local library and game bookmarks
 
 - The user confirmed the library works, then requested ready-made game looks to
-  help compare visibility. Added an original seven-preset game pack: Siege
+  help compare visibility, and confirmed that pack works before requesting Rust
+  biome options. The original seven-preset game pack includes Siege
   Balanced/Indoor lift/Outdoor balance/Strong color, plus balanced starting points
   for Counter-Strike 2, VALORANT and Apex Legends. These are uncalibrated appearance
   choices, not evidence of better enemy detection or game-specific compatibility.
   No game or physical display was used to tune or test them.
+- Added five Rust options: Forest / Temperate, Desert / Arid, Snow / Arctic,
+  Tundra and Jungle. Biome naming follows the Facepunch-hosted Terrain wiki;
+  [Rust preset notes](GAME-PRESETS.md) record source, original values and limits.
+  The full game pack now contains 12 presets. Add Rust biome presets adds only
+  those five missing IDs and selects the Rust filter; Add game presets includes
+  them too. Existing library edits and game bookmark IDs are preserved. Neither
+  action applies colors or detects the game/biome. Snow/desert lower neutral peak
+  whites; Jungle lifts dark neutrals more than Forest, using affine math only.
+- A full-suite run exposed the process harness receiving real Windows display
+  notifications during its scripted fake session, causing a stale revision at
+  setup. AgentHost now accepts an injectable IAgentBroadcastSource alongside its
+  existing injected runtime. The file-backed process harness supplies an inert
+  source; AgentDisplayEvents has separate explicit fake-event tests. Production
+  always constructs HiddenBroadcastWindow and retains its real safety events;
+  bootstrap/IPC provides no event-disable option. No retry of hardware commands
+  or weakening of revision/generation fences was added.
 - Library's Add game presets action atomically adds missing stable IDs and keeps
   existing presets/edits. It selects the Siege game filter, with other games in
   the Game tag filter. Adding the pack, reset, preview and editing do not apply
   anything. Reset selected starting point restores only that bundled preset;
   duplicate a customized preset first to retain it. The scene reset stays separate.
-- The game pack uses saturation 135–200%, gamma=1, neutral shadows/highlights/
+- The game pack uses saturation 120–200%, gamma=1, neutral shadows/highlights/
   vibrance/CVD and no mode, crosshair, hardware ID or asset. It uses the existing
   global affine SDR route rather than requiring optional LUT or NVIDIA services.
   Neutral gray steps remain monotonic and within output range in mathematical
@@ -340,7 +357,7 @@ holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 test
 passed instead; optimized self-contained publishing and three independent runtime
 startup checks passed separately. No product target was downgraded. The earlier
 Release/x64 186-test checkpoint is historical; the current Stage 3 library
-checkpoint above passed a full Release/x64 build and all 229 tests.
+checkpoint above passed a full Release/x64 build and all 231 tests.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second

@@ -39,6 +39,13 @@ first to keep a customized version. Indoor lift changes the whole image. These
 are original uncalibrated appearance choices; map/display comparison is still
 needed. They do not detect enemies or switch automatically with games.
 
+For Rust, click **Add Rust biome presets** to add only its five options and show
+the Rust filter: **Forest / Temperate**, **Desert / Arid**, **Snow / Arctic**,
+**Tundra** and **Jungle**. The full game-pack button includes them as well. Choose
+the environment yourself; Preview/Apply remain manual. Values and intended
+differences are in [Rust preset notes](docs/GAME-PRESETS.md). Your edited presets
+are preserved when adding the pack again.
+
 Export `.chromaticpreset` JSON or generate an offline **CD1** share code. Paste a
 code or `chromaticdesk://preset/<code>` into the import box, review the diff, then
 **Confirm import** to save a new local copy. Importing never applies it. Resolution,
@@ -144,8 +151,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 229 passing VSTest tests**
-(60 Core, 143 integration, 26 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 231 passing VSTest tests**
+(61 Core, 143 integration, 27 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

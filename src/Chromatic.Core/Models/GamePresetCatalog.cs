@@ -9,6 +9,7 @@ public sealed record GamePresetStartingPoint(PresetDocument Preset, string Descr
 public static class GamePresetCatalog
 {
     public const string Siege = "Rainbow Six Siege";
+    public const string Rust = "Rust";
     public static ImmutableArray<GamePresetStartingPoint> Entries { get; } =
     [
         Make("siege-balanced", "Siege — Balanced", Siege, new(150, Brightness: .01, Contrast: .98),
@@ -24,7 +25,17 @@ public static class GamePresetCatalog
         Make("valorant-balanced", "VALORANT — Balanced", "VALORANT", new(135),
             "A restrained color boost. Check your chosen in-game outline color and lower saturation if outlines lose detail."),
         Make("apex-balanced", "Apex — Balanced", "Apex Legends", new(145, Brightness: .008, Contrast: .98),
-            "A moderate color boost and small overall lift. Compare indoor areas, sky and terrain under the lighting you play.")
+            "A moderate color boost and small overall lift. Compare indoor areas, sky and terrain under the lighting you play."),
+        Make("rust-forest", "Rust — Forest / Temperate", Rust, new(135, Brightness: .015, Contrast: .96),
+            "Moderate saturation with a small whole-image lift for comparison in grass and woodland. Check tree shade, foliage and clothing detail; vegetation changes color too."),
+        Make("rust-desert", "Rust — Desert / Arid", Rust, new(120, Brightness: -.01, Contrast: .96),
+            "Restrained saturation and softer bright tones for comparison against sand and rocks. The whole image changes; compare shaded objects as well as sunlit ground."),
+        Make("rust-snow", "Rust — Snow / Arctic", Rust, new(125, Brightness: -.015, Contrast: .94),
+            "Lowers peak whites and keeps a small neutral black-level lift. Compare snow glare and shaded silhouettes. It cannot recover detail already missing from the rendered image."),
+        Make("rust-tundra", "Rust — Tundra", Rust, new(145, Brightness: .005, Contrast: .98),
+            "A stronger color starting point for muted ground, rocks and mixed vegetation. Check that clothing and terrain retain detail; reduce Saturation if colors clip."),
+        Make("rust-jungle", "Rust — Jungle", Rust, new(125, Brightness: .03, Contrast: .92),
+            "A larger whole-image lift and restrained saturation for comparison in dense greenery. Blacks become lighter and vegetation is affected too. It does not reveal obscured objects.")
     ];
     public static ImmutableArray<PresetDocument> Presets => Entries.Select(e => e.Preset).ToImmutableArray();
     public static PresetDocument? FindOriginal(string id) =>

@@ -13,18 +13,36 @@ public sealed class LibraryWorkflowTests
     [Fact] public async Task AddingGamePackPersistsOncePerIdAndPreservesExistingEditsWithoutApplying()
     {
         using var fixture = new Fixture(); var library = fixture.Library; await library.LoadAsync();
-        await library.AddGamePresetsAsync(); Assert.Equal(14, library.All.Length); Assert.Equal(4, library.Filtered.Count());
+        await library.AddGamePresetsAsync(); Assert.Equal(19, library.All.Length); Assert.Equal(4, library.Filtered.Count());
         Assert.Equal(GamePresetCatalog.Siege, library.GameFilter); Assert.Equal("builtin-game-siege-balanced", library.Selected!.Id);
         fixture.Display.Saturation = 177; await library.UpdateColorsAsync();
         library.EditName = "My tuned Siege look"; library.EditTag = "My game tag"; await library.RenameAsync();
         var edited = library.Selected!;
-        await library.AddGamePresetsAsync(); Assert.Equal(14, library.All.Length);
+        await library.AddGamePresetsAsync(); Assert.Equal(19, library.All.Length);
         Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
         Assert.Contains(library.Selected, library.Filtered);
         Assert.Empty(fixture.Client.Commands); Assert.Equal(177, fixture.Display.Saturation);
-        await library.LoadAsync(); Assert.Equal(14, library.All.Length); Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
+        await library.LoadAsync(); Assert.Equal(19, library.All.Length); Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
         library.GameFilter = GamePresetCatalog.Siege; Assert.Equal(3, library.Filtered.Count());
         library.GameFilter = "Counter-Strike 2"; Assert.Single(library.Filtered);
+    }
+    [Fact] public async Task RustPackUpgradesAnExistingGameLibraryAndKeepsEditsWhilePreviewStaysLocal()
+    {
+        using var fixture = new Fixture(); var library = fixture.Library;
+        var legacyGames = GamePresetCatalog.Presets.Where(p => p.GameTag != GamePresetCatalog.Rust);
+        await new LibraryRepository(fixture.LibraryPath).SaveAsync(new() { Presets = BuiltInPresets.Create().AddRange(legacyGames) });
+        await library.LoadAsync(); Assert.Equal(14, library.All.Length);
+        await library.AddRustPresetsAsync(); Assert.Equal(19, library.All.Length);
+        Assert.Equal(GamePresetCatalog.Rust, library.GameFilter); Assert.Equal(5, library.Filtered.Count());
+        Assert.Equal("builtin-game-rust-forest", library.Selected!.Id);
+        fixture.Display.Saturation = 177; library.EditName = "My Rust forest";
+        await library.UpdateColorsAsync(); await library.RenameAsync(); var edited = library.Selected!;
+        await library.AddRustPresetsAsync(); Assert.Equal(19, library.All.Length); Assert.Equal(edited, library.Selected);
+        library.Selected = library.Filtered.Single(p => p.Id.EndsWith("snow")); Assert.True(library.Preview());
+        Assert.Equal(library.Selected.Color, fixture.Display.DraftColor);
+        await library.ResetSelectedAsync(); Assert.Equal(edited, library.All.Single(p => p.Id == edited.Id));
+        await library.LoadAsync(); Assert.Equal(5, library.All.Count(p => p.GameTag == GamePresetCatalog.Rust));
+        Assert.Empty(fixture.Client.Commands);
     }
     [Fact] public async Task ResetRestoresOnlyTheChosenStartingPointAndLeavesTheDisplayUntouched()
     {
