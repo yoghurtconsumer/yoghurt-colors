@@ -1,6 +1,6 @@
 # Manual qualification backlog — Stage 3
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 275 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 304 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -100,6 +100,15 @@ Do not automate the game, alter its files or bypass its protection/policies.
 Check keyboard navigation, high contrast, screen reader labels, mixed DPI, tray
 Show/Pause/Restore/Exit and actual close-to-tray behavior manually. Those checks
 have not been claimed as complete visual/accessibility qualification.
+
+## Requested Rust colour-darkening extension
+
+Use [the Rust review guide](RUST-COLOUR-DARKENING.md). Prepare changes only the
+draft: verify Blue sight darkens while White stays white, save/share/import and
+confirm without applying. A human may separately compare the blue holo and
+blue-tinted loot drafts in Rust through explicit Apply, checking collateral
+colours and Restore. Neither actual holo nor black loot was qualified during
+development. Neutral white cannot become black with these controls.
 
 ## Explicit hardware qualification only
 

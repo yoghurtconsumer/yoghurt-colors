@@ -30,7 +30,9 @@ public static class ColorMatrixBuilder
         warmth[0] = 1 + .1 * settings.Warmth;
         warmth[12] = 1 - .1 * settings.Warmth;
         // Gamma/shadows/highlights are deliberately independent nonlinear LUT operations.
-        return Saturation(saturation) * DaltonizationBuilder.Correction(settings.CvdMode, settings.CvdStrength)
+        return Saturation(saturation) * ColourAccentBuilder.Rotate(settings.HueRotationDegrees)
+            * ColourAccentBuilder.Darken(settings.DarkenHueDegrees, settings.DarkenStrength)
+            * DaltonizationBuilder.Correction(settings.CvdMode, settings.CvdStrength)
             * new Matrix5x5(affine) * new Matrix5x5(warmth);
     }
     public static Matrix5x5 BasicLift(double lift)

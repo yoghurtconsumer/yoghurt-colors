@@ -23,8 +23,10 @@ public static class BackendPlanner
             && (color.SaturationPercent == 100 || allowNativeWithExtraSaturation);
         // Saturation/accessibility always require cross-channel processing; gamma cannot substitute.
         if (color.SaturationPercent != 100 || color.Brightness != 0 || color.Contrast != 1 ||
-            color.Warmth != 0 || color.CvdMode != "None" || color.Vibrance != 0 && !nativeVibrance)
+            color.Warmth != 0 || color.CvdMode != "None" || color.HueRotationDegrees != 0 || color.DarkenStrength != 0 || color.Vibrance != 0 && !nativeVibrance)
             Add(BackendKind.Magnification, EffectScope.GlobalDesktop, null);
+        if (color.HueRotationDegrees != 0 || color.DarkenStrength != 0)
+            reasons.Add("Experimental global hue/colour darkening affects matching colours everywhere, including other apps; neutral white remains white. Rust behavior is unqualified.");
         if (color.Vibrance != 0)
         {
             if (nativeVibrance) Add(BackendKind.NvidiaDvc, EffectScope.PerMonitor, selectedDisplay);

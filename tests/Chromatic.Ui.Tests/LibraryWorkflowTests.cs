@@ -10,6 +10,15 @@ namespace Chromatic.Ui.Tests;
 
 public sealed class LibraryWorkflowTests
 {
+    [Fact] public async Task AccentDraftIsSavedSharedAndConfirmedWithItsWholeImageWarningWithoutApplying()
+    {
+        using var fixture = new Fixture(); await fixture.Library.LoadAsync(); fixture.Display.PrepareBlueHoloCommand.Execute(null);
+        var colour = fixture.Display.DraftColor; fixture.Library.EditName = "My blue-accent test"; await fixture.Library.SaveNewAsync();
+        Assert.Equal(colour, fixture.Library.Selected!.Color);
+        fixture.Library.ShareCommand.Execute(null); fixture.Library.StageImportText(fixture.Library.ShareText);
+        Assert.Contains("colour darkening", fixture.Library.ImportDiff); Assert.Contains("white remains white", fixture.Library.ImportDiff);
+        await fixture.Library.ConfirmImportAsync(); Assert.Equal(colour, fixture.Library.Selected!.Color); Assert.Empty(fixture.Client.Commands);
+    }
     [Fact] public async Task SiegeNamedStylesAreAddedToAnExistingPackAndPreviewWithoutApplyingOrReplacingEdits()
     {
         using var fixture = new Fixture(); var library = fixture.Library;

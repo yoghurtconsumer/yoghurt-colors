@@ -142,6 +142,13 @@ legacy probe falsely blocked a BenQ SDR display (legacy flags 5). The fixed prob
 uses Windows 11's explicit active mode (modern flags 69, SDR), with a runtime gate
 and conservative legacy fallback on older Windows. No Windows setting was changed.
 
+Experimental Rust accents: on **Display**, expand **Experimental colour darkening · Rust accent tests**.
+**Prepare blue holo test** edits the preview; choose Rust's blue holo colour yourself,
+then explicitly **Apply colors to desktop**. This original global transform changes
+matching colours everywhere. **Prepare blue-tinted loot test** is unqualified:
+neutral white stays white, so a black loot highlight is not promised. See the
+[Rust review guide](docs/RUST-COLOUR-DARKENING.md) for steps, reset and limits.
+
 ## Build and automated tests
 
 For an invited friend who has no SDK or .NET installed, create a private Windows
@@ -178,8 +185,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 240 passing VSTest tests**
-(68 Core, 143 integration, 29 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 304 passing VSTest tests**
+(104 Core, 166 integration, 34 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

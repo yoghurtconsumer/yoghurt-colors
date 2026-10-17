@@ -41,6 +41,9 @@ public static partial class SettingsValidator
         Range(color.Shadows, 0, .8, nameof(color.Shadows));
         Range(color.Highlights, 0, .8, nameof(color.Highlights));
         Range(color.CvdStrength, 0, 1, nameof(color.CvdStrength));
+        Range(color.HueRotationDegrees, -180, 180, nameof(color.HueRotationDegrees));
+        Range(color.DarkenHueDegrees, 0, 360, nameof(color.DarkenHueDegrees));
+        Range(color.DarkenStrength, 0, 4, nameof(color.DarkenStrength));
         if (color.CvdMode is not ("None" or "RedWeak" or "GreenWeak" or "BlueWeak"))
             throw new ArgumentException("Unknown color accessibility mode.");
     }

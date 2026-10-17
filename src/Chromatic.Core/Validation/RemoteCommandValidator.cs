@@ -14,7 +14,10 @@ public static class RemoteCommandValidator
         switch (command.Action)
         {
             case RemoteAction.SetColor when command.Color is not null && command.PresetId is null:
-                SettingsValidator.ValidateColor(command.Color); break;
+                SettingsValidator.ValidateColor(command.Color);
+                if (command.Color.HueRotationDegrees != 0 || command.Color.DarkenHueDegrees != 0 || command.Color.DarkenStrength != 0)
+                    throw new ArgumentException("Hue rotation and colour darkening are local controls, outside the ten-control remote whitelist.");
+                break;
             case RemoteAction.ActivateScene when command.Color is null && command.PresetId is not null && allowedScenes.Contains(command.PresetId): break;
             case RemoteAction.GetState when command.Color is null && command.PresetId is null: break;
             default: throw new ArgumentException("Remote color-only whitelist rejected the command.");

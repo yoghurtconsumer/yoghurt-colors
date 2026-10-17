@@ -1,8 +1,8 @@
 # Requirements traceability — Stage 3 implementation
 
 Status records implemented behavior, not hardware qualification. All 14 .NET 10
-x64 projects build Release with SDK 10.0.402; 275 VSTest tests pass (85 Core, 159 integration,
-31 UI/launcher). Native color routes retain authenticated ownership, verified
+x64 projects build Release with SDK 10.0.402; 304 VSTest tests pass (104 Core, 166 integration,
+34 UI/launcher). Native color routes retain authenticated ownership, verified
 SDR, journal-before-write, readback and live independent recovery. All automated
 resource tests inject fakes. No agent-run physical display qualification was run.
 User feedback on 17 October confirms Saturation up to 300% worked during Siege
@@ -22,10 +22,10 @@ implemented; live input/GPU qualification is a separate manual review gate.
 | --- | --- | --- | --- | --- |
 | F01 | Whole-screen saturation through 300%; 100% neutral | Guarded matrix/atomic Apply implemented; user reports 300% slider working in Siege Fullscreen | Exact math/ABI/STA/baseline tests; fake-process UI Apply; modern SDR regression; user feedback recorded 17 October | Broader GPU/OS and exact presentation-path qualification |
 | F02 | Native NVIDIA digital vibrance; software AMD/Intel equivalent; software beyond NVIDIA limit | Optional private adapter, draft preparation UI and safe software fallback implemented; experimental | Explicit opt-in, neutral saturation/separate vibrance, actual backend status; System32-only ABI, GDI mapping/ranges, route restore, fake no-double-vibrance/fallback tests | Fullscreen/private ABI/hybrid/driver hardware matrix |
-| F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
+| F03 | Brightness, contrast, temperature and gamma | Global affine matrix and optional selected-output gamma implemented; requested local hue/darkening extension added | Journaled composed matrix/LUT; exact captured calibration; slow/ignored failures roll back | Single-output hardware qualification; shared-ramp gate remains |
 | F04 | Highlights and shadows sliders in phone UI | Desktop sliders/curves and optional SDR LUT implemented; phone deferred | Monotonic bounded curves, preview, explicit gamma opt-in/output; no phone listener | Physical LUT qualification / 6 |
 | F05 | Scene looks for treelines, interiors/dark rooms, night, snow glare, smoke/dust, range/bright sky | Seven scene and fourteen game starting points implemented | Requested Siege Champ/Im Diamond 1; accepted Strong retained; richer Rust palette; affine gray-range/low-lift tests, portable sharing and upgrade with edited entries preserved; no measured game visibility claim | Human game/map/display comparison |
-| F06 | Saved custom looks | Local library CRUD implemented | Save/update base Display draft, rename/tag/duplicate/delete, atomic library + last-good, failure/corruption tests; per-output/held state separate | UI/manual qualification |
+| F06 | Saved custom looks | Local library CRUD implemented | Save/update base Display draft including optional hue/darkening, rename/tag/duplicate/delete, atomic library + last-good, failure/corruption tests; per-output/held state separate | UI/manual qualification |
 | F07 | Automatic game-specific colors | Opt-in exact-path foreground profiles, enabled rules and desktop fallback implemented | Limited query path/PID/creation identity, OUTOFCONTEXT/debounce/liveness; denied/own/unknown/PID reuse and rapid-focus fake tests; global scope explicit | Manual live focus/process/driver qualification |
 | F08 | Preset hotkeys | Opt-in preset/pause/restore hotkeys implemented | RegisterHotKey MOD_NOREPEAT, actual per-ID conflict status, pure strict chord configuration and fake dispatch tests | Manual key/conflict/layout qualification |
 | F09 | Red-/green-/blue-weak color modes | Adjustable global approximation implemented | Attributed severity-1 coefficients; row orientation/correction tests; UI mode/strength; COLOR-PROVENANCE.md | Visual qualification; approximation remains explicit |
@@ -71,3 +71,11 @@ Native color/math and active authenticated process hosts are implemented. Later
 views/dialogs/assets, packaging/CI and optional-cloud service trees remain scoped
 to later stages; empty files are not used to imply implementation. The manual
 hardware harness was compiled but never executed.
+
+User-requested Rust extension beyond the original F01–F38 listing: original opt-in
+global hue rotation/colour darkening, draft-only holo/blue-tinted-loot tests,
+preview/reset, strict local schemas and save/share/import diff are implemented.
+This reuses the existing owned matrix with no native import expansion. White
+remains white; black neutral-white loot highlighting is NOT implemented/verified.
+Actual Rust holo/loot appearance remains manual qualification. See
+[Rust review](RUST-COLOUR-DARKENING.md). Stage 4 was not started.

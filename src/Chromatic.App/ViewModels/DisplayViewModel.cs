@@ -31,6 +31,11 @@ public sealed class DisplayViewModel : PageViewModel
     public double VibranceScale { get => (Vibrance + 1) * 50; set => Vibrance = value / 50 - 1; }
     public string CvdMode { get => _draft.CvdMode; set => Set(_draft with { CvdMode = value }, nameof(CvdMode)); }
     public double CvdStrength { get => _draft.CvdStrength; set => Set(_draft with { CvdStrength = value }, nameof(CvdStrength)); }
+    public double HueRotation { get => _draft.HueRotationDegrees; set => Set(_draft with { HueRotationDegrees = value }, nameof(HueRotation)); }
+    public double DarkenHue { get => _draft.DarkenHueDegrees; set => Set(_draft with { DarkenHueDegrees = value }, nameof(DarkenHue)); }
+    public double DarkenPercent { get => _draft.DarkenStrength * 100; set => Set(_draft with { DarkenStrength = value / 100 }, nameof(DarkenPercent)); }
+    public string AccentStatus => DarkenPercent == 0 && HueRotation == 0 ? "Colour darkening and hue rotation are off." :
+        "Experimental GLOBAL colour transform. Matching colours everywhere may darken; opposite colours may brighten/clip. Neutral white stays white. Black holo/loot behavior in Rust has not been visually qualified.";
     public string[] CvdModes { get; } = ["None", "RedWeak", "GreenWeak", "BlueWeak"];
     public ImmutableArray<DisplayIdentity> Outputs => _outputs;
     public DisplayIdentity? SelectedOutput
@@ -51,7 +56,7 @@ public sealed class DisplayViewModel : PageViewModel
         SettingsValidator.ValidateColor(color);
         _draft = color;
         foreach (var property in new[] { nameof(Saturation), nameof(Brightness), nameof(Contrast), nameof(Warmth), nameof(Gamma),
-            nameof(Shadows), nameof(Highlights), nameof(Vibrance), nameof(VibranceScale), nameof(CvdMode), nameof(CvdStrength), nameof(OutputWarmth) }) Changed(property);
+            nameof(Shadows), nameof(Highlights), nameof(Vibrance), nameof(VibranceScale), nameof(CvdMode), nameof(CvdStrength), nameof(OutputWarmth), nameof(HueRotation), nameof(DarkenHue), nameof(DarkenPercent), nameof(AccentStatus) }) Changed(property);
         RebuildPreview();
         ApplyStatus = "Preset loaded into the local sample preview. Press Apply to request desktop changes.";
     }
@@ -60,6 +65,9 @@ public sealed class DisplayViewModel : PageViewModel
     public ICommand ResetTonesCommand { get; }
     public ICommand OpenDisplaySettingsCommand { get; }
     public ICommand PrepareNvidiaCommand { get; }
+    public ICommand PrepareBlueHoloCommand { get; }
+    public ICommand PrepareBlueLootCommand { get; }
+    public ICommand ResetAccentCommand { get; }
     public string FullscreenStatus => _client?.State.Capabilities.Backends.Any(b => b.Backend == BackendKind.NvidiaDvc && b.Status == Capability.Experimental) == true
         ? "Experimental NVIDIA vibrance is opted in. Select one output, keep Saturation at 100%, adjust Vibrance and Apply. Check for Magnification+NvidiaDvc in the result; a software fallback does not cover exclusive fullscreen. Driver/game behavior needs your visual check."
         : "Exclusive fullscreen can bypass desktop saturation. For NVIDIA vibrance: Settings → opt in to experimental NVIDIA DVC → Save → restart, then select one output and use Prepare NVIDIA vibrance. This uses the display driver, without game hooks. Fullscreen support is unqualified.";
@@ -87,11 +95,24 @@ public sealed class DisplayViewModel : PageViewModel
     {
         _client = client; _session = settings; _draft = settings?.Current.GlobalColor ?? new();
         ApplyCommand = new AsyncCommand(ApplyAsync, error => ApplyStatus = $"Apply failed: {error.Message}");
+        PrepareBlueHoloCommand = new RelayCommand(_ =>
+        {
+            LoadColorDraft(new(150) { HueRotationDegrees = 15, DarkenHueDegrees = 255, DarkenStrength = 4 });
+            ApplyStatus = "BLUE holo test draft only. In Rust, select a blue Holo Sight Colour yourself under Accessibility. This global transform is original and unverified in Rust, not an exact PlexusX preset. Preview, then explicitly Apply. Other blue/purple objects change too.";
+        });
+        PrepareBlueLootCommand = new RelayCommand(_ =>
+        {
+            LoadColorDraft(new(120) { DarkenHueDegrees = 240, DarkenStrength = 4 });
+            ApplyStatus = "Blue-tinted inventory-accent TEST draft only. It may darken a coloured highlight; a neutral white highlight stays white. No game/hover detection or confirmed black-loot result. Preview and Apply only if you accept the whole-image changes.";
+        });
+        ResetAccentCommand = new RelayCommand(_ =>
+        {
+            HueRotation = 0; DarkenPercent = 0; DarkenHue = 0;
+            ApplyStatus = "Colour darkening/hue rotation reset in the draft. Other base controls preserved; press Apply when ready.";
+        });
         PrepareNvidiaCommand = new RelayCommand(_ =>
         {
-            _draft = new(Vibrance: .5); _outputWarmth = 0;
-            foreach (var property in new[] { nameof(Saturation), nameof(Brightness), nameof(Contrast), nameof(Warmth), nameof(Gamma),
-                nameof(Shadows), nameof(Highlights), nameof(Vibrance), nameof(VibranceScale), nameof(CvdMode), nameof(CvdStrength), nameof(OutputWarmth) }) Changed(property);
+            _outputWarmth = 0; LoadColorDraft(new(Vibrance: .5));
             if (Outputs.Length == 1) SelectedOutput = Outputs[0];
             RebuildPreview();
             ApplyStatus = "Draft prepared: Saturation 100% (neutral), Vibrance 75/100, other controls neutral. Nothing applied. Enable NVIDIA DVC in Settings, Save + restart if needed, then select one output and Apply. The result must name NvidiaDvc for native vibrance.";
@@ -109,10 +130,7 @@ public sealed class DisplayViewModel : PageViewModel
         });
         ResetCommand = new RelayCommand(_ =>
         {
-            _draft = new(); _outputWarmth = 0; Changed(nameof(OutputWarmth)); RebuildPreview();
-            Changed(nameof(Saturation)); Changed(nameof(Brightness)); Changed(nameof(Contrast)); Changed(nameof(Warmth));
-            Changed(nameof(Gamma)); Changed(nameof(Shadows)); Changed(nameof(Highlights)); Changed(nameof(Vibrance)); Changed(nameof(CvdMode)); Changed(nameof(CvdStrength));
-            Changed(nameof(VibranceScale));
+            _outputWarmth = 0; LoadColorDraft(new());
         });
         RebuildPreview();
         Refresh();
@@ -164,13 +182,15 @@ public sealed class DisplayViewModel : PageViewModel
     }
     private void Set(ColorSettings value, string property)
     {
-        SettingsValidator.ValidateColor(value); _draft = value; Changed(property); RebuildPreview();
+        SettingsValidator.ValidateColor(value); _draft = value; Changed(property); Changed(nameof(AccentStatus)); RebuildPreview();
     }
     private void RebuildPreview()
     {
         var matrix = ColorMatrixBuilder.Build(_draft);
         (string Label, Rgba Value)[] samples = [("Warm", new(.75, .3, .2)), ("Leaf", new(.25, .6, .2)),
-            ("Sky", new(.2, .45, .8)), ("Dark", new(.12, .15, .18)), ("Gray", new(.5, .5, .5)), ("Light", new(.9, .9, .9))];
+            ("Sky", new(.2, .45, .8)), ("Dark", new(.12, .15, .18)), ("Gray", new(.5, .5, .5)), ("Light", new(.9, .9, .9)),
+            ("Red sight", new(1, 0, 0)), ("Green sight", new(0, 1, 0)), ("Blue sight", new(0, 0, 1)),
+            ("Blue tint", new(.4, .5, .95)), ("White", new(1, 1, 1)), ("Black", new(0, 0, 0))];
         Rgba Tone(Rgba value) => new(
             ToneCurveBuilder.Map(Math.Clamp(value.R, 0, 1), _draft.Gamma, _draft.Shadows, _draft.Highlights) * (1 + .1 * _outputWarmth),
             ToneCurveBuilder.Map(Math.Clamp(value.G, 0, 1), _draft.Gamma, _draft.Shadows, _draft.Highlights),

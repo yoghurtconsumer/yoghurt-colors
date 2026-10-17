@@ -25,6 +25,19 @@
       <TextBlock Text="Color accessibility approximation" Margin="0,12,0,4" />
       <ComboBox ItemsSource="{Binding CvdModes}" SelectedItem="{Binding CvdMode}" AutomationProperties.Name="Approximate CVD mode" />
       <Slider Minimum="0" Maximum="1" Value="{Binding CvdStrength}" AutomationProperties.Name="CVD approximation strength" />
+      <Expander Header="Experimental colour darkening · Rust accent tests" Margin="0,18,0,12" Foreground="{DynamicResource TextBrush}"><StackPanel>
+        <TextBlock Text="Original desktop-wide colour transform. This does not identify reticles or hovered loot. All matching colours change, including terrain and other apps. Start with the samples below." Margin="0,8,0,10" />
+        <TextBlock Text="{Binding HueRotation, StringFormat=Hue rotation · {0:0} degrees}" />
+        <Slider Minimum="-180" Maximum="180" Value="{Binding HueRotation}" AutomationProperties.Name="Global hue rotation draft" />
+        <TextBlock Text="{Binding DarkenHue, StringFormat=Hue to darken · {0:0} degrees · 0 red / 120 green / 240 blue}" />
+        <Slider Minimum="0" Maximum="360" Value="{Binding DarkenHue}" AutomationProperties.Name="Global hue to darken" />
+        <TextBlock Text="{Binding DarkenPercent, StringFormat=Colour darkening · {0:0}% · 0 off}" />
+        <Slider Minimum="0" Maximum="400" Value="{Binding DarkenPercent}" AutomationProperties.Name="Global colour darkening percentage" />
+        <WrapPanel><Button Content="Prepare blue holo test" Command="{Binding PrepareBlueHoloCommand}" /><Button Content="Prepare blue-tinted loot test" Command="{Binding PrepareBlueLootCommand}" /></WrapPanel>
+        <Button Content="Reset colour darkening / hue rotation" Command="{Binding ResetAccentCommand}" HorizontalAlignment="Left" />
+        <TextBlock Text="{Binding AccentStatus}" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" />
+        <TextBlock Text="Holo test: choose Rust's blue sight colour yourself in Accessibility. A neutral white loot highlight cannot be selectively blackened with this transform. In-game behavior still requires your visual check. Apply above remains explicit." Style="{StaticResource Muted}" />
+      </StackPanel></Expander>
       <TextBlock Text="Optional SDR output · gamma/shadows/highlights (enable compatibility in Settings, save and restart)" TextWrapping="Wrap" Margin="0,16,0,4" />
       <ComboBox ItemsSource="{Binding Outputs}" SelectedItem="{Binding SelectedOutput}" DisplayMemberPath="GdiName" AutomationProperties.Name="Explicit SDR output" />
       <TextBlock Text="{Binding GammaStatus}" Style="{StaticResource Muted}" />

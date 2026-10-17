@@ -75,29 +75,25 @@ A different app location fails exact-image authentication and must not start a
 second UI/Agent; exit the old build before switching locations. Automated pipe
 tests inject a unique scope and never connect to the real app endpoint.
 
-## Rust black accents: clarified request, backend limitation
+## Rust colour-darkening review
 
-The user clarified on 17 October: recolor the actual holo reticle black and make
-the white loot hover highlight black. They do not want a static replacement
-crosshair or automated looting. The accepted five biome presets remain unchanged.
+The supplied [YouTube mirror](https://www.youtube.com/watch?v=-xwbPDYUWp8)
+plays and was visually inspected. At about 10 seconds it shows PlexusX's Hue turn
+and Darken a colour controls, including 400% colour depth; later frames show the
+Rust Accessibility colour menu. The original TikTok remained inaccessible. No
+challenge, account or age data was submitted. The exact reference formula and
+its claimed game/anti-cheat compatibility have not been independently verified.
 
-The existing Magnification backend applies one affine RGB transform everywhere;
-it cannot identify a reticle, inventory item or hovered object. Equal input colors
-receive equal output colors, including unrelated sky/text/highlights. A whole
-image inversion can make white black but also changes all other colors and is
-not the requested selective effect. The calibrated gamma path is monotonic and
-cannot selectively fold white back to black either. No reticle recognition,
-continuous game capture, game hook, file change or input automation was added.
+Display now contains **Experimental colour darkening · Rust accent tests**.
+Use **Prepare blue holo test** to preview an original global transform, choose
+Rust's blue holo colour yourself, then use the separate **Apply colors to desktop**.
+The **Prepare blue-tinted loot test** is experimental: neutral white stays white,
+so it is not a verified black loot solution. Other matching colours change too.
+No game-element identification, game capture, overlay, file edits or input
+synthesis is used. Accepted Siege/Rust presets remain unchanged.
 
-No working black-holo/loot-highlight implementation is claimed in this package.
-The user supplied [this PlexusX TikTok clip](https://www.tiktok.com/@plexus.x/video/7695834627306491158).
-On 17 October, the web reader could not retrieve it; the background browser
-showed a verification popup followed by login/age verification instead of video
-playback. The clip has NOT been visually inspected. No account, birthday or
-verification challenge was submitted. A directly attached clip or playable
-mirror is needed to inspect the full-image behavior before selecting another
-display-only backend. This is separate from the completed Stage 3 work;
-Stage 4 was not started and no product code changed for this investigation.
-
-Follow game policy. The architecture does not provide anti-cheat approval or a
-guarantee against false flags. See ANTI-CHEAT-BOUNDARY.md.
+Follow [the Rust review steps](RUST-COLOUR-DARKENING.md), including Restore,
+checking unrelated colours and saving/sharing the draft. No live Rust/hardware
+qualification was run by development. Stage 3 implementation is complete;
+Stage 4 was not started. Follow game policy: the architecture does not establish
+anti-cheat approval or a guarantee against false flags. See ANTI-CHEAT-BOUNDARY.md.

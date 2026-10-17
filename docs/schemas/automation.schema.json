@@ -58,6 +58,21 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "hueRotationDegrees": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "darkenHueDegrees": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360
+        },
+        "darkenStrength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
         }
       },
       "required": [

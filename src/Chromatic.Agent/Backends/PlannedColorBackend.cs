@@ -49,6 +49,8 @@ public sealed class PlannedColorBackend(OwnedResourceController ownership, IRead
                 }
             }
         }
+        if (color.DarkenStrength != 0 || color.HueRotationDegrees != 0)
+            note += " Experimental global hue/colour darkening; other colours change too. No game element detection or verified black loot result.";
         var composed = ColorMatrixBuilder.Build(color, softwareVibrance);
         if (requested.Effective.HoldModifier is { } boost)
         {

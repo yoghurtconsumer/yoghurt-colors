@@ -2,7 +2,7 @@
 
 Updated: 17 October 2026. Requested work: finish all Stage 3 steps while user is away.
 Current checkpoint: Stage 3 implementation complete; manual input/GPU qualification pending.
-Previous GitHub checkpoint: 10bd6f4 (Siege Champ and Im Diamond 1).
+Previous GitHub checkpoint: d72eddf (Stage 3 and Rust reference investigation).
 
 ## Current outcome
 
@@ -10,7 +10,7 @@ Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
 (14 projects total). The Stage 3 implementation builds Release/x64 with zero
-warnings/errors; 275 VSTest tests pass: 85 Core, 159 integration and 31 UI/launcher.
+warnings/errors; 304 VSTest tests pass: 104 Core, 166 integration and 34 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -30,19 +30,37 @@ this documentation update.
 
 The current request authorizes finishing Stage 3. Its implementation is complete;
 manual live-input and GPU qualification remains open. Stop before Stage 4. The
-requested Rust extension was clarified: recolor the actual holo reticle and the
-white loot hover highlight black (not an overlay crosshair or automatic looting).
-It is NOT implemented: the current global affine color filter cannot identify
-individual game elements; global inversion would change unrelated colors too.
-The monotonic calibrated gamma route cannot supply a selective white-to-black
-fold. The user supplied TikTok video 7695834627306491158 from @plexus.x. The web
-reader could not retrieve it and the background browser stopped at verification/
-login/age gates; the video has NOT been inspected. No challenge or age data was
-submitted. A direct clip/playable mirror is needed before choosing an additional
-display-only approach. The reference URL and blocker are in STAGE3-REVIEW.md.
-No product code changed for this investigation. No game capture/recognition, game
-hooks/files or input automation was added. See STAGE3-REVIEW.md. Existing accepted
-Rust/Siege presets are preserved.
+requested Rust extension was clarified: blacken the actual holo reticle and the
+white loot hover highlight, not an overlay crosshair or automatic looting.
+The supplied TikTok was inaccessible behind verification/login/age gates; none
+was bypassed. The later supplied [YouTube mirror](https://www.youtube.com/watch?v=-xwbPDYUWp8)
+was visually inspected on 17 October. At about 10 seconds PlexusX shows separate
+Hue turn and Darken a colour controls, with 400% colour depth; later frames show
+Rust's Accessibility colour menu. This demonstrates the reference controls,
+not their exact formula, independent safety certification or identical results.
+
+An original experimental global hue rotation and colour-opponent darkening
+transform is now implemented through the existing owned Magnification matrix.
+Display has explicit draft-only blue-holo and blue-tinted-loot test buttons,
+preview samples, reset and separate Apply. Matching colours throughout the
+image change, opposite colours can brighten/clip, and neutral white stays white.
+Therefore a working black neutral-white loot highlight is NOT claimed. Holo and
+loot appearance still require the user's Rust visual review; no game or display
+was used by development. The user must choose Rust's blue holo colour themselves.
+No reticle/object recognition, game capture, game hook/file change or input
+synthesis was added. Existing accepted Rust/Siege presets are unchanged.
+
+Three optional local ColorSettings fields default to zero and are omitted at
+zero; existing v1 documents load without migration. Strict local settings,
+profile, preset, library, automation and IPC schemas accept bounded finite
+extensions. The remote ten-control whitelist is unchanged and rejects these
+fields. Older binaries reject documents carrying nonzero new fields rather than
+silently ignoring them. Save/share/import diff and automatic-rule snapshots
+retain the base values; held modifiers remain temporary. Tests cover neutral
+preservation, hue/alpha/clipping, invalid ranges/non-finite values, persistence,
+IPC, remote rejection, explicit Apply and exact owned fake-baseline restoration.
+Launcher smoke renders/closes without companions/providers. See
+[Rust colour review](RUST-COLOUR-DARKENING.md). Stage 4 has not been started.
 
 ## Stage 3 completion — input, foreground and authenticated link handoff
 

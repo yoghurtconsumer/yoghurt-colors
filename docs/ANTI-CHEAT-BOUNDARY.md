@@ -4,7 +4,9 @@ Reviewed 17 October 2026 against the Stage 3 input/profile/link implementation. 
 was launched for this review. This is an architecture review, not certification
 or a promise that a game will permit Chromatic.
 
-The default color route calls Windows Magnification on the desktop. Gamma is a
+The default color route calls Windows Magnification on the desktop. The optional
+local hue rotation/colour-darkening extension composes the same global matrix;
+it adds no native imports, game access, capture or object/hover recognition. Gamma is a
 separate opt-in Windows display API; private NVIDIA DVC is experimental and off
 by default. These are display operations. The application does not access game
 memory, inject a DLL, attach a debugger, intercept DirectX, edit game files or

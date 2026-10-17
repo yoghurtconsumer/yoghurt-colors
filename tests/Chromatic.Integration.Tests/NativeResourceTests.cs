@@ -14,6 +14,28 @@ namespace Chromatic.Integration.Tests;
 
 public sealed class NativeResourceTests
 {
+    [Fact] public async Task AccentUsesExistingOwnedMatrixAndRestoresExactBaselineWithoutNewNativeEntryPoints()
+    {
+        using var directory = new TestDirectory(); using var worker = new AgentStaWorker();
+        var coordinator = new JournaledEffectsCoordinator(worker, new()
+        { Capabilities = new([new(BackendKind.Magnification, Capability.Available, "Injected", EffectScope.GlobalDesktop)]) }) { RecoveryReady = true };
+        var api = new MagFake(); var matrix = new MagnificationResource(api, () => true);
+        using var owned = new OwnedResourceController(new RecoveryJournalStore(directory.File()),
+            new() { UserSid = "S-1-5-21-1", SessionId = 1, AgentPid = 42, AgentStartTicks = 100 }, coordinator, () => true);
+        coordinator.AttachBackend(new PlannedColorBackend(owned, [matrix], matrix, () => coordinator.State, new()));
+        try
+        {
+            var colour = new ColorSettings(150) { HueRotationDegrees = 15, DarkenHueDegrees = 255, DarkenStrength = 4 };
+            var result = await coordinator.SendAsync(new(Guid.NewGuid(), 0, 0, new ApplyProfile(new() { GlobalColor = colour })));
+            Assert.True(result.Completion.Success); Assert.Contains("No game element detection", result.Completion.Explanation);
+            var actual = await worker.InvokeAsync(() => matrix.ReadAsync(default));
+            Assert.Equal(matrix.Canonicalize(new(ColorMatrixBuilder.Build(colour).Values)).Values.ToArray(), actual.Values.ToArray());
+            var state = coordinator.State;
+            Assert.True((await coordinator.SendAsync(new(Guid.NewGuid(), state.Revision, state.Generation, new Restore()))).Completion.Success);
+            Assert.Equal(Matrix5x5.Identity.Values.ToArray(), (await worker.InvokeAsync(() => matrix.ReadAsync(default))).Values.ToArray());
+        }
+        finally { await worker.InvokeAsync(() => { matrix.Dispose(); return true; }); }
+    }
     [Fact] public async Task BasicHoldWritesComposedAffineMatrixAndReleaseUsesNewestBase()
     {
         using var directory = new TestDirectory(); using var worker = new AgentStaWorker();
