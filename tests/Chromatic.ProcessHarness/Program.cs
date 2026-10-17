@@ -28,7 +28,7 @@ internal static class Program
             Directory.CreateDirectory(directory);
             var runtime = new CompanionRuntime(directory, () => new([new("fake-monitor", null, @"\\.\DISPLAY1", 1, 1)], true, false, "Injected test SDR inventory."),
                 (_, _, _) => new FileCatalog(directory));
-            if (mode == "agent") return await AgentHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime);
+            if (mode == "agent") return await AgentHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime, () => new FixtureBroadcasts());
             if (mode == "recovery") return await RecoveryHost.RunAsync(await CompanionLaunch.ReadAsync(), runtime);
             FileResource.Save(Path.Combine(directory, "state.json"), Value(117));
             var ui = PipeInterop.Current;
@@ -93,6 +93,14 @@ internal static class Program
         return Process.Start(start) ?? throw new IOException("Fake child launch failed.");
     }
     internal static ResourceValue Value(double percent) => new(ColorMatrixBuilder.Saturation(percent).Values);
+    // Recovery/process tests exercise their scripted file mutations, independently
+    // of unrelated display broadcasts on the developer's interactive desktop.
+    // AgentDisplayEvents has separate tests with explicit fake OS events.
+    private sealed class FixtureBroadcasts : IAgentBroadcastSource
+    {
+        public event Action<AgentBroadcast>? Broadcast { add { } remove { } }
+        public void Dispose() { }
+    }
     private sealed class FileCatalog : IColorResourceCatalog
     {
         public IResourceAdapter Matrix { get; }

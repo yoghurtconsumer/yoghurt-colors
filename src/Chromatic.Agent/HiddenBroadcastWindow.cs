@@ -5,7 +5,11 @@ using System.Windows.Threading;
 namespace Chromatic.Agent;
 
 public enum AgentBroadcast { DisplayChanged, SessionSuspended, SessionUnlocked, PowerSuspended, PowerResumed }
-public sealed class HiddenBroadcastWindow : IDisposable
+public interface IAgentBroadcastSource : IDisposable
+{
+    event Action<AgentBroadcast>? Broadcast;
+}
+public sealed class HiddenBroadcastWindow : IAgentBroadcastSource
 {
     private readonly HwndSource _window;
     public event Action<AgentBroadcast>? Broadcast;

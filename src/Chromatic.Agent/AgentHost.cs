@@ -12,7 +12,8 @@ namespace Chromatic.Agent;
 
 public static class AgentHost
 {
-    public static async Task<int> RunAsync(CompanionBootstrap launch, CompanionRuntime? injectedRuntime = null)
+    public static async Task<int> RunAsync(CompanionBootstrap launch, CompanionRuntime? injectedRuntime = null,
+        Func<IAgentBroadcastSource>? injectedBroadcasts = null)
     {
         AbiAssertions.Verify(); DisplaySafetyProbe.VerifyAbi();
         if (launch.RecoveryOnly) throw new UnauthorizedAccessException("Recovery-only launch cannot start an Agent.");
@@ -37,7 +38,10 @@ public static class AgentHost
         var catalog = runtime.CreateResources(inventory, launch.Services.GammaCompatibility, launch.Services.NvidiaExperimental);
         coordinator.AttachBackend(new PlannedColorBackend(owned, catalog.Resources, catalog.Matrix, () => coordinator.State, launch.Services));
         using var lifetime = new CancellationTokenSource();
-        var broadcast = await worker.InvokeAsync(() => new HiddenBroadcastWindow());
+        // Tests inject their event source alongside file-backed resources. The
+        // production entry point always installs the real Windows notifications;
+        // there is no bootstrap/IPC option to turn those safety events off.
+        var broadcast = await worker.InvokeAsync<IAgentBroadcastSource>(() => injectedBroadcasts?.Invoke() ?? new HiddenBroadcastWindow());
         var displayEvents = new AgentDisplayEvents(coordinator, inventory, runtime.Inventory,
             report => Capabilities(report, launch.Services), message => CompanionLaunch.Log("Agent", message));
         broadcast.Broadcast += kind => _ = HandleBroadcastAsync(kind);
