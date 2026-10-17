@@ -19,6 +19,7 @@ public sealed class SchemaAndMigrationTests
     [Fact] public void CurrentDocumentsConformToEveryPublishedSchema()
     {
         Validate("settings", new AppSettings()); Validate("profile", new DisplayProfile()); Validate("preset", new PresetDocument());
+        Validate("library", new PresetLibrary { Presets = BuiltInPresets.Create() }); Validate("games", new GameLibrary());
         Validate("remote", new RemoteCommand(1, 1, 0, RemoteAction.GetState));
         Validate("recovery", RecoveryTests.ValidSnapshot());
         Validate("ipc", new PipeHello(1, "hello", 10, 100, 1, "S-1-5-21-1", new string('a', 64)));

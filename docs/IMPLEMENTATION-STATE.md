@@ -1,15 +1,16 @@
 # Chromatic Desktop implementation state
 
-Updated: 17 October 2026. Requested checkpoint: Stage 2 fixes, private friend-test package and user compatibility feedback.
-Previous GitHub checkpoint: ef086dc (self-contained private test packaging).
+Updated: 17 October 2026. Requested work: continue step by step.
+Current checkpoint: Stage 3, step 1 — local preset library and game bookmarks.
+Previous GitHub checkpoint: ef297e4 (user-confirmed 300% saturation in Siege Fullscreen).
 
 ## Current outcome
 
-Stage 2 color-engine and process-safety implementation is present and tested on
+Stage 2 color-engine and process-safety implementation is retained and tested on
 the actual .NET 10 Windows x64 target. The solution has nine source projects,
 three automated test projects and two distinct manual/process harnesses
-(14 projects total). Release/x64 builds with zero warnings/errors; 186 VSTest
-tests pass: 58 Core, 113 integration and 15 UI/launcher tests.
+(14 projects total). The Stage 3 library checkpoint builds Release/x64 with zero
+warnings/errors; 223 VSTest tests pass: 58 Core, 142 integration and 23 UI/launcher.
 
 This is a development checkpoint, not GPU qualification or a release. No physical
 display, registry, startup, firewall or LAN setting was changed during development
@@ -27,8 +28,61 @@ all-system, capture or anti-cheat qualification. Native DVC remains separately
 unverified on hardware. No code change or additional hardware test was made for
 this documentation update.
 
-Stop here after Stage 2. Stage 3 input/game/library work is not authorized by the
-current next-phase request.
+The user's follow-up authorizes continued work step by step. Stage 3 is IN
+PROGRESS, not complete. This checkpoint implements the offline library/discovery
+step first. Input/foreground listeners and protocol registration/handoff are not
+installed or exposed as working. Stop before Stage 4.
+
+## Stage 3, step 1 — local library and game bookmarks
+
+- Seven original editable starting presets: Neutral, Treeline, Interior, Night,
+  Snow glare, Smoke / dust and Bright sky. These are starting values, not game
+  performance or visibility claims. Saturation retains its existing 0–300% range.
+- Presets/Library now supports create from the Display base draft, rename/tag,
+  update colors, duplicate, delete, reset built-ins, and name/author/type/game-tag
+  filtering. Preview changes local sample swatches only. Explicit Apply uses the
+  existing authenticated Agent path and displays the actual completion/failure.
+  Saving never reads effective held boost; per-monitor settings stay separate.
+- Strict Color/Crosshair/Resolution/FullSetup JSON imports/exports, .chromaticpreset
+  extension and bounded offline CD1 codes. Codes use compact, ordinal-key JSON
+  normalized through the typed schema, GZip, base64url and SHA-256. Decompression
+  is bounded to 64 KiB; code text is bounded to 48,000 characters. The checksum
+  detects corruption and does not establish trust. No hosted catalog is contacted.
+- Imports show proposed color/mode/crosshair/asset/author metadata and require
+  confirmation to save a new local ID. No automatic application or asset loading.
+  Crosshair, resolution and FullSetup Apply is explicitly refused until the later
+  stages; mode intent cannot bypass a future Stage 4 preview transaction.
+- chromaticdesk://preset/<CD1-code> can be pasted into the Library import box.
+  Strict parsing rejects extra routes, credentials, ports, queries and fragments.
+  Windows protocol registration and authenticated single-instance argv handoff
+  remain pending; clicking an OS link is not claimed as implemented.
+- Games supports local executable/preset bookmarks, manual file selection, path
+  edits/removal and preview of the chosen Color preset. Missing preset references
+  are surfaced. These bookmarks do NOT perform automatic game switching.
+- Steam discovery is an explicit button action: HKCU SteamPath READ, registered
+  libraryfolders.vdf and top-level appmanifest metadata only. Bounded VDF depth,
+  file size, tokens, libraries and manifest count; malformed manifests are skipped.
+  No game file scan, executable read, game launch, process inspection or registry
+  write. Executables are picked manually; UNC/device/alternate-stream paths fail.
+- Separate strict library/games schema v1 stores under the existing per-user data
+  directory use flush/atomic replacement and validated last-good storage. Existing
+  settings/profile/preset schemas remain unchanged; no migration is needed for the
+  new version-1 stores. Corrupt files are preserved, saving is blocked on failed
+  load, and failed writes reload authoritative state even after a committed rename.
+- Real Release/x64 whole-solution build/test passed on .NET 10.0.402. New tests
+  cover all four preset kinds, malicious links/fields/ranges/versions, checksum and
+  decompression bombs, corruption/interrupted commits, VDF limits/path traversal,
+  CRUD/confirmation/filtering/bookmarks and actual XAML measure/arrange without
+  showing windows. All display backends in the tests are injected fakes. The real
+  Run-App -NoBuild -SmokeTest launcher also rendered and exited cleanly with
+  in-memory defaults, no companions and no native resource providers.
+
+Next Stage 3 steps: (1) Agent-owned opt-in pumping-thread hold/hotkey support with
+repeat/chord/injected-input/release reconciliation and conflict reporting; (2)
+debounced foreground identity/profile selection and desktop fallback, including
+PID reuse/denied access/focus loss; (3) explicit per-user protocol registration
+and authenticated single-instance handoff; (4) corresponding integration tests
+and manual input/GPU qualification. None of those are claimed complete here.
 
 ## Target and dependencies
 
@@ -165,8 +219,8 @@ which Settings/Save persists. Compatibility services require opt-in, Save and
 restart. The UI is shown before asynchronous companion connection/recovery,
 so a failed companion cannot reproduce a silent launcher flash.
 
-eng/Test.ps1 -Locked restored locked dependencies, built the whole solution and
-ran the 186 tests above. Six isolated child-process scenarios cover graceful
+At Stage 2, eng/Test.ps1 -Locked restored locked dependencies, built the whole
+solution and ran 186 tests. Six isolated child-process scenarios cover graceful
 exit, crash after setter/before confirmed journal, a hung setter, UI death and a
 foreign writer, and DisplayViewModel Apply through authenticated Agent IPC with
 exact expected matrix/readback and baseline restoration. These use the real
@@ -258,11 +312,12 @@ closes in no-provider smoke mode; companion smoke modes return before bootstrap,
 pipes or providers. Final ZIP entries are decompressed and SHA-256 checked against
 the verified folder. This is not a clean-machine VM or physical hardware test.
 
-The latest whole-solution Release rebuild was blocked by the user's live App
+During Stage 2 packaging, a whole-solution Release rebuild was blocked by the user's live App
 holding DLLs. It was not terminated. Whole-solution Debug/x64 build and 186 tests
 passed instead; optimized self-contained publishing and three independent runtime
 startup checks passed separately. No product target was downgraded. The earlier
-Release/x64 186-test checkpoint remains recorded above.
+Release/x64 186-test checkpoint is historical; the current Stage 3 library
+checkpoint above passed a full Release/x64 build and all 223 tests.
 
 Chromatic.HardwareHarness is a separate manual-only executable. Two explicit
 flags, an interactive APPLY acknowledgment, five-second countdown and ten-second
@@ -280,9 +335,10 @@ and has no native bypass. It was NOT executed. See MANUAL-TESTS.md.
   driver behavior and on-screen grayscale checks remain manual qualification.
 - Hotplug/mode reset/hybrid mapping and private NvAPI support require an explicit
   driver matrix. Unknown/HDR/ACM states suspend global SDR effects.
-- Complete mode/HDR transactions, DDC, input/game profiles, libraries/imports,
-  overlay/capture, phone and media are Stages 3–6; their providers remain honest
-  NotImplemented. No listeners outside local authenticated named pipes exist.
+- Mode/HDR transactions, DDC, live input/automatic game profiles, OS deep-link
+  handoff, overlay/capture, phone and media remain pending in Stages 3–6. The local
+  library/import/discovery step above is implemented. No listeners outside local
+  authenticated named pipes exist.
 - Signing, packaging/publish companion layout, installer/updater, licence
   selection, full dependency notices/SBOM and final security audit remain Stage 7.
   Do not describe the final Section 2 file tree or release gates as complete.

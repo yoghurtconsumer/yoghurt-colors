@@ -36,6 +36,7 @@ public sealed class ShellSmokeTests
             vm.Selected = navigation;
             Assert.Same(navigation.Page, vm.CurrentPage);
             if (vm.CurrentPage is DisplayViewModel) Assert.Contains("unavailable", vm.CurrentPage.CapabilityStatus);
+            else if (vm.CurrentPage is PresetsViewModel or GamesViewModel) Assert.Contains("Local", vm.CurrentPage.CapabilityStatus);
             else Assert.Equal("NotImplemented", vm.CurrentPage.CapabilityStatus);
         }
         Assert.False(services.GetRequiredService<DisplayViewModel>().CanApply);
@@ -57,7 +58,11 @@ public sealed class ShellSmokeTests
                 foreach (var page in vm.Navigation)
                 {
                     var template = Assert.IsType<DataTemplate>(window.Resources[new DataTemplateKey(page.Page.GetType())]);
-                    Assert.NotNull(template.LoadContent());
+                    var content = Assert.IsAssignableFrom<FrameworkElement>(template.LoadContent());
+                    content.DataContext = page.Page;
+                    content.Measure(new Size(900, double.PositiveInfinity));
+                    content.Arrange(new Rect(new Point(), content.DesiredSize));
+                    content.UpdateLayout();
                 }
                 foreach (var theme in Enum.GetValues<ThemeKind>())
                 {

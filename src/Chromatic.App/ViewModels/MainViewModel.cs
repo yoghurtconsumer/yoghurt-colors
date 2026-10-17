@@ -10,7 +10,7 @@ public sealed class MainViewModel : ObservableViewModel
 {
     private readonly IEffectsClient _client;
     private NavigationItem _selected;
-    private string _status = "Effects off · Stage 2 development build";
+    private string _status = "Effects off · Stage 3 library checkpoint";
     private readonly DisplayViewModel _display;
     public ImmutableArray<NavigationItem> Navigation { get; }
     public MusicViewModel Music { get; }

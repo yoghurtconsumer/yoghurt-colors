@@ -32,7 +32,11 @@ Windows version, GPU, whether desktop/borderless/fullscreen works, the exact App
 result, and whether Restore/Exit returns your original colors. Report issues to
 the person who sent this private build; nothing is uploaded automatically.
 Logs: %LOCALAPPDATA%\ChromaticDesktop\logs and \sessions.
-Later navigation features remain unavailable at this Stage 2 checkpoint.
+Library: save/preview named Color presets and share offline CD1 codes or
+.chromaticpreset JSON. Review and confirm imports; nothing applies automatically.
+Games saves local executable/preset bookmarks, with optional manual Steam metadata
+discovery. Automatic switching, input hotkeys and OS link handoff remain pending.
+Other later navigation features remain unavailable at this Stage 3 library checkpoint.
 
 GAME POLICY
 No game-memory access, injection, DirectX hooks, game-file edits or driver installs.

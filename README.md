@@ -1,7 +1,8 @@
 # Chromatic Desktop
 
-Independent Windows 10/11 display utility. Stage 2 implements guarded color
-engines, authenticated Agent IPC and independent recovery. Production is C# WPF,
+Independent Windows 10/11 display utility. Stage 3's first checkpoint adds a local
+preset library and game bookmarks to guarded color engines, authenticated Agent
+IPC and independent recovery. Production is C# WPF,
 .NET 10, native x64, Windows build 19041+. This is a development build: physical
 GPU/monitor behavior remains unqualified and later-stage features are unavailable.
 
@@ -20,6 +21,27 @@ On a verified SDR desktop with connected Agent/Recovery, **Apply colors to deskt
 requests the global matrix and reports actual completion/readback or failure.
 **Restore** and exiting request the captured baseline. Magnification affects
 every monitor; selecting an output scopes only independent LUT/DVC intentions.
+
+In **Presets / Library**, choose a starting preset and **Preview in Display**, or
+adjust Display and **Save Display draft as new** with a name/game tag. Preview
+does not change the desktop. **Apply selected colors to desktop** requests the
+existing guarded color engine and shows its actual result. Rename, update,
+duplicate, delete, search/type/game-tag filters and reset of original starting
+points are available. Color presets save base colors; monitor intentions and
+temporary held boost are separate.
+
+Export `.chromaticpreset` JSON or generate an offline **CD1** share code. Paste a
+code or `chromaticdesk://preset/<code>` into the import box, review the diff, then
+**Confirm import** to save a new local copy. Importing never applies it. Resolution,
+crosshair and full-setup documents can be stored/shared but application awaits
+their later stages. Windows link registration/handoff is still pending.
+
+**Games** saves local executable/Color-preset bookmarks and previews a chosen
+look. **Read installed Steam games** explicitly reads registered local Steam
+library/manifests; choose the executable manually. Automatic game switching and
+global hotkeys/hold input are still pending in Stage 3. Bookmarks never launch or
+inspect a game. Data lives in `%APPDATA%/ChromaticDesktop/library.json` and
+`games.json`, with atomic replacement and validated `.last-good` backups.
 
 Gamma compatibility and private NVIDIA DVC require separate Settings opt-ins,
 Save and restart. Gamma/shadows/highlights need an explicit output. Multiple active
@@ -113,8 +135,8 @@ Or in PowerShell:
     dotnet build ChromaticDesktop.sln -c Release -p:Platform=x64
     dotnet test ChromaticDesktop.sln -c Release -p:Platform=x64 --no-build
 
-Verified: **14 projects, zero build warnings/errors, 186 passing VSTest tests**
-(58 Core, 113 integration, 15 UI/launcher). TRX results are under artifacts/test-results.
+Verified: **14 projects, zero build warnings/errors, 223 passing VSTest tests**
+(58 Core, 142 integration, 23 UI/launcher). TRX results are under artifacts/test-results.
 Tests cover math/ABI, strict schemas/migrations, atomic write failures, owned
 baselines, stale revisions, real OS-authenticated pipes and six independent
 child-process cases, including Display Apply through the Agent and exact restore.

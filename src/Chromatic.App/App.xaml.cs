@@ -71,6 +71,11 @@ public partial class App : Application
         window.ShowActivated = true;
         window.Show();
         window.Activate();
+        if (!smokeTest)
+        {
+            await _services.GetRequiredService<ViewModels.PresetsViewModel>().LoadAsync();
+            await _services.GetRequiredService<ViewModels.GamesViewModel>().LoadAsync();
+        }
         if (_companions is not null) _ = ConnectCompanionsAsync(settings.Services);
     }
     private async Task ConnectCompanionsAsync(OptionalServices services)

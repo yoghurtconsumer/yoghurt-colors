@@ -15,10 +15,13 @@ public sealed class AppSessionSettings(AppSettings settings)
 }
 public static class CompositionRoot
 {
-    public static ServiceProvider Build(AppSettings settings, SettingsRepository repository, IEffectsClient? effects = null)
+    public static ServiceProvider Build(AppSettings settings, SettingsRepository repository, IEffectsClient? effects = null, string? dataDirectory = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(new AppSessionSettings(settings)); services.AddSingleton(repository);
+        dataDirectory ??= System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ChromaticDesktop");
+        services.AddSingleton(new LibraryRepository(System.IO.Path.Combine(dataDirectory, "library.json")));
+        services.AddSingleton(new GameLibraryRepository(System.IO.Path.Combine(dataDirectory, "games.json")));
         services.AddSingleton<IEffectsClient>(effects ?? new EffectsPipeClient());
         services.AddSingleton<IMediaController, GsmtcController>();
         services.AddSingleton<OverlayHost>(); services.AddSingleton<PhoneServer>();

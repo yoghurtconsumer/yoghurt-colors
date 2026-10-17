@@ -45,6 +45,16 @@ public sealed class DisplayViewModel : PageViewModel
     }
     public string ApplyStatus { get => _applyStatus; private set { _applyStatus = value; Changed(); } }
     public ImmutableArray<PreviewSwatch> Swatches { get; private set; } = [];
+    public ColorSettings DraftColor => _draft;
+    public void LoadColorDraft(ColorSettings color)
+    {
+        SettingsValidator.ValidateColor(color);
+        _draft = color;
+        foreach (var property in new[] { nameof(Saturation), nameof(Brightness), nameof(Contrast), nameof(Warmth), nameof(Gamma),
+            nameof(Shadows), nameof(Highlights), nameof(Vibrance), nameof(VibranceScale), nameof(CvdMode), nameof(CvdStrength), nameof(OutputWarmth) }) Changed(property);
+        RebuildPreview();
+        ApplyStatus = "Preset loaded into the local sample preview. Press Apply to request desktop changes.";
+    }
     public ICommand ResetCommand { get; }
     public ICommand ApplyCommand { get; }
     public ICommand ResetTonesCommand { get; }

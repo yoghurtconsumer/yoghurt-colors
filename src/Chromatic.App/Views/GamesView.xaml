@@ -4,7 +4,32 @@
     <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}" />
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="{Binding CapabilityStatus}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
-      <TextBlock Text="{Binding Deferred}" Margin="0,10,0,0" />
+      <TextBlock Text="{Binding Deferred}" Margin="0,10,0,14" />
+      <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding Selected}" Height="160" Margin="0,0,0,12">
+        <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="2,3">
+          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding ExecutablePath}" FontSize="12" />
+        </StackPanel></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+      <TextBlock Text="Name" /><TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" Margin="0,4,0,10" />
+      <TextBlock Text="Exact local executable path" /><TextBox Text="{Binding ExecutablePath, UpdateSourceTrigger=PropertyChanged}" MaxLength="32768" Margin="0,4,0,10" />
+      <Button Content="Browse executable…" Command="{Binding BrowseCommand}" HorizontalAlignment="Left" />
+      <TextBlock Text="Color preset" />
+      <ComboBox ItemsSource="{Binding ColorPresets}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedPreset}" Margin="0,4,0,12" />
+      <WrapPanel>
+        <Button Content="New bookmark" Command="{Binding NewCommand}" />
+        <Button Content="Save bookmark" Command="{Binding SaveCommand}" />
+        <Button Content="Delete selected" Command="{Binding DeleteCommand}" />
+        <Button Content="Preview chosen preset" Command="{Binding PreviewPresetCommand}" />
+      </WrapPanel>
+      <TextBlock Text="{Binding Status}" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="Steam discovery (manual)" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock Text="Reads the current user's Steam registration, libraryfolders.vdf and app manifests. Choose an executable yourself; no recursive scan or game launch." Margin="0,8,0,12" />
+      <Button Content="Read installed Steam games" Command="{Binding DiscoverCommand}" HorizontalAlignment="Left" />
+      <ListBox ItemsSource="{Binding Installed}" SelectedItem="{Binding InstalledSelection}" DisplayMemberPath="Name" Height="160" Margin="0,4,0,12" />
+      <Button Content="Choose executable for selected game…" Command="{Binding ChooseDiscoveredCommand}" HorizontalAlignment="Left" />
     </StackPanel></Border>
   </StackPanel>
 </UserControl>

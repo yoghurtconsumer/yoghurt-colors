@@ -4,7 +4,54 @@
     <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}" />
     <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="{Binding CapabilityStatus}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
-      <TextBlock Text="{Binding Deferred}" Margin="0,10,0,0" />
+      <TextBlock Text="{Binding Deferred}" Margin="0,10,0,14" />
+      <TextBlock Text="Search name, game tag or author" />
+      <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10" />
+      <WrapPanel>
+        <TextBlock Text="Type" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding TypeFilter}" Width="140" Margin="0,0,16,8" />
+        <TextBlock Text="Game tag" VerticalAlignment="Center" Margin="0,0,8,8" />
+        <ComboBox ItemsSource="{Binding GameTags}" SelectedItem="{Binding GameFilter}" MinWidth="160" MaxWidth="300" Margin="0,0,0,8" />
+      </WrapPanel>
+      <ListBox ItemsSource="{Binding Filtered}" SelectedItem="{Binding Selected}" Height="200" Margin="0,4,0,12">
+        <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="2,3">
+          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+          <WrapPanel><TextBlock Text="{Binding Kind}" Margin="0,0,12,0" /><TextBlock Text="{Binding GameTag}" /></WrapPanel>
+        </StackPanel></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+      <WrapPanel>
+        <Button Content="Preview in Display" Command="{Binding PreviewCommand}" />
+        <Button Content="Apply selected colors to desktop" Command="{Binding ApplyCommand}" />
+        <Button Content="Duplicate" Command="{Binding DuplicateCommand}" />
+        <Button Content="Delete selected" Command="{Binding DeleteCommand}" />
+      </WrapPanel>
+      <TextBlock Text="Preset name" Margin="0,8,0,4" />
+      <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" />
+      <TextBlock Text="Game tag (optional)" Margin="0,8,0,4" />
+      <TextBox Text="{Binding EditTag, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" />
+      <WrapPanel Margin="0,12,0,0">
+        <Button Content="Save Display draft as new" Command="{Binding SaveNewCommand}" />
+        <Button Content="Save name / tag" Command="{Binding RenameCommand}" />
+        <Button Content="Update selected from Display" Command="{Binding UpdateColorsCommand}" />
+        <Button Content="Reset original starting points" Command="{Binding ResetBuiltInsCommand}" />
+      </WrapPanel>
+      <TextBlock Text="{Binding Status}" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="Offline import / export" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock Text="Paste a CD1 code or chromaticdesk://preset/ link. Links are parsed here; Windows protocol registration is not installed in this checkpoint." Margin="0,8,0,8" />
+      <TextBox Text="{Binding ShareText, UpdateSourceTrigger=PropertyChanged}" MaxLength="48040" TextWrapping="Wrap" AcceptsReturn="True" Height="90" VerticalScrollBarVisibility="Auto" />
+      <WrapPanel Margin="0,12,0,0">
+        <Button Content="Review pasted import" Command="{Binding ImportCodeCommand}" />
+        <Button Content="Import JSON file…" Command="{Binding ImportFileCommand}" />
+        <Button Content="Export selected JSON…" Command="{Binding ExportCommand}" />
+        <Button Content="Generate share code" Command="{Binding ShareCommand}" />
+      </WrapPanel>
+      <TextBlock Text="{Binding ImportDiff}" Margin="0,8,0,12" />
+      <WrapPanel>
+        <Button Content="Confirm import (save local copy)" Command="{Binding ConfirmImportCommand}" IsEnabled="{Binding HasPendingImport}" />
+        <Button Content="Cancel import" Command="{Binding CancelImportCommand}" IsEnabled="{Binding HasPendingImport}" />
+      </WrapPanel>
     </StackPanel></Border>
   </StackPanel>
 </UserControl>

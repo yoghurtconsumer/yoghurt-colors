@@ -1,6 +1,6 @@
 # Game and anti-cheat boundary
 
-Reviewed 16 October 2026 against the Stage 2 implementation. No game or anti-cheat
+Reviewed 17 October 2026 against the Stage 3 library checkpoint. No game or anti-cheat
 was launched for this review. This is an architecture review, not certification
 or a promise that a game will permit Chromatic.
 
@@ -9,8 +9,12 @@ separate opt-in Windows display API; private NVIDIA DVC is experimental and off
 by default. These are display operations. The application does not access game
 memory, inject a DLL, attach a debugger, intercept DirectX, edit game files or
 install a driver. There is no implemented crosshair overlay, game scanner, global
-input hook or phone listener in this checkpoint. Deferred features remain marked
-NotImplemented.
+input hook, foreground listener or phone listener in this checkpoint. Local game
+bookmarks store paths/preset IDs as data only. Steam discovery runs only on an
+explicit button click and reads registration/library/manifest metadata. It does
+not read game executables, recursively scan game directories or launch games.
+Library CRUD/import/share operations are local files and bounded JSON, without
+game-process access. Deferred features remain marked unavailable.
 
 Process access authenticates the known UI/Agent/Recovery children and pins their
 OS handles. It uses limited query rights and synchronization; termination rights
@@ -27,7 +31,7 @@ not inspect Windows/framework internals or prove a vendor's compatibility.
 
 Game rules and vendor decisions still govern whether color/visibility utilities
 are allowed. BattlEye's [official FAQ](https://www.battleye.com/support/faq/),
-checked on the review date, describes general support for non-cheat visual tools
+last checked on 16 October 2026, describes general support for non-cheat visual tools
 subject to the game developer's decision. This is not approval of Chromatic or
 every effect. No exclusion, anti-cheat bypass, security disabling, process hiding
 or evasion is implemented or recommended. Check the particular game's rules;

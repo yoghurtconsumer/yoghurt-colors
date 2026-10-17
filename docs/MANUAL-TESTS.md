@@ -1,6 +1,6 @@
-# Manual qualification backlog — Stage 2
+# Manual qualification backlog — Stage 3 library checkpoint
 
-Automated .NET 10 Release/x64 validation: 14 projects build, 186 tests pass.
+Automated .NET 10 Release/x64 validation: 14 projects build, 223 tests pass.
 No physical display, registry, startup, firewall or LAN setting was changed.
 The hardware harness was NOT run. Ordinary CI must never run it.
 
@@ -10,6 +10,29 @@ Double-click Run-Chromatic.cmd. The main WPF window should render even if a
 companion fails; diagnostics then explain why Apply is unavailable. Navigate all
 pages, edit sliders/sample previews, inspect themes and save/restart settings.
 Sliders alone must not change the desktop. Effects start off.
+
+Library checks for this checkpoint (no Apply needed):
+
+1. Set Display saturation to 175%, then save the Display draft as a new named
+   Color preset in Library. Restart and verify the saved preset remains.
+2. Preview another preset and return to Display: only the local samples/sliders
+   should change. Duplicate/rename/tag/filter/delete a copy; reset built-ins and
+   check custom presets remain. Per-output settings must stay separate.
+3. Generate a CD1 code, paste it into the import box, review the diff, and cancel:
+   the library must not gain an entry. Review again and confirm: a new local copy
+   appears, with no desktop write. Export/import .chromaticpreset JSON as well.
+4. Import a resolution or crosshair document: store/export is available; Apply
+   must explain the pending later stage and leave the desktop unchanged.
+5. In Games, add/edit/remove an executable/preset bookmark. Nothing launches or
+   switches automatically. Remove its chosen preset and check the missing-preset
+   message. Optionally click Steam discovery and manually pick an executable.
+6. Check readability/keyboard navigation in Default and Slate, especially list
+   selection, filters, long paths and share-code text. Actual DPI/accessibility
+   qualification is still manual; XAML layout is covered automatically.
+
+Global input, automatic focus switching and Windows protocol handoff are still
+pending. Do not interpret saved game bookmarks or a pasted link parser as those
+features being implemented.
 
 Run-Chromatic.cmd -SmokeTest verifies first render and closes with in-memory
 defaults, without launching companions or native resource providers. Logs are at
